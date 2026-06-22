@@ -1,0 +1,130 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,600&family=Jost:wght@300;400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 42 30% 97%;
+    --foreground: 200 25% 12%;
+    --card: 42 40% 99%;
+    --card-foreground: 200 25% 12%;
+    --popover: 42 40% 99%;
+    --popover-foreground: 200 25% 12%;
+    --primary: 196 60% 32%;
+    --primary-foreground: 42 40% 99%;
+    --secondary: 42 30% 92%;
+    --secondary-foreground: 200 20% 25%;
+    --muted: 42 20% 90%;
+    --muted-foreground: 200 15% 45%;
+    --accent: 38 55% 58%;
+    --accent-foreground: 42 40% 99%;
+    --destructive: 0 65% 55%;
+    --destructive-foreground: 42 40% 99%;
+    --border: 42 20% 85%;
+    --input: 42 20% 85%;
+    --ring: 196 60% 32%;
+    --sand: 38 55% 75%;
+    --sand-light: 42 45% 93%;
+    --sand-dark: 36 40% 55%;
+    --ocean: 196 60% 32%;
+    --ocean-light: 196 50% 88%;
+    --ocean-mid: 196 55% 55%;
+    --ocean-dark: 200 65% 20%;
+    --pine: 145 35% 28%;
+    --pine-light: 145 30% 88%;
+    --gold: 38 70% 52%;
+    --radius: 1rem;
+    --sidebar-background: 42 40% 99%;
+    --sidebar-foreground: 200 25% 12%;
+    --sidebar-primary: 196 60% 32%;
+    --sidebar-primary-foreground: 42 40% 99%;
+    --sidebar-accent: 42 30% 92%;
+    --sidebar-accent-foreground: 200 20% 25%;
+    --sidebar-border: 42 20% 85%;
+    --sidebar-ring: 196 60% 32%;
+  }
+
+  * { @apply border-border; -webkit-font-smoothing: antialiased; }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Jost', sans-serif;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+  }
+
+  h1, h2, h3, .font-display {
+    font-family: 'Cormorant Garamond', serif;
+    letter-spacing: -0.02em;
+  }
+}
+
+@layer components {
+  .btn-ocean {
+    @apply bg-primary text-primary-foreground rounded-full px-6 py-3 font-medium text-sm tracking-wide transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 cursor-pointer;
+    font-family: 'Jost', sans-serif;
+  }
+  .btn-sand {
+    @apply rounded-full px-6 py-3 font-medium text-sm tracking-wide transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 text-white cursor-pointer;
+    background: hsl(38 55% 58%);
+    font-family: 'Jost', sans-serif;
+  }
+  .btn-ghost {
+    @apply border border-primary/40 text-primary rounded-full px-6 py-3 font-medium text-sm tracking-wide transition-all duration-300 hover:bg-[hsl(196_50%_88%)] cursor-pointer;
+    font-family: 'Jost', sans-serif;
+  }
+  .card-premium {
+    @apply bg-card rounded-2xl border border-border/60 shadow-sm hover:shadow-md transition-all duration-300;
+  }
+  .pill {
+    @apply rounded-full px-3 py-1 text-xs font-medium tracking-wide;
+    font-family: 'Jost', sans-serif;
+  }
+  .glass {
+    background: rgba(255,255,255,0.75);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.5);
+  }
+  .glass-dark {
+    background: rgba(10,30,42,0.65);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    @apply text-3xl font-semibold text-foreground;
+    letter-spacing: -0.02em;
+  }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+.animate-fade-up { animation: fadeUp 0.7s cubic-bezier(0.16,1,0.3,1) forwards; }
+.animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+.anim-d1 { animation-delay: 0.1s; opacity: 0; }
+.anim-d2 { animation-delay: 0.22s; opacity: 0; }
+.anim-d3 { animation-delay: 0.34s; opacity: 0; }
+.anim-d4 { animation-delay: 0.46s; opacity: 0; }
+.anim-d5 { animation-delay: 0.58s; opacity: 0; }
+.animate-float { animation: float 4s ease-in-out infinite; }
+
+.safe-area-bottom { padding-bottom: max(env(safe-area-inset-bottom, 0px), 0px); }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: hsl(42 20% 80%); border-radius: 2px; }
