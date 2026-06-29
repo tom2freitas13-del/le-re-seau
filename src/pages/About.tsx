@@ -131,10 +131,6 @@ export default function About() {
               <h3 className="font-display text-2xl font-semibold mb-1">Tom DE FREITAS</h3>
               <p className="text-sm font-medium text-primary mb-3">Développeur & Concepteur Web App</p>
               
-              <p className="text-sm text-muted-foreground max-w-md mx-auto mb-6 leading-relaxed">
-                Responsable de toute l’ingénierie technique du Ré-seau. C'est lui qui a transformé cette belle idée en la Web Application officielle, fluide, sécurisée et ultra-rapide que vous utilisez aujourd'hui.
-              </p>
-
               <a
                 href="https://instagram.com/tom_defts"
                 target="_blank"
