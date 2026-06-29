@@ -1,13 +1,30 @@
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Waves, Heart, Users, Shield } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { ArrowLeft, Instagram, Heart, Code2, Sparkles } from 'lucide-react';
+import { useAuth } from '@/lib/auth-context';
 import BottomNav from '@/components/BottomNav';
+
+const FOUNDERS = [
+  {
+    name: 'Hector De Giorgio',
+    role: 'Co-fondateur',
+    insta: 'hector_dgrg',
+    initials: 'HD',
+  },
+  {
+    name: 'Noé Derain',
+    role: 'Co-fondateur',
+    insta: 'noe.drn',
+    initials: 'ND',
+  },
+];
 
 export default function About() {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
-  // BUG FIX (#2) : bouton retour fiable. navigate(-1) seul peut ne rien faire
-  // si l'utilisateur arrive directement sur /about (pas d'historique précédent) ;
-  // on retombe alors sur l'accueil plutôt que de rester bloqué.
+  // BUG FIX (#2) : bouton retour fiable réintégré
   const handleBack = () => {
     if (window.history.length > 1) {
       navigate(-1);
@@ -17,70 +34,135 @@ export default function About() {
   };
 
   return (
-    <div className="min-h-screen pb-28 bg-background">
-      <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-md border-b border-border/50">
-        <div className="max-w-lg mx-auto px-4 py-4 flex items-center gap-3">
-          <button onClick={handleBack} className="text-muted-foreground hover:text-foreground transition-colors" aria-label="Retour">
-            <ArrowLeft className="h-5 w-5" />
-          </button>
-          <h1 className="font-display text-2xl font-semibold">Qui sommes-nous ?</h1>
+    <div className="min-h-screen pb-24 bg-background">
+      {/* Hero */}
+      <section className="relative h-[50vh] min-h-[360px] w-full overflow-hidden">
+        <img
+          src="https://images.unsplash.com/photo-1692208790949-e5742b9d6f3a?auto=format&fit=crop&w=2000&q=80"
+          alt="Île de Ré"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-foreground/30 via-foreground/20 to-background" />
+        <button
+          onClick={handleBack}
+          className="absolute top-6 left-6 inline-flex items-center gap-1.5 rounded-full bg-card/30 backdrop-blur-md border border-card/40 px-4 py-2 text-sm text-card hover:bg-card/40 transition-colors z-10"
+        >
+          <ArrowLeft className="h-4 w-4" /> Retour
+        </button>
+        <div className="relative flex h-full flex-col items-center justify-center px-6 text-center">
+          <span className="mb-3 rounded-full bg-card/30 backdrop-blur-md border border-card/40 px-4 py-1.5 text-xs font-medium uppercase tracking-widest text-card">
+            Qui sommes-nous
+          </span>
+          <h1 className="font-display text-4xl md:text-6xl font-medium text-card drop-shadow-xl max-w-2xl leading-[1.05]">
+            Une île, une vision, une appli officielle
+          </h1>
         </div>
-      </div>
+      </section>
 
-      <div className="max-w-lg mx-auto px-4 pt-8 space-y-8">
-        <div className="text-center">
-          <Waves className="h-10 w-10 text-primary mx-auto mb-3" />
-          <h2 className="font-display text-3xl font-semibold mb-2">Le Ré-seau</h2>
-          <p className="text-muted-foreground text-sm" style={{ fontFamily: 'Jost, sans-serif', lineHeight: 1.7 }}>
-            Une plateforme pensée pour celles et ceux qui aiment l'Île de Ré — résidents à l'année,
-            habitués du week-end ou vacanciers d'été.
+      {/* Notre histoire */}
+      <section className="px-4 py-16 max-w-3xl mx-auto">
+        <p className="text-xs uppercase tracking-widest text-pine font-medium mb-3 text-center">Notre histoire</p>
+        <h2 className="font-display text-3xl md:text-4xl font-medium text-center mb-8">Le Ré-seau, c'est quoi ?</h2>
+        <div className="space-y-5 text-base md:text-lg text-muted-foreground leading-relaxed">
+          <p>
+            <span className="font-display italic text-foreground">Le Ré-seau</span> est né d'un constat tout simple :
+            sur l'Île de Ré, on croise des dizaines de personnes formidables chaque été — voisins de plage,
+            partenaires de surf, amis d'amis croisés au marché — sans jamais vraiment se reconnecter ensuite.
+          </p>
+          <p>
+            Nous sommes <strong className="text-foreground">Hector</strong> et <strong className="text-foreground">Noé</strong>,
+            deux étudiants amoureux de l'île. Nous voulions créer l'espace numérique de référence pour que jeunes, familles et résidents
+            puissent se rencontrer, échanger des bons plans et s'entraider toute l'année.
+          </p>
+          <p>
+            Pas de pub, pas d'algorithme opaque. Juste une communauté locale, bienveillante et utile —
+            de Rivedoux aux Portes-en-Ré.
           </p>
         </div>
+      </section>
 
-        <div className="card-premium p-5 flex items-start gap-4">
-          <div className="h-12 w-12 rounded-2xl bg-ocean-light flex items-center justify-center flex-shrink-0">
-            <Heart className="h-6 w-6 text-primary" strokeWidth={1.5} />
+      {/* Fondateurs */}
+      <section className="px-4 pt-16 pb-8 bg-sand/40">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-10">
+            <p className="text-xs uppercase tracking-widest text-pine font-medium mb-3">L'origine du projet</p>
+            <h2 className="font-display text-3xl md:text-4xl font-medium">Les fondateurs</h2>
           </div>
-          <div>
-            <h3 className="font-display text-xl font-semibold mb-1">Notre mission</h3>
-            <p className="text-sm text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif', lineHeight: 1.6 }}>
-              Recréer du lien social sur l'île, faciliter les rencontres et l'entraide entre habitants
-              et visiteurs, toute l'année.
-            </p>
+          <div className="grid md:grid-cols-2 gap-5">
+            {FOUNDERS.map((f) => (
+              <Card key={f.insta} className="rounded-3xl border-border/50 shadow-sm hover:shadow-lg transition-shadow overflow-hidden bg-card">
+                <CardContent className="p-8 text-center">
+                  <div className="mx-auto mb-5 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-ocean-light to-pine/20 font-display text-3xl font-medium text-ocean-dark">
+                    {f.initials}
+                  </div>
+                  <h3 className="font-display text-2xl font-semibold mb-1">{f.name}</h3>
+                  <p className="text-sm text-muted-foreground mb-4">{f.role}</p>
+                  <a
+                    href={`https://instagram.com/${f.insta}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-full bg-background border border-border px-4 py-2 text-sm font-medium hover:bg-accent transition-colors"
+                  >
+                    <Instagram className="h-4 w-4 text-pink-600" />
+                    @{f.insta}
+                  </a>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
+      </section>
 
-        <div className="card-premium p-5 flex items-start gap-4">
-          <div className="h-12 w-12 rounded-2xl bg-pine-light flex items-center justify-center flex-shrink-0">
-            <Users className="h-6 w-6 text-pine" strokeWidth={1.5} />
+      {/* Développeur - Tom DE FREITAS */}
+      <section className="px-4 pb-16 pt-8 bg-sand/40">
+        <div className="max-w-xl mx-auto">
+          <div className="text-center mb-6">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary mb-2">
+              <Sparkles className="w-3.5 h-3.5" /> Architecture & Code
+            </span>
+            <h2 className="font-display text-2xl md:text-3xl font-medium">Le moteur derrière l'appli</h2>
           </div>
-          <div>
-            <h3 className="font-display text-xl font-semibold mb-1">Une communauté locale</h3>
-            <p className="text-sm text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif', lineHeight: 1.6 }}>
-              Trouvez des activités, des coups de main, des discussions par thème — tout est pensé
-              pour la vie sur l'île, été comme hiver.
-            </p>
-          </div>
+
+          <Card className="rounded-3xl border-primary/20 shadow-md hover:shadow-xl transition-all overflow-hidden relative bg-gradient-to-b from-card to-card/95">
+            <CardContent className="p-8 text-center">
+              <div className="mx-auto mb-5 flex h-24 w-24 items-center justify-center rounded-full bg-primary/10 text-primary relative group">
+                <Code2 className="h-10 w-10 transition-transform group-hover:scale-110 duration-300" />
+              </div>
+              <h3 className="font-display text-2xl font-semibold mb-1">Tom DE FREITAS</h3>
+              <p className="text-sm font-medium text-primary mb-3">Développeur & Concepteur Web App</p>
+              
+              <p className="text-sm text-muted-foreground max-w-md mx-auto mb-6 leading-relaxed">
+                Responsable de toute l’ingénierie technique du Ré-seau. C'est lui qui a transformé cette belle idée en la Web Application officielle, fluide, sécurisée et ultra-rapide que vous utilisez aujourd'hui.
+              </p>
+
+              <a
+                href="https://instagram.com/tom_defts"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-full bg-foreground text-background px-6 py-2.5 text-sm font-medium hover:opacity-90 transition-opacity shadow-sm"
+              >
+                <Instagram className="h-4 w-4" />
+                Suivre @tom_defts
+              </a>
+            </CardContent>
+          </Card>
         </div>
+      </section>
 
-        <div className="card-premium p-5 flex items-start gap-4">
-          <div className="h-12 w-12 rounded-2xl bg-sand-light flex items-center justify-center flex-shrink-0">
-            <Shield className="h-6 w-6 text-gold" strokeWidth={1.5} />
-          </div>
-          <div>
-            <h3 className="font-display text-xl font-semibold mb-1">Vos données</h3>
-            <p className="text-sm text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif', lineHeight: 1.6 }}>
-              Le Ré-seau ne vend pas vos données et n'affiche aucune publicité. Vous pouvez modifier
-              ou supprimer votre profil à tout moment depuis votre page Profil.
-            </p>
-          </div>
-        </div>
-
-        <p className="text-center text-xs text-muted-foreground pt-2" style={{ fontFamily: 'Jost, sans-serif' }}>
-          Fait avec ♥ pour l'Île de Ré 🌊
+      {/* CTA */}
+      <section className="px-4 py-16 max-w-2xl mx-auto text-center">
+        <Heart className="h-8 w-8 text-pine mx-auto mb-4" />
+        <h2 className="font-display text-3xl md:text-4xl font-medium mb-3">Rejoignez-nous</h2>
+        <p className="text-muted-foreground mb-8">
+          Le Ré-seau grandit avec vous. Inscrivez-vous, complétez votre profil, et commencez à rencontrer
+          la communauté qui aime l'île autant que vous.
         </p>
-      </div>
-      <BottomNav />
+        <Button size="lg" onClick={() => navigate(user ? '/social' : '/auth')} className="shadow-lg">
+          {user ? 'Voir la communauté' : 'Rejoindre Le Ré-seau'}
+        </Button>
+      </section>
+
+      {user && <BottomNav />}
     </div>
   );
 }
