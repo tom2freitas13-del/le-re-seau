@@ -1,6 +1,10 @@
-import { MessageCircle, Instagram, Linkedin, Star } from 'lucide-react';
+import { MessageCircle, Instagram, Linkedin, Star, MoreVertical } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { avatarFallbackInitial } from '@/lib/constants';
+import { ReportModal } from '@/components/ReportModal';
+import BlockButton from '@/components/BlockButton';
+import { useBlockedUsers } from '@/lib/useBlockedUsers';
 
 interface ProfileCardProps {
   profile: {
@@ -41,9 +45,48 @@ const interestConfig: Record<string, { emoji: string; label: string }> = {
 export default function ProfileCard({ profile, matchScore }: ProfileCardProps) {
   const navigate = useNavigate();
   const status = profile.status ? statusConfig[profile.status] : null;
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
+  const { isBlocked, blockUser, unblockUser } = useBlockedUsers();
+  const blocked = isBlocked(profile.user_id);
 
   return (
-    <div className="card-premium overflow-hidden group">
+    <div className="card-premium overflow-hidden group relative">
+      {/* Menu options (signaler / bloquer) */}
+      <div className="absolute top-3 right-3 z-10">
+        <button
+          onClick={(e) => { e.stopPropagation(); setMenuOpen(!menuOpen); }}
+          className="h-8 w-8 rounded-full glass flex items-center justify-center text-foreground hover:bg-white/90 transition-colors">
+          <MoreVertical className="h-4 w-4" />
+        </button>
+        {menuOpen && (
+          <div className="absolute top-9 right-0 bg-card rounded-xl shadow-lg border border-border/50 py-1 w-40 z-20"
+            onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => { setReportOpen(true); setMenuOpen(false); }}
+              className="w-full text-left px-3 py-2 text-sm hover:bg-secondary flex items-center gap-2"
+              style={{ fontFamily: 'Jost, sans-serif' }}>
+              🚩 Signaler
+            </button>
+            <button
+              onClick={() => { blocked ? unblockUser(profile.user_id) : blockUser(profile.user_id); setMenuOpen(false); }}
+              className="w-full text-left px-3 py-2 text-sm hover:bg-secondary flex items-center gap-2 text-destructive"
+              style={{ fontFamily: 'Jost, sans-serif' }}>
+              {blocked ? '✅ Débloquer' : '🚫 Bloquer'}
+            </button>
+          </div>
+        )}
+      </div>
+
+      {reportOpen && (
+        <ReportModal
+          targetType="profile"
+          targetId={profile.id}
+          targetUserId={profile.user_id}
+          onClose={() => setReportOpen(false)}
+        />
+      )}
+
       {/* Photo */}
       <div className="relative aspect-[4/3] overflow-hidden bg-ocean-light">
         {profile.photo_url ? (

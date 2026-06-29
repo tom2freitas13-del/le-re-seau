@@ -8,6 +8,7 @@ import { SALONS } from '@/lib/constants';
 import { toast } from 'sonner';
 import { avatarFallbackInitial } from '@/lib/constants';
 import { cn } from '@/lib/utils';
+import { ReportButton } from '@/components/ReportModal';
 
 interface SalonMessage {
   id: string;
@@ -291,11 +292,16 @@ function ForumView({ onBack }: { onBack: () => void }) {
 
         {posts.map(post => (
           <div key={post.id} className="card-premium p-4 space-y-2">
-            <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-full bg-ocean-light flex items-center justify-center text-xs font-semibold text-primary/70 flex-shrink-0">
-                {avatarFallbackInitial(authorNames[post.author_id])}
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 rounded-full bg-ocean-light flex items-center justify-center text-xs font-semibold text-primary/70 flex-shrink-0">
+                  {avatarFallbackInitial(authorNames[post.author_id])}
+                </div>
+                <span className="text-sm font-medium" style={{ fontFamily: 'Jost, sans-serif' }}>{authorNames[post.author_id] || 'Membre'}</span>
               </div>
-              <span className="text-sm font-medium" style={{ fontFamily: 'Jost, sans-serif' }}>{authorNames[post.author_id] || 'Membre'}</span>
+              {post.author_id !== user?.id && (
+                <ReportButton targetType="forum_post" targetId={post.id} targetUserId={post.author_id} className="text-muted-foreground hover:text-destructive transition-colors p-1 rounded-lg hover:bg-destructive/10" />
+              )}
             </div>
             <p className="text-sm" style={{ fontFamily: 'Jost, sans-serif', lineHeight: 1.6 }}>{post.content}</p>
             <div className="flex items-center gap-4 pt-1">

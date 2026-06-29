@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import { toast } from 'sonner';
-import { LogOut, Camera, Instagram, Linkedin, Check, Info } from 'lucide-react';
+import { LogOut, Camera, Instagram, Linkedin, Check, Info, ShieldCheck } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import { cn } from '@/lib/utils';
 import { STATUS_OPTIONS, AVAILABILITY_OPTIONS, INTEREST_OPTIONS, MIN_AGE, MAX_AGE } from '@/lib/constants';
@@ -16,7 +16,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 }
 
 export default function Profile() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -127,6 +127,12 @@ export default function Profile() {
         <div className="max-w-lg mx-auto px-4 py-4 flex items-center justify-between">
           <h1 className="font-display text-2xl font-semibold">Mon Profil</h1>
           <div className="flex items-center gap-3">
+            {isAdmin && (
+              <Link to="/admin" className="text-xs text-destructive hover:text-destructive/80 transition-colors flex items-center gap-1 font-medium"
+                style={{ fontFamily: 'Jost, sans-serif' }}>
+                <ShieldCheck className="h-3.5 w-3.5" /> Modération
+              </Link>
+            )}
             <Link to="/about" className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
               style={{ fontFamily: 'Jost, sans-serif' }}>
               <Info className="h-3.5 w-3.5" /> À propos

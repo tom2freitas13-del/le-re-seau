@@ -22,6 +22,8 @@ export interface Database {
           interests: string[] | null;
           instagram: string | null;
           linkedin: string | null;
+          is_admin: boolean;
+          is_banned: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -37,6 +39,8 @@ export interface Database {
           interests?: string[] | null;
           instagram?: string | null;
           linkedin?: string | null;
+          is_admin?: boolean;
+          is_banned?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -279,6 +283,52 @@ export interface Database {
           joined_at?: string;
         };
         Update: Partial<Database['public']['Tables']['activity_participants']['Insert']>;
+        Relationships: [];
+      };
+      reports: {
+        Row: {
+          id: string;
+          reporter_id: string;
+          target_type: 'profile' | 'message' | 'group_message' | 'salon_message' | 'forum_post' | 'forum_comment' | 'job_offer' | 'job_request' | 'activity';
+          target_id: string;
+          target_user_id: string | null;
+          reason: 'spam' | 'harcelement' | 'contenu_inapproprie' | 'arnaque' | 'faux_profil' | 'autre';
+          details: string | null;
+          status: 'pending' | 'reviewed' | 'dismissed';
+          created_at: string;
+          reviewed_at: string | null;
+          reviewed_by: string | null;
+        };
+        Insert: {
+          id?: string;
+          reporter_id: string;
+          target_type: 'profile' | 'message' | 'group_message' | 'salon_message' | 'forum_post' | 'forum_comment' | 'job_offer' | 'job_request' | 'activity';
+          target_id: string;
+          target_user_id?: string | null;
+          reason: 'spam' | 'harcelement' | 'contenu_inapproprie' | 'arnaque' | 'faux_profil' | 'autre';
+          details?: string | null;
+          status?: 'pending' | 'reviewed' | 'dismissed';
+          created_at?: string;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+        };
+        Update: Partial<Database['public']['Tables']['reports']['Insert']>;
+        Relationships: [];
+      };
+      blocked_users: {
+        Row: {
+          id: string;
+          blocker_id: string;
+          blocked_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          blocker_id: string;
+          blocked_id: string;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['blocked_users']['Insert']>;
         Relationships: [];
       };
     };

@@ -5,6 +5,7 @@ import ProfileCard from '@/components/ProfileCard';
 import BottomNav from '@/components/BottomNav';
 import { useNavigate } from 'react-router-dom';
 import { Users, Sparkles, Compass, Clock } from 'lucide-react';
+import { useBlockedUsers } from '@/lib/useBlockedUsers';
 
 interface Profile {
   id: string;
@@ -50,6 +51,7 @@ export default function Social() {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
+  const { isBlocked } = useBlockedUsers();
 
   useEffect(() => {
     if (!user) { navigate('/auth'); return; }
@@ -87,10 +89,14 @@ export default function Social() {
     loadProfilesPage(next, false);
   };
 
-  const withScores = profiles.map(p => ({
-    profile: p,
-    score: myProfile ? computeMatchScore(myProfile, p) : 0,
-  }));
+  // Sécurité : on retire les profils des utilisateurs bloqués par la personne connectée,
+  // pour qu'elle ne voie plus jamais leur contenu nulle part dans l'appli.
+  const withScores = profiles
+    .filter(p => !isBlocked(p.user_id))
+    .map(p => ({
+      profile: p,
+      score: myProfile ? computeMatchScore(myProfile, p) : 0,
+    }));
 
   const suggestions = withScores
     .filter(({ score }) => score > 0)

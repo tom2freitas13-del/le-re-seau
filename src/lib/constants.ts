@@ -61,6 +61,16 @@ export const ACTIVITY_CATEGORIES = [
 export const MIN_AGE = 13;
 export const MAX_AGE = 120;
 
+// Raisons de signalement disponibles dans le système de modération
+export const REPORT_REASONS = [
+  { value: 'spam', label: 'Spam ou publicité' },
+  { value: 'harcelement', label: 'Harcèlement ou comportement hostile' },
+  { value: 'contenu_inapproprie', label: 'Contenu inapproprié' },
+  { value: 'arnaque', label: 'Arnaque ou tentative de fraude' },
+  { value: 'faux_profil', label: 'Faux profil / usurpation' },
+  { value: 'autre', label: 'Autre raison' },
+] as const;
+
 // Génère une URL de fallback non-trompeuse (pas une vraie photo de visage)
 // pour remplacer les avatars manquants — corrige le bug de la photo Unsplash trompeuse
 export function avatarFallbackInitial(name: string | null | undefined): string {

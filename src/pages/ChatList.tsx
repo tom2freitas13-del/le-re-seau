@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { MessageCircle, Users, Plus, X, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { avatarFallbackInitial } from '@/lib/constants';
+import { useBlockedUsers } from '@/lib/useBlockedUsers';
 
 interface Conversation {
   partnerId: string;
@@ -29,6 +30,7 @@ export default function ChatList() {
   const [groups, setGroups] = useState<GroupItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateGroup, setShowCreateGroup] = useState(false);
+  const { isBlocked } = useBlockedUsers();
 
   useEffect(() => {
     if (!user) { navigate('/auth'); return; }
@@ -136,7 +138,7 @@ export default function ChatList() {
             <div className="space-y-2">
               {[1,2,3].map(i => <div key={i} className="h-16 rounded-2xl bg-muted animate-pulse" />)}
             </div>
-          ) : conversations.length === 0 ? (
+          ) : conversations.filter(c => !isBlocked(c.partnerId)).length === 0 ? (
             <div className="text-center py-12">
               <div className="text-4xl mb-3">💬</div>
               <p className="text-sm text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>
@@ -145,7 +147,7 @@ export default function ChatList() {
             </div>
           ) : (
             <div className="space-y-2">
-              {conversations.map(c => (
+              {conversations.filter(c => !isBlocked(c.partnerId)).map(c => (
                 <button key={c.partnerId} onClick={() => navigate(`/chat/${c.partnerId}`)}
                   className="card-premium p-4 flex items-center gap-3 w-full text-left">
                   <div className="h-12 w-12 rounded-full overflow-hidden bg-ocean-light flex items-center justify-center flex-shrink-0">
