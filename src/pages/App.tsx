@@ -18,6 +18,9 @@ import Discussions from "./pages/Discussions";
 import Activities from "./pages/Activities";
 import NewActivity from "./pages/NewActivity";
 import About from "./pages/About";
+import CommunityRules from "./pages/CommunityRules";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
@@ -25,7 +28,7 @@ const queryClient = new QueryClient();
 
 // Pages toujours accessibles même à un compte banni (pour pouvoir
 // se déconnecter, consulter les infos, ou comprendre la situation).
-const ALWAYS_ACCESSIBLE = ['/', '/about', '/auth'];
+const ALWAYS_ACCESSIBLE = ['/', '/about', '/auth', '/community-rules', '/privacy', '/terms'];
 
 function AppRoutes() {
   const { isBanned, loading } = useAuth();
@@ -41,6 +44,9 @@ function AppRoutes() {
     <Routes>
       <Route path="/" element={<Index />} />
       <Route path="/about" element={<About />} />
+      <Route path="/community-rules" element={<CommunityRules />} />
+      <Route path="/privacy" element={<PrivacyPolicy />} />
+      <Route path="/terms" element={<TermsOfService />} />
       <Route path="/auth" element={<Auth />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/social" element={<Social />} />

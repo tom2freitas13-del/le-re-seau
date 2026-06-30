@@ -7,6 +7,7 @@ import { LogOut, Camera, Instagram, Linkedin, Check, Info, ShieldCheck } from 'l
 import BottomNav from '@/components/BottomNav';
 import { cn } from '@/lib/utils';
 import { STATUS_OPTIONS, AVAILABILITY_OPTIONS, INTEREST_OPTIONS, MIN_AGE, MAX_AGE } from '@/lib/constants';
+import DeleteAccountButton from '@/components/DeleteAccountButton';
 
 const BIO_MAX = 300;
 const MAX_PHOTO_SIZE_MB = 5;
@@ -313,6 +314,15 @@ export default function Profile() {
           className="btn-ocean w-full py-4 text-base font-semibold flex items-center justify-center gap-2 disabled:opacity-60">
           {loading ? 'Sauvegarde...' : '✨ Enregistrer mon profil'}
         </button>
+
+        {/* Zone de danger : suppression de compte (obligation RGPD) */}
+        <div className="card-premium p-5 border border-destructive/20">
+          <h3 className="font-display text-lg font-semibold mb-1 text-destructive">Zone de danger</h3>
+          <p className="text-xs text-muted-foreground mb-4" style={{ fontFamily: 'Jost, sans-serif' }}>
+            La suppression de votre compte est définitive et supprime toutes vos données.
+          </p>
+          <DeleteAccountButton />
+        </div>
 
         <div className="h-4" />
       </div>
