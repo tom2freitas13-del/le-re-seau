@@ -77,11 +77,16 @@ export default function Index() {
         <div className="absolute inset-0"
           style={{ background: 'linear-gradient(to bottom, rgba(10,30,42,0.1) 0%, rgba(10,30,42,0.15) 40%, rgba(10,30,42,0.75) 80%, rgba(8,24,34,0.95) 100%)' }} />
 
-        <div className="absolute top-6 left-1/2 -translate-x-1/2 flex items-center gap-2 glass-dark text-white rounded-full px-4 py-2 text-xs tracking-wider uppercase"
-          style={{ fontFamily: 'Jost, sans-serif' }}>
-          <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          Île de Ré · Communauté locale
+        <div className="absolute top-6 left-1/2 -translate-x-1/2 glass-dark text-white rounded-full px-4 py-2 text-xs tracking-wider uppercase"
+        style={{ fontFamily: 'Jost, sans-serif' }}>
+        <div className="flex items-center justify-center gap-3">
+          <span>🌊 Île de Ré</span>
+          <span>•</span>
+          <span>Communauté locale</span>
+          <span>•</span>
+          <span>Sans publicité</span>
         </div>
+      </div>
 
         <div className="absolute inset-0 flex flex-col items-center justify-end pb-16 px-6 text-center">
           <div className="animate-fade-up anim-d1">
@@ -237,17 +242,49 @@ export default function Index() {
         </div>
       </div>
 
-      {/* Footer */}
-      <div className="text-center py-8 text-xs text-muted-foreground border-t border-border/50"
-        style={{ fontFamily: 'Jost, sans-serif' }}>
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <TreePine className="h-3 w-3" />
-          <span className="font-semibold tracking-widest uppercase text-foreground/40">Le Ré-seau</span>
-          <TreePine className="h-3 w-3" />
+      {/* ── FOOTER LEGAL ── */}
+      <footer className="border-t border-border/50 mt-10">
+        <div className="max-w-lg mx-auto px-4 py-10 text-center space-y-6">
+
+          {/* Branding */}
+          <div className="flex items-center justify-center gap-2 text-muted-foreground">
+            <TreePine className="h-4 w-4" />
+            <span className="font-display font-semibold tracking-widest text-foreground/60">
+              Le Ré-seau
+            </span>
+            <TreePine className="h-4 w-4" />
+          </div>
+
+          <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>
+            Une plateforme locale indépendante pour connecter les habitants et visiteurs de l’Île de Ré.
+          </p>
+
+          {/* Links */}
+          <div className="flex flex-col gap-2 text-sm">
+            <Link to="/about" className="text-primary hover:underline">
+              À propos
+            </Link>
+
+            <Link to="/community-rules" className="text-primary hover:underline">
+              Règles de la communauté
+            </Link>
+
+            <Link to="/privacy" className="text-primary hover:underline">
+              Politique de confidentialité
+            </Link>
+
+            <Link to="/terms" className="text-primary hover:underline">
+              Conditions d’utilisation
+            </Link>
+          </div>
+
+          {/* Legal mini line */}
+          <p className="text-[11px] text-muted-foreground pt-4 border-t border-border/40">
+            © {new Date().getFullYear()} Le Ré-seau — Tous droits réservés
+          </p>
+
         </div>
-        <Link to="/about" className="underline hover:text-foreground transition-colors">Qui sommes-nous ?</Link>
-        <p className="mt-2">Fait avec amour pour l'Île de Ré 🌊</p>
-      </div>
+      </footer>
 
     </div>
   );
