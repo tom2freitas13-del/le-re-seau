@@ -17,6 +17,7 @@ import GroupChat from "./pages/GroupChat";
 import Discussions from "./pages/Discussions";
 import Activities from "./pages/Activities";
 import NewActivity from "./pages/NewActivity";
+import MapView from "./pages/MapView";
 import About from "./pages/About";
 import CommunityRules from "./pages/CommunityRules";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
@@ -54,6 +55,7 @@ function AppRoutes() {
       <Route path="/jobs/new" element={<NewJob />} />
       <Route path="/activities" element={<Activities />} />
       <Route path="/activities/new" element={<NewActivity />} />
+      <Route path="/map" element={<MapView />} />
       <Route path="/chat" element={<ChatList />} />
       <Route path="/chat/:partnerId" element={<Chat />} />
       <Route path="/groups/:groupId" element={<GroupChat />} />

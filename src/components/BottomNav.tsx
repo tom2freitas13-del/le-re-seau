@@ -1,11 +1,11 @@
-import { Home, Users, MessageCircle, Briefcase, User, Calendar } from 'lucide-react';
+import { Home, Users, MessageCircle, Briefcase, User, Map } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { icon: Home, label: 'Accueil', path: '/' },
   { icon: Users, label: 'Commu.', path: '/social' },
-  { icon: Calendar, label: 'Activités', path: '/activities' },
+  { icon: Map, label: 'Carte', path: '/map' },
   { icon: MessageCircle, label: 'Discuss.', path: '/discussions' },
   { icon: Briefcase, label: 'Services', path: '/jobs' },
   { icon: User, label: 'Profil', path: '/profile' },

@@ -245,6 +245,8 @@ export interface Database {
           description: string | null;
           category: string | null;
           location: string | null;
+          latitude: number | null;
+          longitude: number | null;
           activity_date: string | null;
           activity_time: string | null;
           min_age: number | null;
@@ -259,6 +261,8 @@ export interface Database {
           description?: string | null;
           category?: string | null;
           location?: string | null;
+          latitude?: number | null;
+          longitude?: number | null;
           activity_date?: string | null;
           activity_time?: string | null;
           min_age?: number | null;

@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import BottomNav from '@/components/BottomNav';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Calendar, MapPin, Users, Trash2 } from 'lucide-react';
+import { Plus, Calendar, MapPin, Users, Trash2, Map as MapIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { ACTIVITY_CATEGORIES } from '@/lib/constants';
 import LocalImage from '@/components/LocalImage';
@@ -120,9 +120,15 @@ export default function Activities() {
               <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>Sorties organisées sur l'île</p>
             </div>
           </div>
-          <button onClick={() => navigate('/activities/new')} className="btn-ocean flex items-center gap-1.5 py-2.5">
-            <Plus className="h-4 w-4" /> Créer
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={() => navigate('/map')} title="Voir sur la carte"
+              className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center text-foreground hover:bg-ocean-light hover:text-primary transition-colors">
+              <MapIcon className="h-4 w-4" />
+            </button>
+            <button onClick={() => navigate('/activities/new')} className="btn-ocean flex items-center gap-1.5 py-2.5">
+              <Plus className="h-4 w-4" /> Créer
+            </button>
+          </div>
         </div>
       </div>
 

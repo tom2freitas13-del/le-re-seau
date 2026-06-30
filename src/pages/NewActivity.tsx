@@ -7,6 +7,7 @@ import { ArrowLeft, Calendar, Camera } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import { cn } from '@/lib/utils';
 import { ACTIVITY_CATEGORIES, MAX_AGE } from '@/lib/constants';
+import LocationPicker from '@/components/LocationPicker';
 
 const MAX_PHOTO_SIZE_MB = 5;
 
@@ -17,6 +18,7 @@ export default function NewActivity() {
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('autre');
   const [location, setLocation] = useState('');
+  const [coords, setCoords] = useState<{ lat: number | null; lng: number | null }>({ lat: null, lng: null });
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [minAge, setMinAge] = useState('');
@@ -76,6 +78,8 @@ export default function NewActivity() {
         description: description.trim() || null,
         category,
         location: location.trim() || null,
+        latitude: coords.lat,
+        longitude: coords.lng,
         activity_date: date || null,
         activity_time: time.trim() || null,
         min_age: minAge ? parseInt(minAge, 10) : null,
@@ -162,7 +166,20 @@ export default function NewActivity() {
           <div className="card-premium p-5 space-y-4">
             <div>
               <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 block" style={{ fontFamily: 'Jost, sans-serif' }}>📍 Lieu</label>
-              <input className={inputClass} style={{ fontFamily: 'Jost, sans-serif' }} placeholder="Ex: Plage de la Conche" value={location} onChange={e => setLocation(e.target.value)} />
+              <LocationPicker
+                value={location}
+                onChange={(label, lat, lng) => { setLocation(label); setCoords({ lat, lng }); }}
+                placeholder="Ex: Plage de la Conche, Ars-en-Ré..."
+              />
+              {coords.lat && coords.lng ? (
+                <p className="text-xs text-pine mt-1.5 flex items-center gap-1" style={{ fontFamily: 'Jost, sans-serif' }}>
+                  ✓ Lieu localisé — apparaîtra sur la carte
+                </p>
+              ) : location.trim() ? (
+                <p className="text-xs text-muted-foreground mt-1.5" style={{ fontFamily: 'Jost, sans-serif' }}>
+                  Choisissez une suggestion pour que l'activité apparaisse sur la carte
+                </p>
+              ) : null}
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
