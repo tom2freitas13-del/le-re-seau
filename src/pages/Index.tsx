@@ -216,11 +216,7 @@ export default function Index() {
               className={`rounded-2xl w-full mb-3 break-inside-avoid ${p.aspect}`}
             />
           ))}
-        </div>
-        <p className="text-center text-xs text-muted-foreground mt-3" style={{ fontFamily: 'Jost, sans-serif' }}>
-          🌊 Quelques coins de l'île · ajoute tes propres photos !
-        </p>
-      </div>
+        
 
       {/* ── CTA FINAL ── */}
       <div className="mx-4 mb-8 rounded-3xl overflow-hidden relative" style={{ background: 'linear-gradient(135deg, hsl(196 60% 22%), hsl(200 65% 15%))' }}>
