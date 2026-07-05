@@ -3,12 +3,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import BottomNav from '@/components/BottomNav';
 import { useNavigate } from 'react-router-dom';
-import { MessageCircle, Send, ArrowLeft, Heart, MessageSquare } from 'lucide-react';
+import { MessageCircle, Send, ArrowLeft, Heart, MessageSquare, Mail } from 'lucide-react';
 import { SALONS } from '@/lib/constants';
 import { toast } from 'sonner';
 import { avatarFallbackInitial } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { ReportButton } from '@/components/ReportModal';
+import { useBlockedUsers } from '@/lib/useBlockedUsers';
 
 interface SalonMessage {
   id: string;
@@ -26,19 +27,55 @@ interface ForumPost {
   created_at: string;
 }
 
+interface PrivateConversation {
+  partnerId: string;
+  partnerName: string;
+  partnerPhoto: string | null;
+  lastMessage: string;
+  lastDate: string;
+  unreadCount: number;
+}
+
 export default function Discussions() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [view, setView] = useState<'list' | 'salon' | 'forum'>('list');
+  const [view, setView] = useState<'list' | 'salon' | 'forum' | 'messages'>('list');
   const [activeSalon, setActiveSalon] = useState<string | null>(null);
+  const [unreadTotal, setUnreadTotal] = useState(0);
 
   useEffect(() => { if (!user) navigate('/auth'); }, [user]);
+
+  // Pastille sur la carte "Messages privés" : total des messages non lus
+  useEffect(() => {
+    if (!user) return;
+    loadUnreadTotal();
+    const channel = supabase
+      .channel(`unread-badge-${user.id}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `receiver_id=eq.${user.id}` }, () => {
+        loadUnreadTotal();
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user]);
+
+  const loadUnreadTotal = async () => {
+    if (!user) return;
+    const { count } = await supabase
+      .from('messages')
+      .select('*', { count: 'exact', head: true })
+      .eq('receiver_id', user.id)
+      .eq('read', false);
+    setUnreadTotal(count || 0);
+  };
 
   if (view === 'salon' && activeSalon) {
     return <SalonView salonId={activeSalon} onBack={() => setView('list')} />;
   }
   if (view === 'forum') {
     return <ForumView onBack={() => setView('list')} />;
+  }
+  if (view === 'messages') {
+    return <MessagesView onBack={() => { setView('list'); loadUnreadTotal(); }} />;
   }
 
   return (
@@ -53,6 +90,22 @@ export default function Discussions() {
       </div>
 
       <div className="max-w-lg mx-auto px-4 pt-6 space-y-6">
+        {/* Messages privés — style Insta, avec pastille de non-lus */}
+        <button onClick={() => setView('messages')} className="card-premium p-5 w-full text-left flex items-center gap-4">
+          <div className="h-14 w-14 rounded-2xl bg-ocean-light flex items-center justify-center flex-shrink-0 relative">
+            <Mail className="h-6 w-6 text-primary" strokeWidth={1.5} />
+            {unreadTotal > 0 && (
+              <span className="absolute -top-1 -right-1 h-5 min-w-[20px] px-1 rounded-full bg-red-500 text-white text-[10px] font-semibold flex items-center justify-center">
+                {unreadTotal > 9 ? '9+' : unreadTotal}
+              </span>
+            )}
+          </div>
+          <div className="flex-1">
+            <h3 className="font-display text-xl font-semibold">Messages privés</h3>
+            <p className="text-sm text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>Vos conversations avec les membres</p>
+          </div>
+        </button>
+
         <button onClick={() => setView('forum')} className="card-premium p-5 w-full text-left flex items-center gap-4">
           <div className="h-14 w-14 rounded-2xl bg-sand-light flex items-center justify-center text-2xl flex-shrink-0">📰</div>
           <div className="flex-1">
@@ -83,9 +136,120 @@ export default function Discussions() {
 }
 
 // ─────────────────────────────────────────────────────────────
-// SALON — BUG FIX (#9) : les messages sont désormais persistés
-// dans Supabase (table salon_messages) au lieu d'un state local
-// qui disparaissait au refresh.
+// MESSAGES PRIVÉS — liste des conversations façon Instagram,
+// avec pastille de non-lus par conversation.
+// ─────────────────────────────────────────────────────────────
+function MessagesView({ onBack }: { onBack: () => void }) {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [conversations, setConversations] = useState<PrivateConversation[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { isBlocked } = useBlockedUsers();
+
+  useEffect(() => { loadConversations(); }, []);
+
+  const loadConversations = async () => {
+    if (!user) return;
+    const { data: messages } = await supabase
+      .from('messages')
+      .select('*')
+      .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
+      .order('created_at', { ascending: false });
+
+    if (!messages) { setLoading(false); return; }
+
+    const byPartner = new Map<string, typeof messages[0]>();
+    const unreadByPartner = new Map<string, number>();
+    for (const m of messages) {
+      const partnerId = m.sender_id === user.id ? m.receiver_id : m.sender_id;
+      if (!byPartner.has(partnerId)) byPartner.set(partnerId, m);
+      if (m.receiver_id === user.id && !m.read) {
+        unreadByPartner.set(partnerId, (unreadByPartner.get(partnerId) || 0) + 1);
+      }
+    }
+
+    const partnerIds = Array.from(byPartner.keys());
+    if (partnerIds.length === 0) { setLoading(false); return; }
+
+    const { data: profiles } = await supabase.from('profiles').select('user_id, name, photo_url').in('user_id', partnerIds);
+    const profileMap = new Map((profiles || []).map(p => [p.user_id, p]));
+
+    const convos: PrivateConversation[] = partnerIds.map(pid => {
+      const m = byPartner.get(pid)!;
+      const profile = profileMap.get(pid);
+      return {
+        partnerId: pid,
+        partnerName: profile?.name || 'Utilisateur',
+        partnerPhoto: profile?.photo_url || null,
+        lastMessage: m.content,
+        lastDate: m.created_at,
+        unreadCount: unreadByPartner.get(pid) || 0,
+      };
+    });
+
+    setConversations(convos);
+    setLoading(false);
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-md border-b border-border/50">
+        <div className="max-w-lg mx-auto px-4 py-3 flex items-center gap-3">
+          <button onClick={onBack} className="text-muted-foreground hover:text-foreground transition-colors">
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <h1 className="font-display text-lg font-semibold">Messages privés</h1>
+        </div>
+      </div>
+
+      <div className="max-w-lg mx-auto px-4 pt-4 space-y-2 pb-8">
+        {loading ? (
+          <div className="space-y-2">
+            {[1, 2, 3].map(i => <div key={i} className="h-16 rounded-2xl bg-muted animate-pulse" />)}
+          </div>
+        ) : conversations.filter(c => !isBlocked(c.partnerId)).length === 0 ? (
+          <div className="text-center py-12">
+            <div className="text-4xl mb-3">💬</div>
+            <p className="text-sm text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>
+              Aucune conversation. Allez dans Communauté pour échanger avec quelqu'un !
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {conversations.filter(c => !isBlocked(c.partnerId)).map(c => (
+              <button key={c.partnerId} onClick={() => navigate(`/chat/${c.partnerId}`)}
+                className="card-premium p-4 flex items-center gap-3 w-full text-left">
+                <div className="h-12 w-12 rounded-full overflow-hidden bg-ocean-light flex items-center justify-center flex-shrink-0">
+                  {c.partnerPhoto ? (
+                    <img src={c.partnerPhoto} alt={c.partnerName} className="h-full w-full object-cover" />
+                  ) : (
+                    <span className="font-display text-lg text-primary/60">{avatarFallbackInitial(c.partnerName)}</span>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className={cn('text-sm', c.unreadCount > 0 ? 'font-semibold' : 'font-medium')} style={{ fontFamily: 'Jost, sans-serif' }}>
+                    {c.partnerName}
+                  </h3>
+                  <p className={cn('text-xs truncate', c.unreadCount > 0 ? 'text-foreground font-medium' : 'text-muted-foreground')} style={{ fontFamily: 'Jost, sans-serif' }}>
+                    {c.lastMessage}
+                  </p>
+                </div>
+                {c.unreadCount > 0 && (
+                  <span className="h-5 min-w-[20px] px-1.5 rounded-full bg-primary text-white text-[10px] font-semibold flex items-center justify-center flex-shrink-0">
+                    {c.unreadCount > 9 ? '9+' : c.unreadCount}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// SALON — inchangé
 // ─────────────────────────────────────────────────────────────
 function SalonView({ salonId, onBack }: { salonId: string; onBack: () => void }) {
   const { user } = useAuth();
@@ -190,8 +354,7 @@ function SalonView({ salonId, onBack }: { salonId: string; onBack: () => void })
 }
 
 // ─────────────────────────────────────────────────────────────
-// FORUM — BUG FIX (#10) : posts, likes et compteur de commentaires
-// désormais réels et persistés (plus de MOCK_POSTS en dur).
+// FORUM — inchangé
 // ─────────────────────────────────────────────────────────────
 function ForumView({ onBack }: { onBack: () => void }) {
   const { user } = useAuth();
