@@ -13,6 +13,7 @@ interface Message {
   receiver_id: string;
   content: string;
   created_at: string;
+  read?: boolean;
 }
 
 export default function Chat() {
@@ -29,8 +30,6 @@ export default function Chat() {
   const { isBlocked, blockUser, unblockUser } = useBlockedUsers();
 
   useEffect(() => {
-    // BUG FIX (#13) : on attend la fin du chargement auth avant de décider
-    // de rediriger, pour éviter le flash de contenu protégé.
     if (authLoading) return;
     if (!user || !partnerId) { navigate('/auth'); return; }
     loadPartner();
@@ -42,6 +41,9 @@ export default function Chat() {
         const m = payload.new as Message;
         if ((m.sender_id === user.id && m.receiver_id === partnerId) || (m.sender_id === partnerId && m.receiver_id === user.id)) {
           setMessages(prev => [...prev, m]);
+          if (m.sender_id === partnerId && m.receiver_id === user.id) {
+            supabase.from('messages').update({ read: true }).eq('id', m.id).then();
+          }
         }
       })
       .subscribe();
@@ -67,6 +69,14 @@ export default function Chat() {
       .or(`and(sender_id.eq.${user.id},receiver_id.eq.${partnerId}),and(sender_id.eq.${partnerId},receiver_id.eq.${user.id})`)
       .order('created_at', { ascending: true });
     if (data) setMessages(data);
+
+    // Marque comme lus tous les messages reçus de ce contact
+    await supabase
+      .from('messages')
+      .update({ read: true })
+      .eq('sender_id', partnerId)
+      .eq('receiver_id', user.id)
+      .eq('read', false);
   };
 
   const handleSend = async (e: React.FormEvent) => {
@@ -102,7 +112,6 @@ export default function Chat() {
           </div>
           <h1 className="font-display text-lg font-semibold flex-1">{partner?.name || 'Conversation'}</h1>
 
-          {/* Menu sécurité : signaler / bloquer */}
           <div className="relative">
             <button onClick={() => setMenuOpen(!menuOpen)} className="text-muted-foreground hover:text-foreground p-1.5">
               <MoreVertical className="h-5 w-5" />
