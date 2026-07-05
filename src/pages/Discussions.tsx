@@ -163,7 +163,7 @@ function MessagesView({ onBack }: { onBack: () => void }) {
     for (const m of messages) {
       const partnerId = m.sender_id === user.id ? m.receiver_id : m.sender_id;
       if (!byPartner.has(partnerId)) byPartner.set(partnerId, m);
-      if (m.receiver_id === user.id && !m.read) {
+      if (m.receiver_id === user.id && m.read === false) {
         unreadByPartner.set(partnerId, (unreadByPartner.get(partnerId) || 0) + 1);
       }
     }
