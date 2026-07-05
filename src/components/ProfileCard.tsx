@@ -52,32 +52,6 @@ export default function ProfileCard({ profile, matchScore }: ProfileCardProps) {
 
   return (
     <div className="card-premium overflow-hidden group relative">
-      {/* Menu options (signaler / bloquer) */}
-      <div className="absolute top-3 right-3 z-10">
-        <button
-          onClick={(e) => { e.stopPropagation(); setMenuOpen(!menuOpen); }}
-          className="h-8 w-8 rounded-full glass flex items-center justify-center text-foreground hover:bg-white/90 transition-colors">
-          <MoreVertical className="h-4 w-4" />
-        </button>
-        {menuOpen && (
-          <div className="absolute top-9 right-0 bg-card rounded-xl shadow-lg border border-border/50 py-1 w-40 z-20"
-            onClick={(e) => e.stopPropagation()}>
-            <button
-              onClick={() => { setReportOpen(true); setMenuOpen(false); }}
-              className="w-full text-left px-3 py-2 text-sm hover:bg-secondary flex items-center gap-2"
-              style={{ fontFamily: 'Jost, sans-serif' }}>
-              🚩 Signaler
-            </button>
-            <button
-              onClick={() => { blocked ? unblockUser(profile.user_id) : blockUser(profile.user_id); setMenuOpen(false); }}
-              className="w-full text-left px-3 py-2 text-sm hover:bg-secondary flex items-center gap-2 text-destructive"
-              style={{ fontFamily: 'Jost, sans-serif' }}>
-              {blocked ? '✅ Débloquer' : '🚫 Bloquer'}
-            </button>
-          </div>
-        )}
-      </div>
-
       {reportOpen && (
         <ReportModal
           targetType="profile"
@@ -97,7 +71,6 @@ export default function ProfileCard({ profile, matchScore }: ProfileCardProps) {
             onError={(e) => { e.currentTarget.style.display = 'none'; }}
           />
         ) : (
-          // Pas de photo de visage générique trompeuse : on affiche une initiale
           <div className="h-full w-full flex items-center justify-center">
             <span className="font-display text-6xl font-semibold text-primary/40">
               {avatarFallbackInitial(profile.name)}
@@ -106,26 +79,51 @@ export default function ProfileCard({ profile, matchScore }: ProfileCardProps) {
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
-        {/* Status badge */}
-        {status && (
-          <div className="absolute top-3 left-3">
-            <div className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium glass ${status.color}`}
+        {/* Rangée du haut : statut à gauche, menu + match empilés à droite (BUG FIX : ils se chevauchaient avant) */}
+        <div className="absolute top-3 left-3 right-3 flex items-start justify-between gap-1.5 z-10">
+          {status ? (
+            <div className={`flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-medium glass max-w-[45%] ${status.color}`}
               style={{ fontFamily: 'Jost, sans-serif' }}>
-              <div className={`h-1.5 w-1.5 rounded-full ${status.dot}`} />
-              {status.label}
+              <div className={`h-1.5 w-1.5 rounded-full ${status.dot} flex-shrink-0`} />
+              <span className="truncate">{status.label}</span>
             </div>
-          </div>
-        )}
+          ) : <span />}
 
-        {/* Match score */}
-        {matchScore !== undefined && matchScore > 0 && (
-          <div className="absolute top-3 right-3 glass rounded-full px-3 py-1 flex items-center gap-1">
-            <Star className="h-3 w-3 text-gold fill-gold" />
-            <span className="text-xs font-semibold text-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>
-              {matchScore}% match
-            </span>
+          <div className="flex flex-col items-end gap-1.5 flex-shrink-0 relative">
+            <button
+              onClick={(e) => { e.stopPropagation(); setMenuOpen(!menuOpen); }}
+              className="h-8 w-8 rounded-full glass flex items-center justify-center text-foreground hover:bg-white/90 transition-colors">
+              <MoreVertical className="h-4 w-4" />
+            </button>
+
+            {matchScore !== undefined && matchScore > 0 && (
+              <div className="glass rounded-full px-2 py-1 flex items-center gap-1 whitespace-nowrap">
+                <Star className="h-3 w-3 text-gold fill-gold flex-shrink-0" />
+                <span className="text-[10px] font-semibold text-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>
+                  {matchScore}% match
+                </span>
+              </div>
+            )}
+
+            {menuOpen && (
+              <div className="absolute top-9 right-0 bg-card rounded-xl shadow-lg border border-border/50 py-1 w-40 z-20"
+                onClick={(e) => e.stopPropagation()}>
+                <button
+                  onClick={() => { setReportOpen(true); setMenuOpen(false); }}
+                  className="w-full text-left px-3 py-2 text-sm hover:bg-secondary flex items-center gap-2"
+                  style={{ fontFamily: 'Jost, sans-serif' }}>
+                  🚩 Signaler
+                </button>
+                <button
+                  onClick={() => { blocked ? unblockUser(profile.user_id) : blockUser(profile.user_id); setMenuOpen(false); }}
+                  className="w-full text-left px-3 py-2 text-sm hover:bg-secondary flex items-center gap-2 text-destructive"
+                  style={{ fontFamily: 'Jost, sans-serif' }}>
+                  {blocked ? '✅ Débloquer' : '🚫 Bloquer'}
+                </button>
+              </div>
+            )}
           </div>
-        )}
+        </div>
 
         {/* Name on photo */}
         <div className="absolute bottom-0 left-0 right-0 p-4">
@@ -160,29 +158,31 @@ export default function ProfileCard({ profile, matchScore }: ProfileCardProps) {
           </div>
         )}
 
-        {/* Actions */}
-        <div className="flex gap-2 pt-1">
+        {/* Actions — BUG FIX : bouton Message sur sa propre ligne, réseaux sociaux en dessous, pour éviter que ça déborde sur les cartes étroites */}
+        <div className="flex flex-col gap-2 pt-1">
           <button
             onClick={() => navigate(`/chat/${profile.user_id}`)}
-            className="flex-1 btn-ocean flex items-center justify-center gap-2 py-2.5 text-sm">
+            className="w-full btn-ocean flex items-center justify-center gap-2 py-2.5 text-sm">
             <MessageCircle className="h-4 w-4" />
             Message
           </button>
 
-          <div className="flex gap-1.5">
-            {profile.instagram && (
-              <a href={`https://instagram.com/${profile.instagram}`} target="_blank" rel="noopener noreferrer"
-                className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center hover:shadow-lg transition-all hover:-translate-y-0.5">
-                <Instagram className="h-4 w-4 text-white" />
-              </a>
-            )}
-            {profile.linkedin && (
-              <a href={`https://linkedin.com/in/${profile.linkedin}`} target="_blank" rel="noopener noreferrer"
-                className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center hover:shadow-lg transition-all hover:-translate-y-0.5">
-                <Linkedin className="h-4 w-4 text-white" />
-              </a>
-            )}
-          </div>
+          {(profile.instagram || profile.linkedin) && (
+            <div className="flex gap-1.5 justify-center">
+              {profile.instagram && (
+                <a href={`https://instagram.com/${profile.instagram}`} target="_blank" rel="noopener noreferrer"
+                  className="h-9 w-9 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center hover:shadow-lg transition-all hover:-translate-y-0.5 flex-shrink-0">
+                  <Instagram className="h-4 w-4 text-white" />
+                </a>
+              )}
+              {profile.linkedin && (
+                <a href={`https://linkedin.com/in/${profile.linkedin}`} target="_blank" rel="noopener noreferrer"
+                  className="h-9 w-9 rounded-full bg-blue-600 flex items-center justify-center hover:shadow-lg transition-all hover:-translate-y-0.5 flex-shrink-0">
+                  <Linkedin className="h-4 w-4 text-white" />
+                </a>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
