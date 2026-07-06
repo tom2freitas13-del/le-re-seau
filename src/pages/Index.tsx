@@ -77,14 +77,14 @@ export default function Index() {
         <div className="absolute inset-0"
           style={{ background: 'linear-gradient(to bottom, rgba(10,30,42,0.1) 0%, rgba(10,30,42,0.15) 40%, rgba(10,30,42,0.75) 80%, rgba(8,24,34,0.95) 100%)' }} />
 
-        <div className="absolute top-6 left-1/2 -translate-x-1/2 glass-dark text-white rounded-full px-4 py-2 text-xs tracking-wider uppercase"
+        <div className="absolute top-6 left-1/2 -translate-x-1/2 w-[92%] max-w-sm glass-dark text-white rounded-2xl px-4 py-2 text-xs tracking-wider uppercase"
         style={{ fontFamily: 'Jost, sans-serif' }}>
-        <div className="flex items-center justify-center gap-3">
-          <span>🌊 Île de Ré</span>
+        <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
+          <span className="whitespace-nowrap">🌊 Île de Ré</span>
           <span>•</span>
-          <span>Communauté locale</span>
+          <span className="whitespace-nowrap">Communauté locale</span>
           <span>•</span>
-          <span>Sans publicité</span>
+          <span className="whitespace-nowrap">Sans publicité</span>
         </div>
       </div>
 

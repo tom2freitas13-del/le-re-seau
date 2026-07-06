@@ -82,7 +82,7 @@ export default function ProfileCard({ profile, matchScore }: ProfileCardProps) {
         {/* Rangée du haut : statut à gauche, menu + match empilés à droite (BUG FIX : ils se chevauchaient avant) */}
         <div className="absolute top-3 left-3 right-3 flex items-start justify-between gap-1.5 z-10">
           {status ? (
-            <div className={`flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-medium glass max-w-[45%] ${status.color}`}
+            <div className={`flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-medium glass max-w-[68%] ${status.color}`}
               style={{ fontFamily: 'Jost, sans-serif' }}>
               <div className={`h-1.5 w-1.5 rounded-full ${status.dot} flex-shrink-0`} />
               <span className="truncate">{status.label}</span>
@@ -100,7 +100,7 @@ export default function ProfileCard({ profile, matchScore }: ProfileCardProps) {
               <div className="glass rounded-full px-2 py-1 flex items-center gap-1 whitespace-nowrap">
                 <Star className="h-3 w-3 text-gold fill-gold flex-shrink-0" />
                 <span className="text-[10px] font-semibold text-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>
-                  {matchScore}% match
+                  {matchScore}%
                 </span>
               </div>
             )}
