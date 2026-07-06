@@ -40,3 +40,20 @@ export async function searchAddress(query: string): Promise<GeocodingResult[]> {
     return [];
   }
 }
+
+// Géocodage inverse : retrouve un nom de lieu lisible à partir de coordonnées GPS
+// (utilisé quand l'utilisateur pointe directement un endroit sur la carte).
+export async function reverseGeocode(lat: number, lon: number): Promise<string | null> {
+  const url = new URL('https://data.geopf.fr/geocodage/reverse');
+  url.searchParams.set('lat', String(lat));
+  url.searchParams.set('lon', String(lon));
+
+  try {
+    const res = await fetch(url.toString());
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data?.features?.[0]?.properties?.label || null;
+  } catch {
+    return null;
+  }
+}

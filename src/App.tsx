@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/lib/auth-context";
 import BannedScreen from "@/components/BannedScreen";
+import { useGlobalMessageNotifications } from "@/lib/useGlobalMessageNotifications";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
@@ -34,6 +35,7 @@ const ALWAYS_ACCESSIBLE = ['/', '/about', '/auth', '/community-rules', '/privacy
 function AppRoutes() {
   const { isBanned, loading } = useAuth();
   const location = useLocation();
+  useGlobalMessageNotifications();
 
   // BUG FIX / sécurité : un compte banni voit un écran de blocage à la place
   // du reste de l'application, sur toutes les pages sauf celles toujours accessibles.

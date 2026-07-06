@@ -3,11 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import { toast } from 'sonner';
-import { ArrowLeft, Calendar, Camera } from 'lucide-react';
+import { ArrowLeft, Calendar, Camera, Map as MapIcon } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import { cn } from '@/lib/utils';
 import { ACTIVITY_CATEGORIES, MAX_AGE } from '@/lib/constants';
 import LocationPicker from '@/components/LocationPicker';
+import MapLocationPicker from '@/components/MapLocationPicker';
 
 const MAX_PHOTO_SIZE_MB = 5;
 
@@ -24,6 +25,7 @@ export default function NewActivity() {
   const [minAge, setMinAge] = useState('');
   const [minAgeError, setMinAgeError] = useState('');
   const [maxParticipants, setMaxParticipants] = useState('');
+  const [showMapPicker, setShowMapPicker] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -166,11 +168,19 @@ export default function NewActivity() {
           <div className="card-premium p-5 space-y-4">
             <div>
               <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 block" style={{ fontFamily: 'Jost, sans-serif' }}>📍 Lieu</label>
-              <LocationPicker
-                value={location}
-                onChange={(label, lat, lng) => { setLocation(label); setCoords({ lat, lng }); }}
-                placeholder="Ex: Plage de la Conche, Ars-en-Ré..."
-              />
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <LocationPicker
+                    value={location}
+                    onChange={(label, lat, lng) => { setLocation(label); setCoords({ lat, lng }); }}
+                    placeholder="Ex: Plage de la Conche, Ars-en-Ré..."
+                  />
+                </div>
+                <button type="button" onClick={() => setShowMapPicker(true)} title="Choisir sur la carte"
+                  className="h-[46px] w-[46px] flex-shrink-0 rounded-xl border border-border bg-background flex items-center justify-center hover:bg-secondary transition-colors">
+                  <MapIcon className="h-4 w-4" />
+                </button>
+              </div>
               {coords.lat && coords.lng ? (
                 <p className="text-xs text-pine mt-1.5 flex items-center gap-1" style={{ fontFamily: 'Jost, sans-serif' }}>
                   ✓ Lieu localisé — apparaîtra sur la carte
@@ -226,6 +236,14 @@ export default function NewActivity() {
           </button>
         </form>
       </div>
+
+      {showMapPicker && (
+        <MapLocationPicker
+          initialPosition={coords.lat && coords.lng ? { lat: coords.lat, lng: coords.lng } : null}
+          onConfirm={(label, lat, lng) => { setLocation(label); setCoords({ lat, lng }); setShowMapPicker(false); }}
+          onClose={() => setShowMapPicker(false)}
+        />
+      )}
       <BottomNav />
     </div>
   );

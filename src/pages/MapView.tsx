@@ -1,12 +1,13 @@
-import { useEffect, useState, useMemo } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { useEffect, useState, useMemo, useRef } from 'react';
+import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import { useNavigate } from 'react-router-dom';
 import BottomNav from '@/components/BottomNav';
-import { Map as MapIcon, Calendar, MapPin, Users, X, List } from 'lucide-react';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import { Map as MapIcon, Calendar, MapPin, Users, X, List, Plus } from 'lucide-react';
 import { ACTIVITY_CATEGORIES } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 
@@ -55,13 +56,34 @@ function createMarkerIcon(category: string | null) {
 function MapResizeFix() {
   const map = useMap();
   useEffect(() => {
-    setTimeout(() => map.invalidateSize(), 100);
+    const t = setTimeout(() => map.invalidateSize(), 150);
+    return () => clearTimeout(t);
   }, [map]);
   return null;
 }
 
+// BUG FIX : clé stable via useRef pour éviter "Map container is already initialized"
+function LeafletMap({ activities, onSelect }: { activities: MapActivity[]; onSelect: (a: MapActivity) => void }) {
+  const mapKey = useRef(`map-${Date.now()}`).current;
+  return (
+    <MapContainer key={mapKey} center={ILE_DE_RE_CENTER} zoom={12}
+      style={{ position: 'absolute', inset: 0, zIndex: 0 }} scrollWheelZoom>
+      <MapResizeFix />
+      <TileLayer
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      />
+      {activities.map(a => (
+        <Marker key={a.id} position={[a.latitude, a.longitude]}
+          icon={createMarkerIcon(a.category)}
+          eventHandlers={{ click: () => onSelect(a) }} />
+      ))}
+    </MapContainer>
+  );
+}
+
 export default function MapView() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [activities, setActivities] = useState<MapActivity[]>([]);
   const [loading, setLoading] = useState(true);
@@ -69,31 +91,35 @@ export default function MapView() {
   const [selected, setSelected] = useState<MapActivity | null>(null);
 
   useEffect(() => {
+    if (authLoading) return;
     if (!user) { navigate('/auth'); return; }
     loadActivities();
-  }, [user]);
+  }, [user, authLoading]);
 
   const loadActivities = async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from('activities')
-      .select('id, title, category, location, latitude, longitude, activity_date, activity_time')
-      .not('latitude', 'is', null)
-      .not('longitude', 'is', null);
+    try {
+      const { data } = await supabase
+        .from('activities')
+        .select('id, title, category, location, latitude, longitude, activity_date, activity_time')
+        .not('latitude', 'is', null)
+        .not('longitude', 'is', null);
 
-    if (data) {
-      const { data: parts } = await supabase.from('activity_participants').select('activity_id');
-      const counts: Record<string, number> = {};
-      (parts || []).forEach(p => { counts[p.activity_id] = (counts[p.activity_id] || 0) + 1; });
+      if (data) {
+        const { data: parts } = await supabase.from('activity_participants').select('activity_id');
+        const counts: Record<string, number> = {};
+        (parts || []).forEach(p => { counts[p.activity_id] = (counts[p.activity_id] || 0) + 1; });
 
-      setActivities(data.map(a => ({
-        ...a,
-        latitude: a.latitude as number,
-        longitude: a.longitude as number,
-        participant_count: counts[a.id] || 0,
-      })));
+        setActivities(data.map(a => ({
+          ...a,
+          latitude: a.latitude as number,
+          longitude: a.longitude as number,
+          participant_count: counts[a.id] || 0,
+        })));
+      }
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const filtered = useMemo(
@@ -105,6 +131,8 @@ export default function MapView() {
     if (!d) return null;
     return new Date(d).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
   };
+
+  if (authLoading) return null;
 
   return (
     <div className="min-h-screen pb-28 bg-background flex flex-col">
@@ -153,21 +181,9 @@ export default function MapView() {
             <p className="text-sm text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>Chargement de la carte...</p>
           </div>
         ) : (
-          <MapContainer center={ILE_DE_RE_CENTER} zoom={12} style={{ height: '100%', width: '100%', zIndex: 0 }} scrollWheelZoom={true}>
-            <MapResizeFix />
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-            {filtered.map(activity => (
-              <Marker
-                key={activity.id}
-                position={[activity.latitude, activity.longitude]}
-                icon={createMarkerIcon(activity.category)}
-                eventHandlers={{ click: () => setSelected(activity) }}
-              />
-            ))}
-          </MapContainer>
+          <ErrorBoundary fallbackTitle="La carte n'a pas pu s'afficher." fallbackMessage="Rechargez la page pour réessayer.">
+            <LeafletMap activities={filtered} onSelect={setSelected} />
+          </ErrorBoundary>
         )}
 
         {!loading && filtered.length === 0 && (
@@ -181,6 +197,12 @@ export default function MapView() {
           </div>
         )}
       </div>
+
+      <button onClick={() => navigate('/activities/new')}
+        className="fixed bottom-24 right-4 z-40 h-14 w-14 rounded-full bg-primary text-white shadow-xl flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
+        style={{ boxShadow: '0 8px 24px rgba(28,94,120,0.4)' }} aria-label="Créer une activité">
+        <Plus className="h-6 w-6" />
+      </button>
 
       {/* Fiche activité sélectionnée — s'affiche en bas comme une bottom sheet */}
       {selected && (
