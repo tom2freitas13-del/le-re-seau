@@ -31,11 +31,26 @@ export default function Profile() {
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [instagram, setInstagram] = useState('');
   const [linkedin, setLinkedin] = useState('');
+  const [pendingReports, setPendingReports] = useState(0);
 
   useEffect(() => {
     if (!user) { navigate('/auth'); return; }
     loadProfile();
   }, [user]);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    const loadPendingReports = async () => {
+      const { count } = await supabase.from('reports').select('*', { count: 'exact', head: true }).eq('status', 'pending');
+      setPendingReports(count || 0);
+    };
+    loadPendingReports();
+    const channel = supabase
+      .channel('admin-pending-reports')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'reports' }, loadPendingReports)
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [isAdmin]);
 
   const loadProfile = async () => {
     if (!user) return;
@@ -129,9 +144,14 @@ export default function Profile() {
           <h1 className="font-display text-2xl font-semibold">Mon Profil</h1>
           <div className="flex items-center gap-3">
             {isAdmin && (
-              <Link to="/admin" className="text-xs text-destructive hover:text-destructive/80 transition-colors flex items-center gap-1 font-medium"
+              <Link to="/admin" className="relative text-xs text-destructive hover:text-destructive/80 transition-colors flex items-center gap-1 font-medium"
                 style={{ fontFamily: 'Jost, sans-serif' }}>
                 <ShieldCheck className="h-3.5 w-3.5" /> Modération
+                {pendingReports > 0 && (
+                  <span className="h-4 min-w-[16px] px-1 rounded-full bg-red-500 text-white text-[9px] font-semibold flex items-center justify-center">
+                    {pendingReports > 9 ? '9+' : pendingReports}
+                  </span>
+                )}
               </Link>
             )}
             <Link to="/about" className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
