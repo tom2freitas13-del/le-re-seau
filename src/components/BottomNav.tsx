@@ -1,59 +1,92 @@
-import { Users, Map, MessageCircle, Briefcase, User } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Home, Users, MessageCircle, Briefcase, User, Map, Bell, X } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { useUnreadMessages } from '@/lib/useUnreadMessages';
+import { useAuth } from '@/lib/auth-context';
+import { getPushPermissionState, isPushSupported, subscribeToPush } from '@/lib/push-notifications';
 
 const navItems = [
-  { icon: Users, label: 'Communauté', path: '/social' },
+  { icon: Home, label: 'Accueil', path: '/' },
+  { icon: Users, label: 'Commu.', path: '/social' },
   { icon: Map, label: 'Carte', path: '/map' },
-  { icon: MessageCircle, label: 'Discussions', path: '/discussions' },
+  { icon: MessageCircle, label: 'Discuss.', path: '/discussions' },
   { icon: Briefcase, label: 'Services', path: '/jobs' },
   { icon: User, label: 'Profil', path: '/profile' },
 ];
 
-/**
- * Barre de navigation mobile — icônes seules (sans texte) pour rester lisible
- * sur petit écran. L'état actif est indiqué par un fond coloré bien visible.
- * Un point rouge apparaît sur Discussions quand il y a des messages non lus.
- */
 export default function BottomNav() {
   const location = useLocation();
-  const { hasUnread } = useUnreadMessages();
+  const { user } = useAuth();
+  const [showPrompt, setShowPrompt] = useState(false);
+
+  useEffect(() => {
+    const check = async () => {
+      if (!user) return;
+      if (localStorage.getItem('push-prompt-dismissed') === '1') return;
+      const supported = await isPushSupported();
+      if (!supported) return;
+      const permission = await getPushPermissionState();
+      if (permission === 'default') setShowPrompt(true);
+    };
+    check();
+  }, [user]);
+
+  const handleEnable = async () => {
+    if (!user) return;
+    const ok = await subscribeToPush(user.id);
+    setShowPrompt(false);
+    if (!ok) localStorage.setItem('push-prompt-dismissed', '1');
+  };
+
+  const handleDismiss = () => {
+    localStorage.setItem('push-prompt-dismissed', '1');
+    setShowPrompt(false);
+  };
 
   return (
-    <nav
-      className="fixed bottom-0 left-0 right-0 z-50 safe-area-bottom"
-      style={{ background: 'rgba(255,253,248,0.95)', backdropFilter: 'blur(20px)', borderTop: '1px solid hsl(42 20% 88%)' }}>
-      <div className="flex items-center justify-around py-2 max-w-lg mx-auto px-2">
-        {navItems.map(({ icon: Icon, label, path }) => {
-          const active = location.pathname === path || (path !== '/' && location.pathname.startsWith(path + '/'));
-          const showBadge = path === '/discussions' && hasUnread;
-          return (
-            <Link
-              key={path}
-              to={path}
-              aria-label={label}
-              title={label}
-              className="flex items-center justify-center">
-              <div className={cn(
-                'h-12 w-12 rounded-2xl flex items-center justify-center transition-all duration-200 relative',
-                active ? 'bg-primary' : 'hover:bg-secondary'
-              )}>
-                <Icon
-                  className={cn('h-[22px] w-[22px] transition-colors duration-200', active ? 'text-white' : 'text-muted-foreground')}
-                  strokeWidth={active ? 2.2 : 1.75}
-                />
-                {showBadge && (
-                  <span
-                    className="absolute top-2 right-2 h-2.5 w-2.5 rounded-full bg-destructive"
-                    style={{ boxShadow: '0 0 0 2px rgba(255,253,248,0.95)' }}
-                  />
+    <>
+      {showPrompt && (
+        <div className="fixed bottom-[64px] left-0 right-0 z-40 px-4 pb-2">
+          <div className="max-w-lg mx-auto bg-primary text-white rounded-2xl px-4 py-3 flex items-center gap-3 shadow-lg">
+            <Bell className="h-5 w-5 flex-shrink-0" />
+            <p className="flex-1 text-xs" style={{ fontFamily: 'Jost, sans-serif' }}>
+              Active les notifications pour ne rater aucun message
+            </p>
+            <button onClick={handleEnable} className="text-xs font-semibold bg-white/20 px-3 py-1.5 rounded-full flex-shrink-0">
+              Activer
+            </button>
+            <button onClick={handleDismiss} className="flex-shrink-0">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      )}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 safe-area-bottom"
+        style={{ background: 'rgba(255,253,248,0.92)', backdropFilter: 'blur(20px)', borderTop: '1px solid hsl(42 20% 88%)' }}>
+        <div className="flex items-center justify-around py-1.5 max-w-lg mx-auto overflow-x-auto">
+          {navItems.map(({ icon: Icon, label, path }) => {
+            const active = location.pathname === path || (path !== '/' && location.pathname.startsWith(path));
+            return (
+              <Link key={path} to={path}
+                className={cn(
+                  'flex flex-col items-center gap-0.5 px-1.5 py-1 rounded-xl transition-all duration-200 text-[10px] font-medium flex-shrink-0',
+                  active
+                    ? 'text-primary'
+                    : 'text-muted-foreground hover:text-foreground'
                 )}
-              </div>
-            </Link>
-          );
-        })}
-      </div>
-    </nav>
+                style={{ fontFamily: 'Jost, sans-serif' }}>
+                <div className={cn(
+                  'p-1.5 rounded-xl transition-all duration-200',
+                  active ? 'bg-ocean-light' : 'bg-transparent'
+                )}>
+                  <Icon className={cn('h-[18px] w-[18px]', active ? 'stroke-primary' : '')} strokeWidth={active ? 2 : 1.5} />
+                </div>
+                <span>{label}</span>
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
+    </>
   );
 }
