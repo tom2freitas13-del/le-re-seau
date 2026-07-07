@@ -50,11 +50,45 @@ export default function Discussions() {
   const [activeSalon, setActiveSalon] = useState<string | null>(null);
   const { onlineCount } = usePresence();
   const { unreadTotal } = useUnreadMessages();
+  const [salonUnread, setSalonUnread] = useState<Record<string, number>>({});
 
   useEffect(() => { if (!user) navigate('/auth'); }, [user]);
 
+  useEffect(() => {
+    if (!user) return;
+    loadSalonUnread();
+    const channel = supabase
+      .channel(`salon-unread-${user.id}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'salon_messages' }, () => loadSalonUnread())
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user]);
+
+  const loadSalonUnread = async () => {
+    if (!user) return;
+    const { data: reads } = await supabase.from('salon_reads').select('salon, last_read_at').eq('user_id', user.id);
+    const lastRead: Record<string, string> = {};
+    (reads || []).forEach(r => { lastRead[r.salon] = r.last_read_at; });
+
+    const { data: msgs } = await supabase
+      .from('salon_messages')
+      .select('salon, created_at')
+      .neq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(500);
+
+    const counts: Record<string, number> = {};
+    (msgs || []).forEach(m => {
+      const threshold = lastRead[m.salon];
+      if (!threshold || new Date(m.created_at) > new Date(threshold)) {
+        counts[m.salon] = (counts[m.salon] || 0) + 1;
+      }
+    });
+    setSalonUnread(counts);
+  };
+
   if (view === 'salon' && activeSalon) {
-    return <SalonView salonId={activeSalon} onBack={() => setView('list')} />;
+    return <SalonView salonId={activeSalon} onBack={() => { setView('list'); loadSalonUnread(); }} />;
   }
   if (view === 'forum') {
     return <ForumView onBack={() => setView('list')} />;
@@ -114,7 +148,12 @@ export default function Discussions() {
           <div className="grid grid-cols-2 gap-3">
             {SALONS.map(s => (
               <button key={s.id} onClick={() => { setActiveSalon(s.id); setView('salon'); }}
-                className="card-premium p-4 text-left">
+                className="card-premium p-4 text-left relative">
+                {salonUnread[s.id] > 0 && (
+                  <span className="absolute top-2.5 right-2.5 h-5 min-w-[20px] px-1 rounded-full bg-red-500 text-white text-[10px] font-semibold flex items-center justify-center">
+                    {salonUnread[s.id] > 9 ? '9+' : salonUnread[s.id]}
+                  </span>
+                )}
                 <div className="text-2xl mb-1.5">{s.emoji}</div>
                 <h3 className="font-medium text-sm mb-0.5" style={{ fontFamily: 'Jost, sans-serif' }}>{s.label}</h3>
                 <p className="text-xs text-muted-foreground line-clamp-2" style={{ fontFamily: 'Jost, sans-serif' }}>{s.desc}</p>
@@ -277,6 +316,17 @@ function SalonView({ salonId, onBack }: { salonId: string; onBack: () => void })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [salonId]);
+
+  // Marque le salon comme lu à l'entrée et à la sortie, pour que le badge
+  // de non-lus sur la liste des salons se remette bien à zéro.
+  useEffect(() => {
+    if (!user) return;
+    const markAsRead = () => {
+      supabase.from('salon_reads').upsert({ user_id: user.id, salon: salonId, last_read_at: new Date().toISOString() }, { onConflict: 'user_id,salon' }).then();
+    };
+    markAsRead();
+    return markAsRead;
+  }, [user, salonId]);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
