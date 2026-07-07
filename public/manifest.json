@@ -1,0 +1,9 @@
+{
+  "name": "Le Ré-seau",
+  "short_name": "Ré-seau",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFFDF8",
+  "theme_color": "#2C5F7C",
+  "icons": []
+}
