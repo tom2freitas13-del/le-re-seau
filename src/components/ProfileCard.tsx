@@ -1,4 +1,4 @@
-import { MessageCircle, Instagram, Linkedin, Star, MoreVertical } from 'lucide-react';
+import { MessageCircle, Instagram, Linkedin, Star, MoreVertical, ShieldCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { avatarFallbackInitial } from '@/lib/constants';
@@ -20,6 +20,22 @@ export interface ProfileCardProfile {
   availability: string | null;
   instagram?: string | null;
   linkedin?: string | null;
+  is_admin?: boolean | null;
+}
+
+export function AdminBadge({ compact = false }: { compact?: boolean }) {
+  if (compact) {
+    return (
+      <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-gradient-to-r from-amber-400 to-amber-600 flex-shrink-0" title="Admin">
+        <ShieldCheck className="h-2.5 w-2.5 text-white" />
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-400 to-amber-600 px-2 py-0.5 text-[10px] font-semibold text-white flex-shrink-0">
+      <ShieldCheck className="h-3 w-3" /> Admin
+    </span>
+  );
 }
 
 interface ProfileCardProps {
@@ -138,11 +154,12 @@ export default function ProfileCard({ profile, matchScore }: ProfileCardProps) {
 
         {/* Name on photo */}
         <div className="absolute bottom-0 left-0 right-0 p-4">
-          <h3 className="font-display text-2xl font-semibold text-white flex items-center gap-2" style={{ textShadow: '0 1px 8px rgba(0,0,0,0.4)' }}>
+          <h3 className="font-display text-2xl font-semibold text-white flex flex-wrap items-center gap-2" style={{ textShadow: '0 1px 8px rgba(0,0,0,0.4)' }}>
             {profile.name || 'Anonyme'}{profile.age ? `, ${profile.age}` : ''}
             {online && (
               <span className="inline-flex h-2.5 w-2.5 rounded-full bg-green-400 ring-2 ring-white/80 flex-shrink-0" title="En ligne" />
             )}
+            {profile.is_admin && <AdminBadge compact />}
           </h3>
         </div>
       </div>

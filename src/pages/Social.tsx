@@ -20,6 +20,7 @@ interface Profile {
   availability: string | null;
   instagram?: string | null;
   linkedin?: string | null;
+  is_admin?: boolean | null;
 }
 
 function computeMatchScore(me: Profile, other: Profile): number {

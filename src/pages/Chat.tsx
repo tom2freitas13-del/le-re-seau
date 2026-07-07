@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import { ArrowLeft, Send, MoreVertical, Check, CheckCheck, Mic, Square, SmilePlus, Image as ImageIcon } from 'lucide-react';
+import { AdminBadge } from '@/components/ProfileCard';
 import { avatarFallbackInitial, formatLastSeen } from '@/lib/constants';
 import { ReportModal } from '@/components/ReportModal';
 import { useBlockedUsers } from '@/lib/useBlockedUsers';
@@ -35,7 +36,7 @@ export default function Chat() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([]);
-  const [partner, setPartner] = useState<{ name: string | null; photo_url: string | null; last_seen: string | null } | null>(null);
+  const [partner, setPartner] = useState<{ name: string | null; photo_url: string | null; last_seen: string | null; is_admin?: boolean | null } | null>(null);
   const [content, setContent] = useState('');
   const [sending, setSending] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -108,7 +109,7 @@ export default function Chat() {
 
   const loadPartner = async () => {
     if (!partnerId) return;
-    const { data } = await supabase.from('profiles').select('name, photo_url, last_seen').eq('user_id', partnerId).single();
+    const { data } = await supabase.from('profiles').select('name, photo_url, last_seen, is_admin').eq('user_id', partnerId).single();
     if (data) setPartner(data);
   };
 
@@ -284,7 +285,10 @@ export default function Chat() {
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <h1 className="font-display text-lg font-semibold truncate">{partner?.name || 'Conversation'}</h1>
+            <h1 className="font-display text-lg font-semibold flex items-center gap-1.5 min-w-0">
+              <span className="truncate">{partner?.name || 'Conversation'}</span>
+              {partner?.is_admin && <AdminBadge />}
+            </h1>
             <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>
               {partnerOnline ? 'En ligne' : formatLastSeen(partner?.last_seen)}
             </p>

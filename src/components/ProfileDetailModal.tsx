@@ -1,7 +1,7 @@
 import { X, MessageCircle, Instagram, Linkedin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { avatarFallbackInitial } from '@/lib/constants';
-import { statusConfig, interestConfig, ProfileCardProfile } from '@/components/ProfileCard';
+import { statusConfig, interestConfig, ProfileCardProfile, AdminBadge } from '@/components/ProfileCard';
 
 interface ProfileDetailModalProps {
   profile: ProfileCardProfile;
@@ -52,8 +52,9 @@ export default function ProfileDetailModal({ profile, matchScore, onClose }: Pro
         )}
 
         <div className="absolute bottom-0 left-0 right-0 p-5">
-          <h2 className="font-display text-3xl font-semibold text-white" style={{ textShadow: '0 1px 8px rgba(0,0,0,0.4)' }}>
+          <h2 className="font-display text-3xl font-semibold text-white flex items-center gap-2" style={{ textShadow: '0 1px 8px rgba(0,0,0,0.4)' }}>
             {profile.name || 'Anonyme'}{profile.age ? `, ${profile.age}` : ''}
+            {profile.is_admin && <AdminBadge />}
           </h2>
         </div>
       </div>
