@@ -9,6 +9,7 @@ import { ReportModal } from '@/components/ReportModal';
 import { useBlockedUsers } from '@/lib/useBlockedUsers';
 import { usePresence } from '@/lib/presence-context';
 import { toast } from 'sonner';
+import { MAX_PHOTO_SIZE_MB, pickAudioMimeType, uploadVoiceMessage, uploadPhoto } from '@/lib/attachments';
 
 interface Message {
   id: string;
@@ -20,8 +21,6 @@ interface Message {
   attachment_url?: string | null;
   attachment_type?: 'audio' | 'image' | null;
 }
-
-const MAX_PHOTO_SIZE_MB = 5;
 
 interface Reaction {
   message_id: string;
@@ -170,11 +169,7 @@ export default function Chat() {
     }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      // Le format réellement produit varie selon l'appareil (webm/opus sur
-      // desktop et Android, mp4/aac sur iOS Safari) — on ne peut pas le
-      // figer, sous peine d'uploader un fichier dont l'extension/Content-Type
-      // mentent sur son contenu réel et cassent la lecture côté récepteur.
-      const preferredType = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4'].find(t => MediaRecorder.isTypeSupported(t));
+      const preferredType = pickAudioMimeType();
       const recorder = preferredType ? new MediaRecorder(stream, { mimeType: preferredType }) : new MediaRecorder(stream);
       audioChunksRef.current = [];
       recorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunksRef.current.push(e.data); };
@@ -198,16 +193,13 @@ export default function Chat() {
 
   const handleUploadVoice = async (blob: Blob, mimeType: string) => {
     if (!user || !partnerId) return;
-    const extension = mimeType.includes('mp4') ? 'm4a' : mimeType.includes('ogg') ? 'ogg' : 'webm';
-    const path = `${user.id}/${Date.now()}.${extension}`;
-    const { error: uploadError } = await supabase.storage.from('chat-audio').upload(path, blob, { contentType: mimeType });
-    if (uploadError) { toast.error("Échec de l'envoi du message vocal."); return; }
-    const { data } = supabase.storage.from('chat-audio').getPublicUrl(path);
+    const url = await uploadVoiceMessage('chat-audio', user.id, blob, mimeType);
+    if (!url) { toast.error("Échec de l'envoi du message vocal."); return; }
     await supabase.from('messages').insert({
       sender_id: user.id,
       receiver_id: partnerId,
       content: '🎤 Message vocal',
-      attachment_url: data.publicUrl,
+      attachment_url: url,
       attachment_type: 'audio',
     });
   };
@@ -227,20 +219,17 @@ export default function Chat() {
     }
 
     setUploadingPhoto(true);
-    const ext = file.name.split('.').pop();
-    const path = `${user.id}/${Date.now()}.${ext}`;
-    const { error: uploadError } = await supabase.storage.from('chat-images').upload(path, file, { contentType: file.type });
-    if (uploadError) {
+    const url = await uploadPhoto('chat-images', user.id, file);
+    if (!url) {
       toast.error("Échec de l'envoi de la photo.");
       setUploadingPhoto(false);
       return;
     }
-    const { data } = supabase.storage.from('chat-images').getPublicUrl(path);
     await supabase.from('messages').insert({
       sender_id: user.id,
       receiver_id: partnerId,
       content: '📷 Photo',
-      attachment_url: data.publicUrl,
+      attachment_url: url,
       attachment_type: 'image',
     });
     setUploadingPhoto(false);

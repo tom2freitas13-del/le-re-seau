@@ -133,6 +133,8 @@ export interface Database {
           salon: string;
           user_id: string;
           content: string;
+          attachment_url: string | null;
+          attachment_type: 'audio' | 'image' | null;
           created_at: string;
         };
         Insert: {
@@ -140,6 +142,8 @@ export interface Database {
           salon: string;
           user_id: string;
           content: string;
+          attachment_url?: string | null;
+          attachment_type?: 'audio' | 'image' | null;
           created_at?: string;
         };
         Update: Partial<Database['public']['Tables']['salon_messages']['Insert']>;
@@ -151,6 +155,8 @@ export interface Database {
           author_id: string;
           content: string;
           tag: string | null;
+          attachment_url: string | null;
+          attachment_type: 'audio' | 'image' | null;
           created_at: string;
         };
         Insert: {
@@ -158,6 +164,8 @@ export interface Database {
           author_id: string;
           content: string;
           tag?: string | null;
+          attachment_url?: string | null;
+          attachment_type?: 'audio' | 'image' | null;
           created_at?: string;
         };
         Update: Partial<Database['public']['Tables']['forum_posts']['Insert']>;

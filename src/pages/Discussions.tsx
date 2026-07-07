@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import BottomNav from '@/components/BottomNav';
 import { useNavigate } from 'react-router-dom';
-import { MessageCircle, Send, ArrowLeft, Heart, MessageSquare, Mail } from 'lucide-react';
+import { MessageCircle, Send, ArrowLeft, Heart, MessageSquare, Mail, Mic, Square, Image as ImageIcon, X } from 'lucide-react';
 import { SALONS } from '@/lib/constants';
 import { toast } from 'sonner';
 import { avatarFallbackInitial } from '@/lib/constants';
@@ -12,12 +12,15 @@ import { ReportButton } from '@/components/ReportModal';
 import { useBlockedUsers } from '@/lib/useBlockedUsers';
 import { usePresence } from '@/lib/presence-context';
 import { useUnreadMessages } from '@/lib/unread-context';
+import { MAX_PHOTO_SIZE_MB, pickAudioMimeType, uploadVoiceMessage, uploadPhoto } from '@/lib/attachments';
 
 interface SalonMessage {
   id: string;
   salon: string;
   user_id: string;
   content: string;
+  attachment_url?: string | null;
+  attachment_type?: 'audio' | 'image' | null;
   created_at: string;
 }
 
@@ -26,6 +29,8 @@ interface ForumPost {
   author_id: string;
   content: string;
   tag: string | null;
+  attachment_url?: string | null;
+  attachment_type?: 'audio' | 'image' | null;
   created_at: string;
 }
 
@@ -253,6 +258,12 @@ function SalonView({ salonId, onBack }: { salonId: string; onBack: () => void })
   const [sending, setSending] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const salon = SALONS.find(s => s.id === salonId)!;
+  const { isBlocked } = useBlockedUsers();
+  const [isRecording, setIsRecording] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     loadMessages();
@@ -298,6 +309,60 @@ function SalonView({ salonId, onBack }: { salonId: string; onBack: () => void })
     setSending(false);
   };
 
+  const handleStartRecording = async () => {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      toast.error("L'enregistrement audio n'est pas supporté sur cet appareil.");
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const preferredType = pickAudioMimeType();
+      const recorder = preferredType ? new MediaRecorder(stream, { mimeType: preferredType }) : new MediaRecorder(stream);
+      audioChunksRef.current = [];
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunksRef.current.push(e.data); };
+      recorder.onstop = () => {
+        stream.getTracks().forEach(t => t.stop());
+        const mimeType = recorder.mimeType || 'audio/webm';
+        handleUploadVoice(new Blob(audioChunksRef.current, { type: mimeType }), mimeType);
+      };
+      mediaRecorderRef.current = recorder;
+      recorder.start();
+      setIsRecording(true);
+    } catch {
+      toast.error("Impossible d'accéder au micro. Vérifiez les autorisations.");
+    }
+  };
+
+  const handleStopRecording = () => {
+    mediaRecorderRef.current?.stop();
+    setIsRecording(false);
+  };
+
+  const handleUploadVoice = async (blob: Blob, mimeType: string) => {
+    if (!user) return;
+    const url = await uploadVoiceMessage('chat-audio', user.id, blob, mimeType);
+    if (!url) { toast.error("Échec de l'envoi du message vocal."); return; }
+    await supabase.from('salon_messages').insert({
+      salon: salonId, user_id: user.id, content: '🎤 Message vocal', attachment_url: url, attachment_type: 'audio',
+    });
+  };
+
+  const handlePhotoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file || !user) return;
+    if (!file.type.startsWith('image/')) { toast.error('Merci de choisir un fichier image.'); return; }
+    if (file.size > MAX_PHOTO_SIZE_MB * 1024 * 1024) { toast.error(`L'image doit faire moins de ${MAX_PHOTO_SIZE_MB} Mo.`); return; }
+
+    setUploadingPhoto(true);
+    const url = await uploadPhoto('chat-images', user.id, file);
+    if (!url) { toast.error("Échec de l'envoi de la photo."); setUploadingPhoto(false); return; }
+    await supabase.from('salon_messages').insert({
+      salon: salonId, user_id: user.id, content: '📷 Photo', attachment_url: url, attachment_type: 'image',
+    });
+    setUploadingPhoto(false);
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-md border-b border-border/50">
@@ -316,15 +381,26 @@ function SalonView({ salonId, onBack }: { salonId: string; onBack: () => void })
             Soyez le premier à écrire dans ce salon 👋
           </p>
         )}
-        {messages.map(m => {
+        {messages.filter(m => !isBlocked(m.user_id)).map(m => {
           const mine = m.user_id === user?.id;
           return (
             <div key={m.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm ${mine ? 'bg-primary text-white' : 'bg-secondary text-foreground'}`}
-                style={{ fontFamily: 'Jost, sans-serif' }}>
-                {!mine && <p className="text-xs font-semibold opacity-70 mb-0.5">{senderNames[m.user_id] || '...'}</p>}
-                {m.content}
-              </div>
+              {m.attachment_type === 'audio' && m.attachment_url ? (
+                <div className={`max-w-[75%] rounded-2xl px-3 py-2 ${mine ? 'bg-primary' : 'bg-secondary'}`}>
+                  {!mine && <p className={cn('text-xs font-semibold opacity-70 mb-0.5', mine ? '' : 'text-foreground')}>{senderNames[m.user_id] || '...'}</p>}
+                  <audio controls src={m.attachment_url} className="h-9 max-w-[220px]" />
+                </div>
+              ) : m.attachment_type === 'image' && m.attachment_url ? (
+                <a href={m.attachment_url} target="_blank" rel="noopener noreferrer" className="block max-w-[75%] rounded-2xl overflow-hidden">
+                  <img src={m.attachment_url} alt="Photo envoyée" className="max-h-64 w-auto object-cover" />
+                </a>
+              ) : (
+                <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm ${mine ? 'bg-primary text-white' : 'bg-secondary text-foreground'}`}
+                  style={{ fontFamily: 'Jost, sans-serif' }}>
+                  {!mine && <p className="text-xs font-semibold opacity-70 mb-0.5">{senderNames[m.user_id] || '...'}</p>}
+                  {m.content}
+                </div>
+              )}
             </div>
           );
         })}
@@ -333,14 +409,30 @@ function SalonView({ salonId, onBack }: { salonId: string; onBack: () => void })
 
       <form onSubmit={handleSend} className="sticky bottom-0 bg-background border-t border-border/50 px-4 py-3 safe-area-bottom">
         <div className="max-w-lg mx-auto flex gap-2">
+          <input ref={photoInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoSelect} />
+          {!isRecording && (
+            <button type="button" onClick={() => photoInputRef.current?.click()} disabled={uploadingPhoto}
+              className="h-11 w-11 rounded-full border border-border flex items-center justify-center flex-shrink-0 text-muted-foreground hover:text-foreground disabled:opacity-50"
+              title="Envoyer une photo">
+              <ImageIcon className="h-4 w-4" />
+            </button>
+          )}
           <input value={content} onChange={e => setContent(e.target.value)} maxLength={1000}
             placeholder={`Écrire dans #${salon.label.toLowerCase()}...`}
             className="flex-1 px-4 py-3 rounded-full border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20"
             style={{ fontFamily: 'Jost, sans-serif' }} />
-          <button type="submit" disabled={!content.trim() || sending}
-            className="h-11 w-11 rounded-full bg-primary text-white flex items-center justify-center disabled:opacity-50 flex-shrink-0">
-            <Send className="h-4 w-4" />
-          </button>
+          {content.trim() ? (
+            <button type="submit" disabled={sending}
+              className="h-11 w-11 rounded-full bg-primary text-white flex items-center justify-center disabled:opacity-50 flex-shrink-0">
+              <Send className="h-4 w-4" />
+            </button>
+          ) : (
+            <button type="button" onClick={isRecording ? handleStopRecording : handleStartRecording}
+              className={`h-11 w-11 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${isRecording ? 'bg-destructive text-white animate-pulse' : 'bg-primary text-white'}`}
+              title={isRecording ? 'Arrêter et envoyer' : 'Message vocal'}>
+              {isRecording ? <Square className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+            </button>
+          )}
         </div>
       </form>
     </div>
@@ -360,6 +452,13 @@ function ForumView({ onBack }: { onBack: () => void }) {
   const [newPost, setNewPost] = useState('');
   const [posting, setPosting] = useState(false);
   const [openComments, setOpenComments] = useState<string | null>(null);
+  const { isBlocked } = useBlockedUsers();
+  const [pendingAttachment, setPendingAttachment] = useState<{ url: string; type: 'audio' | 'image' } | null>(null);
+  const [attaching, setAttaching] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { loadPosts(); }, []);
 
@@ -396,13 +495,66 @@ function ForumView({ onBack }: { onBack: () => void }) {
   };
 
   const handlePost = async () => {
-    if (!user || !newPost.trim() || posting) return;
+    if (!user || (!newPost.trim() && !pendingAttachment) || posting) return;
     setPosting(true);
-    const text = newPost.trim();
-    const { error } = await supabase.from('forum_posts').insert({ author_id: user.id, content: text });
+    const text = newPost.trim() || (pendingAttachment?.type === 'audio' ? '🎤 Message vocal' : '📷 Photo');
+    const { error } = await supabase.from('forum_posts').insert({
+      author_id: user.id,
+      content: text,
+      attachment_url: pendingAttachment?.url,
+      attachment_type: pendingAttachment?.type,
+    });
     if (error) toast.error("Impossible de publier.");
-    else { setNewPost(''); loadPosts(); }
+    else { setNewPost(''); setPendingAttachment(null); loadPosts(); }
     setPosting(false);
+  };
+
+  const handleStartRecording = async () => {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      toast.error("L'enregistrement audio n'est pas supporté sur cet appareil.");
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const preferredType = pickAudioMimeType();
+      const recorder = preferredType ? new MediaRecorder(stream, { mimeType: preferredType }) : new MediaRecorder(stream);
+      audioChunksRef.current = [];
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunksRef.current.push(e.data); };
+      recorder.onstop = async () => {
+        stream.getTracks().forEach(t => t.stop());
+        const mimeType = recorder.mimeType || 'audio/webm';
+        if (!user) return;
+        setAttaching(true);
+        const url = await uploadVoiceMessage('chat-audio', user.id, new Blob(audioChunksRef.current, { type: mimeType }), mimeType);
+        setAttaching(false);
+        if (!url) { toast.error("Échec de l'envoi du message vocal."); return; }
+        setPendingAttachment({ url, type: 'audio' });
+      };
+      mediaRecorderRef.current = recorder;
+      recorder.start();
+      setIsRecording(true);
+    } catch {
+      toast.error("Impossible d'accéder au micro. Vérifiez les autorisations.");
+    }
+  };
+
+  const handleStopRecording = () => {
+    mediaRecorderRef.current?.stop();
+    setIsRecording(false);
+  };
+
+  const handlePhotoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file || !user) return;
+    if (!file.type.startsWith('image/')) { toast.error('Merci de choisir un fichier image.'); return; }
+    if (file.size > MAX_PHOTO_SIZE_MB * 1024 * 1024) { toast.error(`L'image doit faire moins de ${MAX_PHOTO_SIZE_MB} Mo.`); return; }
+
+    setAttaching(true);
+    const url = await uploadPhoto('chat-images', user.id, file);
+    setAttaching(false);
+    if (!url) { toast.error("Échec de l'envoi de la photo."); return; }
+    setPendingAttachment({ url, type: 'image' });
   };
 
   const toggleLike = async (postId: string) => {
@@ -436,9 +588,39 @@ function ForumView({ onBack }: { onBack: () => void }) {
             placeholder="Quoi de neuf sur l'île ?"
             className="w-full px-3 py-2 rounded-xl border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20 resize-none"
             style={{ fontFamily: 'Jost, sans-serif' }} />
-          <button onClick={handlePost} disabled={!newPost.trim() || posting} className="btn-ocean w-full py-2.5 text-sm disabled:opacity-50">
-            {posting ? 'Publication...' : 'Publier'}
-          </button>
+
+          {pendingAttachment && (
+            <div className="relative inline-block">
+              {pendingAttachment.type === 'image' ? (
+                <img src={pendingAttachment.url} alt="Photo à publier" className="max-h-32 rounded-xl" />
+              ) : (
+                <audio controls src={pendingAttachment.url} className="h-9" />
+              )}
+              <button onClick={() => setPendingAttachment(null)}
+                className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-destructive text-white flex items-center justify-center">
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
+
+          <div className="flex items-center gap-2">
+            <input ref={photoInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoSelect} />
+            <button type="button" onClick={() => photoInputRef.current?.click()} disabled={attaching || !!pendingAttachment}
+              className="h-9 w-9 rounded-full border border-border flex items-center justify-center flex-shrink-0 text-muted-foreground hover:text-foreground disabled:opacity-50"
+              title="Joindre une photo">
+              <ImageIcon className="h-4 w-4" />
+            </button>
+            <button type="button" onClick={isRecording ? handleStopRecording : handleStartRecording} disabled={attaching || !!pendingAttachment}
+              className={cn('h-9 w-9 rounded-full border flex items-center justify-center flex-shrink-0 disabled:opacity-50 transition-colors',
+                isRecording ? 'bg-destructive text-white border-destructive animate-pulse' : 'border-border text-muted-foreground hover:text-foreground')}
+              title={isRecording ? 'Arrêter' : 'Joindre un vocal'}>
+              {isRecording ? <Square className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+            </button>
+            <button onClick={handlePost} disabled={(!newPost.trim() && !pendingAttachment) || posting || attaching}
+              className="btn-ocean flex-1 py-2.5 text-sm disabled:opacity-50">
+              {posting ? 'Publication...' : attaching ? 'Envoi...' : 'Publier'}
+            </button>
+          </div>
         </div>
 
         {posts.length === 0 && (
@@ -447,7 +629,7 @@ function ForumView({ onBack }: { onBack: () => void }) {
           </p>
         )}
 
-        {posts.map(post => (
+        {posts.filter(post => !isBlocked(post.author_id)).map(post => (
           <div key={post.id} className="card-premium p-4 space-y-2">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
@@ -461,6 +643,14 @@ function ForumView({ onBack }: { onBack: () => void }) {
               )}
             </div>
             <p className="text-sm" style={{ fontFamily: 'Jost, sans-serif', lineHeight: 1.6 }}>{post.content}</p>
+            {post.attachment_type === 'image' && post.attachment_url && (
+              <a href={post.attachment_url} target="_blank" rel="noopener noreferrer" className="block rounded-xl overflow-hidden">
+                <img src={post.attachment_url} alt="Photo du post" className="max-h-72 w-full object-cover" />
+              </a>
+            )}
+            {post.attachment_type === 'audio' && post.attachment_url && (
+              <audio controls src={post.attachment_url} className="h-9 max-w-full" />
+            )}
             <div className="flex items-center gap-4 pt-1">
               <button onClick={() => toggleLike(post.id)} className={cn('flex items-center gap-1.5 text-xs', myLikes.has(post.id) ? 'text-red-500' : 'text-muted-foreground')}>
                 <Heart className={cn('h-4 w-4', myLikes.has(post.id) && 'fill-red-500')} />
