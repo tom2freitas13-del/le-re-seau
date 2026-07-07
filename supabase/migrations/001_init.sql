@@ -10,7 +10,7 @@ create table if not exists public.profiles (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null unique references auth.users(id) on delete cascade,
   name text,
-  age integer check (age is null or (age >= 13 and age <= 120)),
+  age integer check (age is null or (age >= 15 and age <= 120)),
   bio text check (bio is null or char_length(bio) <= 500),
   photo_url text,
   status text check (status in ('resident', 'frequent', 'vacation')),

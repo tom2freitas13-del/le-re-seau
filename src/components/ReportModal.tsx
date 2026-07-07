@@ -53,7 +53,7 @@ export function ReportModal({ targetType, targetId, targetUserId, onClose }: Rep
           <h2 className="font-display text-xl font-semibold flex items-center gap-2">
             <Flag className="h-5 w-5 text-destructive" /> Signaler
           </h2>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
+          <button onClick={onClose} className="min-h-10 min-w-10 flex items-center justify-center -mr-2 text-muted-foreground hover:text-foreground">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -122,7 +122,7 @@ export function ReportButton({ targetType, targetId, targetUserId, className, la
       <button
         onClick={(e) => { e.stopPropagation(); setOpen(true); }}
         title="Signaler"
-        className={className || 'text-muted-foreground hover:text-destructive transition-colors p-1.5 rounded-lg hover:bg-destructive/10'}>
+        className={className || 'min-h-10 min-w-10 flex items-center justify-center text-muted-foreground hover:text-destructive transition-colors px-2.5 rounded-lg hover:bg-destructive/10'}>
         <Flag className="h-4 w-4" />
         {label && <span className="ml-1.5 text-xs">{label}</span>}
       </button>

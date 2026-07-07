@@ -23,6 +23,12 @@ export default function CommunityRules() {
           Pour que ça reste vrai, quelques règles simples s'appliquent à tout le monde.
         </p>
 
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          Ce n'est pas une application de rencontre amoureuse ou pour adultes : c'est un espace pour
+          se faire de nouveaux amis sur l'île, se donner rendez-vous, discuter, s'organiser et
+          s'entraider.
+        </p>
+
         <div className="card-premium p-5">
           <h2 className="font-display text-xl font-semibold mb-3 flex items-center gap-2">
             <ShieldAlert className="h-5 w-5 text-destructive" /> 🚫 Ce qui est interdit

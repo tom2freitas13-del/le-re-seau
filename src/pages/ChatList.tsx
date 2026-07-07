@@ -7,6 +7,7 @@ import { MessageCircle, Users, Plus, X, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { avatarFallbackInitial } from '@/lib/constants';
 import { useBlockedUsers } from '@/lib/useBlockedUsers';
+import { usePresence } from '@/lib/presence-context';
 
 interface Conversation {
   partnerId: string;
@@ -31,6 +32,7 @@ export default function ChatList() {
   const [loading, setLoading] = useState(true);
   const [showCreateGroup, setShowCreateGroup] = useState(false);
   const { isBlocked } = useBlockedUsers();
+  const { isOnline, onlineCount } = usePresence();
 
   useEffect(() => {
     if (!user) { navigate('/auth'); return; }
@@ -93,7 +95,15 @@ export default function ChatList() {
             <div className="h-10 w-10 rounded-2xl bg-ocean-light flex items-center justify-center">
               <MessageCircle className="h-5 w-5 text-primary" strokeWidth={1.5} />
             </div>
-            <h1 className="font-display text-2xl font-semibold">Messages</h1>
+            <div>
+              <h1 className="font-display text-2xl font-semibold">Messages</h1>
+              {onlineCount > 0 && (
+                <p className="text-xs text-muted-foreground flex items-center gap-1.5" style={{ fontFamily: 'Jost, sans-serif' }}>
+                  <span className="h-1.5 w-1.5 rounded-full bg-green-400" />
+                  {onlineCount} en ligne
+                </p>
+              )}
+            </div>
           </div>
           {/* BUG FIX (#4) : bouton "créer un groupe" désormais fonctionnel */}
           <button onClick={() => setShowCreateGroup(true)} className="btn-ocean flex items-center gap-1.5 py-2.5">
@@ -150,11 +160,16 @@ export default function ChatList() {
               {conversations.filter(c => !isBlocked(c.partnerId)).map(c => (
                 <button key={c.partnerId} onClick={() => navigate(`/chat/${c.partnerId}`)}
                   className="card-premium p-4 flex items-center gap-3 w-full text-left">
-                  <div className="h-12 w-12 rounded-full overflow-hidden bg-ocean-light flex items-center justify-center flex-shrink-0">
-                    {c.partnerPhoto ? (
-                      <img src={c.partnerPhoto} alt={c.partnerName} className="h-full w-full object-cover" />
-                    ) : (
-                      <span className="font-display text-lg text-primary/60">{avatarFallbackInitial(c.partnerName)}</span>
+                  <div className="relative flex-shrink-0">
+                    <div className="h-12 w-12 rounded-full overflow-hidden bg-ocean-light flex items-center justify-center">
+                      {c.partnerPhoto ? (
+                        <img src={c.partnerPhoto} alt={c.partnerName} className="h-full w-full object-cover" />
+                      ) : (
+                        <span className="font-display text-lg text-primary/60">{avatarFallbackInitial(c.partnerName)}</span>
+                      )}
+                    </div>
+                    {isOnline(c.partnerId) && (
+                      <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-400 ring-2 ring-card" title="En ligne" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">

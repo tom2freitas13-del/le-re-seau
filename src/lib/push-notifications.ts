@@ -1,6 +1,9 @@
 import { supabase } from '@/integrations/supabase/client';
 
-const VAPID_PUBLIC_KEY = 'BGXjeQ8KDjk70GwNn5LqD82iPCeDBmh_miSxUeBmhfxTT5bj9ERTesX80grZHbzX5uCZnP44MlYkPZhiYHEPAIs';
+// Clé publique VAPID — sa clé privée correspondante vit uniquement comme secret
+// de l'Edge Function `send-push` (jamais commitée). L'ancienne clé publique n'avait
+// pas de clé privée connue nulle part, donc paire régénérée en entier.
+const VAPID_PUBLIC_KEY = 'BOoO8DxlbWgvAdNHTwpKMsxscmE97ps5pXjzyPFpgtRWjFP_Vvc-dxirZ_QE_cX7QQm6dsDH2gAjpCK5TTbeBGQ';
 
 function urlBase64ToUint8Array(base64String: string) {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);

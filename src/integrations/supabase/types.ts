@@ -24,6 +24,7 @@ export interface Database {
           linkedin: string | null;
           is_admin: boolean;
           is_banned: boolean;
+          last_seen: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -41,6 +42,7 @@ export interface Database {
           linkedin?: string | null;
           is_admin?: boolean;
           is_banned?: boolean;
+          last_seen?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -53,6 +55,9 @@ export interface Database {
           sender_id: string;
           receiver_id: string;
           content: string;
+          read: boolean;
+          attachment_url: string | null;
+          attachment_type: 'audio' | null;
           created_at: string;
         };
         Insert: {
@@ -60,6 +65,9 @@ export interface Database {
           sender_id: string;
           receiver_id: string;
           content: string;
+          read?: boolean;
+          attachment_url?: string | null;
+          attachment_type?: 'audio' | null;
           created_at?: string;
         };
         Update: Partial<Database['public']['Tables']['messages']['Insert']>;
@@ -333,6 +341,44 @@ export interface Database {
           created_at?: string;
         };
         Update: Partial<Database['public']['Tables']['blocked_users']['Insert']>;
+        Relationships: [];
+      };
+      message_reactions: {
+        Row: {
+          id: string;
+          message_id: string;
+          user_id: string;
+          emoji: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          message_id: string;
+          user_id: string;
+          emoji: string;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['message_reactions']['Insert']>;
+        Relationships: [];
+      };
+      push_subscriptions: {
+        Row: {
+          id: string;
+          user_id: string;
+          endpoint: string;
+          p256dh: string;
+          auth: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          endpoint: string;
+          p256dh: string;
+          auth: string;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['push_subscriptions']['Insert']>;
         Relationships: [];
       };
     };

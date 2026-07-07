@@ -4,6 +4,7 @@ import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/integrations/supabase/client';
 import { Users, Briefcase, MessageCircle, Calendar, ArrowRight, Waves, TreePine, Sun } from 'lucide-react';
 import LocalImage from '@/components/LocalImage';
+import { usePresence } from '@/lib/presence-context';
 
 // Photos locales : mets tes fichiers dans public/images/ et ils seront
 // accessibles ici avec le chemin /images/nom-du-fichier.jpg
@@ -51,6 +52,7 @@ export default function Index() {
   // étaient des constantes en dur dans l'ancienne version, donc toujours identiques.
   // Ici on interroge réellement la base via la vue `site_stats`.
   const [stats, setStats] = useState<SiteStats | null>(null);
+  const { onlineCount } = usePresence();
 
   useEffect(() => {
     supabase
@@ -131,6 +133,12 @@ export default function Index() {
             <span>
               {stats ? `${stats.total_members} membre${stats.total_members !== 1 ? 's' : ''} sur l'île` : 'Rejoignez les premiers membres'}
             </span>
+            {onlineCount > 0 && (
+              <span className="flex items-center gap-1.5 pl-2 border-l border-white/20">
+                <span className="h-1.5 w-1.5 rounded-full bg-green-400" />
+                {onlineCount} en ligne
+              </span>
+            )}
           </div>
         </div>
       </div>

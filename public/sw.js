@@ -1,3 +1,7 @@
+// Passthrough — nécessaire pour l'éligibilité "installable" du PWA sur certains
+// navigateurs, qui exigent un service worker avec un handler fetch.
+self.addEventListener('fetch', () => {});
+
 self.addEventListener('push', (event) => {
   let data = {};
   try { data = event.data.json(); } catch (e) { data = { title: 'Le Ré-seau', body: event.data ? event.data.text() : '' }; }

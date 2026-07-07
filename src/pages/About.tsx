@@ -90,6 +90,12 @@ export default function About() {
         <p className="text-muted-foreground leading-relaxed">
           Pas de publicité, pas d’exploitation des données : uniquement une plateforme utile, locale et humaine.
         </p>
+
+        <p className="text-muted-foreground leading-relaxed">
+          Le Ré-seau n’est pas une application de rencontre amoureuse ou pour adultes. C’est un
+          espace pour se faire de nouveaux amis sur l’île, se donner rendez-vous, discuter,
+          s’organiser et s’entraider.
+        </p>
       </section>
 
       {/* VALUES */}
@@ -178,6 +184,10 @@ export default function About() {
 
         <Link className="block text-primary underline text-sm" to="/terms">
           Conditions d’utilisation
+        </Link>
+
+        <Link className="block text-primary underline text-sm" to="/legal-notice">
+          Mentions légales
         </Link>
       </section>
 

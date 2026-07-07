@@ -58,7 +58,7 @@ export const ACTIVITY_CATEGORIES = [
   { value: 'autre', label: 'Autre', emoji: '✨' },
 ] as const;
 
-export const MIN_AGE = 13;
+export const MIN_AGE = 15;
 export const MAX_AGE = 120;
 
 // Raisons de signalement disponibles dans le système de modération
@@ -75,4 +75,19 @@ export const REPORT_REASONS = [
 // pour remplacer les avatars manquants — corrige le bug de la photo Unsplash trompeuse
 export function avatarFallbackInitial(name: string | null | undefined): string {
   return (name?.trim()?.[0] || '?').toUpperCase();
+}
+
+// Formate "vu il y a Xmin/Xh" ou une heure/date pour l'affichage hors-ligne
+export function formatLastSeen(lastSeen: string | null | undefined): string {
+  if (!lastSeen) return 'Hors ligne';
+  const diffMs = Date.now() - new Date(lastSeen).getTime();
+  const diffMin = Math.floor(diffMs / 60_000);
+  if (diffMin < 1) return "Vu à l'instant";
+  if (diffMin < 60) return `Vu il y a ${diffMin} min`;
+  const diffH = Math.floor(diffMin / 60);
+  if (diffH < 24) return `Vu il y a ${diffH} h`;
+  const diffDays = Math.floor(diffH / 24);
+  if (diffDays === 1) return 'Vu hier';
+  if (diffDays < 7) return `Vu il y a ${diffDays} j`;
+  return `Vu le ${new Date(lastSeen).toLocaleDateString('fr-FR')}`;
 }

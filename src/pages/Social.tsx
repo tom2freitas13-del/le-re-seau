@@ -6,6 +6,7 @@ import BottomNav from '@/components/BottomNav';
 import { useNavigate } from 'react-router-dom';
 import { Users, Sparkles, Compass, Clock } from 'lucide-react';
 import { useBlockedUsers } from '@/lib/useBlockedUsers';
+import { usePresence } from '@/lib/presence-context';
 
 interface Profile {
   id: string;
@@ -52,6 +53,7 @@ export default function Social() {
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const { isBlocked } = useBlockedUsers();
+  const { onlineUserIds, onlineCount } = usePresence();
 
   useEffect(() => {
     if (!user) { navigate('/auth'); return; }
@@ -98,17 +100,24 @@ export default function Social() {
       score: myProfile ? computeMatchScore(myProfile, p) : 0,
     }));
 
+  // Les membres actuellement en ligne remontent en tête de chaque liste —
+  // ça donne plus de chances d'avoir une réponse immédiate.
+  const onlineFirst = (a: { profile: Profile }, b: { profile: Profile }) =>
+    Number(onlineUserIds.has(b.profile.user_id)) - Number(onlineUserIds.has(a.profile.user_id));
+
   const suggestions = withScores
     .filter(({ score }) => score > 0)
-    .sort((a, b) => b.score - a.score);
+    .sort((a, b) => onlineFirst(a, b) || b.score - a.score);
 
-  const nearby = withScores.filter(({ profile }) =>
-    profile.availability && myProfile?.availability && profile.availability === myProfile.availability
-  );
+  const nearby = withScores
+    .filter(({ profile }) => profile.availability && myProfile?.availability && profile.availability === myProfile.availability)
+    .sort(onlineFirst);
+
+  const discover = [...withScores].sort(onlineFirst);
 
   const currentList = activeTab === 'suggestions' ? suggestions
     : activeTab === 'nearby' ? nearby
-    : withScores;
+    : discover;
 
   return (
     <div className="min-h-screen pb-28 bg-background">
@@ -121,8 +130,13 @@ export default function Social() {
             </div>
             <div>
               <h1 className="font-display text-2xl font-semibold">Communauté</h1>
-              <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>
+              <p className="text-xs text-muted-foreground flex items-center gap-1.5" style={{ fontFamily: 'Jost, sans-serif' }}>
                 {profiles.length} membre{profiles.length > 1 ? 's' : ''} chargé{profiles.length > 1 ? 's' : ''}
+                {onlineCount > 0 && (
+                  <span className="flex items-center gap-1">
+                    · <span className="h-1.5 w-1.5 rounded-full bg-green-400" /> {onlineCount} en ligne
+                  </span>
+                )}
               </p>
             </div>
           </div>

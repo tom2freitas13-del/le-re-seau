@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/lib/auth-context';
@@ -15,6 +15,7 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -43,6 +44,10 @@ export default function Auth() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isLogin && !acceptedTerms) {
+      toast.error("Merci d'accepter les conditions d'utilisation et la politique de confidentialité.");
+      return;
+    }
     setLoading(true);
     try {
       if (isLogin) {
@@ -146,6 +151,23 @@ export default function Auth() {
                 {showPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
+            {!isLogin && (
+              <label className="flex items-start gap-2 text-xs text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>
+                <input
+                  type="checkbox"
+                  checked={acceptedTerms}
+                  onChange={e => setAcceptedTerms(e.target.checked)}
+                  className="mt-0.5"
+                  required
+                />
+                <span>
+                  J'ai au moins 15 ans et j'accepte les{' '}
+                  <Link to="/terms" target="_blank" className="text-primary underline">conditions d'utilisation</Link>
+                  {' '}et la{' '}
+                  <Link to="/privacy" target="_blank" className="text-primary underline">politique de confidentialité</Link>.
+                </span>
+              </label>
+            )}
             <button type="submit" disabled={loading} className="btn-ocean w-full py-4 text-base font-semibold disabled:opacity-60">
               {loading ? '...' : isLogin ? 'Se connecter' : "S'inscrire"}
             </button>

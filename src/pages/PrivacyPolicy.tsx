@@ -18,7 +18,7 @@ export default function PrivacyPolicy() {
       </div>
 
       <div className="max-w-lg mx-auto px-4 pt-8 space-y-6" style={{ fontFamily: 'Jost, sans-serif' }}>
-        <p className="text-xs text-muted-foreground">Dernière mise à jour : 29 juin 2026</p>
+        <p className="text-xs text-muted-foreground">Dernière mise à jour : 7 juillet 2026</p>
 
         <p className="text-sm text-foreground/80 leading-relaxed">
           Le Ré-seau (« nous ») respecte votre vie privée. Cette page explique de manière simple
@@ -32,16 +32,28 @@ export default function PrivacyPolicy() {
             <li>Informations de profil que vous renseignez : prénom, âge, photo, bio, statut, intérêts, réseaux sociaux.</li>
             <li>Contenus que vous publiez : messages, posts du forum, annonces, activités, signalements.</li>
             <li>Données techniques minimales nécessaires à la sécurité du service (date de connexion).</li>
+            <li>Si vous activez les notifications, un identifiant d'abonnement technique (push subscription) permettant de vous envoyer des notifications sur cet appareil.</li>
           </ul>
         </section>
 
         <section className="space-y-2">
-          <h2 className="font-display text-lg font-semibold">Finalités</h2>
+          <h2 className="font-display text-lg font-semibold">Finalités et base légale</h2>
           <ul className="space-y-1.5 text-sm text-foreground/80 leading-relaxed list-disc pl-5">
-            <li>Vous permettre d'accéder à la communauté et d'y interagir.</li>
-            <li>Vous proposer des suggestions de profils et d'activités correspondant à vos intérêts.</li>
-            <li>Garantir la sécurité du service et lutter contre les abus (signalements, blocage, modération).</li>
+            <li>Vous permettre d'accéder à la communauté et d'y interagir (exécution du contrat qui nous lie lorsque vous créez un compte).</li>
+            <li>Vous proposer des suggestions de profils et d'activités correspondant à vos centres d'intérêt communs (loisirs, activités locales), y compris un score de compatibilité amicale calculé automatiquement (intérêt légitime : faciliter les rencontres amicales et l'entraide entre membres).</li>
+            <li>Vous envoyer des notifications si vous les avez activées (consentement, révocable à tout moment depuis votre appareil).</li>
+            <li>Garantir la sécurité du service et lutter contre les abus (signalements, blocage, modération) (intérêt légitime).</li>
           </ul>
+        </section>
+
+        <section className="space-y-2">
+          <h2 className="font-display text-lg font-semibold">Durée de conservation</h2>
+          <p className="text-sm text-foreground/80 leading-relaxed">
+            Vos données sont conservées tant que votre compte est actif. En cas de suppression de
+            votre compte, vos données sont effacées définitivement, à l'exception des éléments que
+            nous serions légalement tenus de conserver plus longtemps (par exemple en cas de
+            signalement en cours de traitement).
+          </p>
         </section>
 
         <section className="space-y-2">
@@ -62,6 +74,8 @@ export default function PrivacyPolicy() {
             <li>Supprimer définitivement votre compte et toutes vos données depuis la page Profil (bouton « Supprimer mon compte »).</li>
             <li>Demander une copie de vos données par email.</li>
             <li>Demander l'effacement complet de vos données par email.</li>
+            <li>Vous opposer au traitement fondé sur l'intérêt légitime, ou retirer votre consentement lorsque le traitement en dépend (notifications).</li>
+            <li>Introduire une réclamation auprès de la CNIL (<a href="https://www.cnil.fr" target="_blank" rel="noreferrer" className="text-primary underline">www.cnil.fr</a>) si vous estimez que vos droits ne sont pas respectés.</li>
           </ul>
         </section>
 
@@ -69,7 +83,7 @@ export default function PrivacyPolicy() {
           <h2 className="font-display text-lg font-semibold">Contact</h2>
           <p className="text-sm text-foreground/80 leading-relaxed">
             Pour toute demande relative à vos données :{' '}
-            <a href="mailto:CONTACT_EMAIL@exemple.com" className="text-primary underline">CONTACT_EMAIL@exemple.com</a>
+            <a href="mailto:hectordegiorgio@gmail.com" className="text-primary underline">hectordegiorgio@gmail.com</a>
           </p>
         </section>
 
