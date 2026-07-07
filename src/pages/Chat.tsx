@@ -58,8 +58,12 @@ export default function Chat() {
     loadPartner();
     loadMessages();
 
+    // Nom de canal identique quel que soit qui l'ouvre en premier — sinon
+    // le broadcast "typing" ne circule jamais entre les deux (un canal
+    // par participant = deux topics distincts, jamais reliés).
+    const channelName = `messages-${[user.id, partnerId].sort().join('-')}`;
     const channel = supabase
-      .channel(`messages-${user.id}-${partnerId}`)
+      .channel(channelName)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
         const m = payload.new as Message;
         if ((m.sender_id === user.id && m.receiver_id === partnerId) || (m.sender_id === partnerId && m.receiver_id === user.id)) {
