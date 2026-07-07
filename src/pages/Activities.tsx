@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import BottomNav from '@/components/BottomNav';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Calendar, MapPin, Users, Trash2, Map as MapIcon } from 'lucide-react';
+import { Plus, Calendar, MapPin, Users, Trash2, Map as MapIcon, MessageCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { ACTIVITY_CATEGORIES } from '@/lib/constants';
 import LocalImage from '@/components/LocalImage';
@@ -20,6 +20,7 @@ interface Activity {
   min_age: number | null;
   max_participants: number | null;
   photo_url: string | null;
+  group_id: string | null;
 }
 
 // BUG FIX : l'ancien fallback utilisait de fausses photos stock (dont un portrait
@@ -207,16 +208,32 @@ export default function Activities() {
                       </span>
                     </div>
                     {isMine ? (
-                      <p className="text-xs text-center text-muted-foreground pt-1" style={{ fontFamily: 'Jost, sans-serif' }}>
-                        C'est votre activité
-                      </p>
+                      <div className="space-y-2">
+                        <p className="text-xs text-center text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>
+                          C'est votre activité
+                        </p>
+                        {activity.group_id && (
+                          <button onClick={() => navigate(`/groups/${activity.group_id}`)}
+                            className="btn-ghost w-full flex items-center justify-center gap-2">
+                            <MessageCircle className="h-4 w-4" /> Discuter
+                          </button>
+                        )}
+                      </div>
                     ) : (
-                      <button
-                        onClick={() => toggleParticipation(activity.id)}
-                        disabled={!!activity.max_participants && !joined && (participantCounts[activity.id] || 0) >= activity.max_participants}
-                        className={joined ? 'btn-ghost w-full disabled:opacity-50' : 'btn-ocean w-full disabled:opacity-50'}>
-                        {joined ? 'Se désinscrire' : 'Participer'}
-                      </button>
+                      <div className="space-y-2">
+                        <button
+                          onClick={() => toggleParticipation(activity.id)}
+                          disabled={!!activity.max_participants && !joined && (participantCounts[activity.id] || 0) >= activity.max_participants}
+                          className={joined ? 'btn-ghost w-full disabled:opacity-50' : 'btn-ocean w-full disabled:opacity-50'}>
+                          {joined ? 'Se désinscrire' : 'Participer'}
+                        </button>
+                        {joined && activity.group_id && (
+                          <button onClick={() => navigate(`/groups/${activity.group_id}`)}
+                            className="btn-ghost w-full flex items-center justify-center gap-2">
+                            <MessageCircle className="h-4 w-4" /> Discuter
+                          </button>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>

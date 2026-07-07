@@ -62,6 +62,10 @@ export default function NewActivity() {
     if (!user) return;
     if (!title.trim()) { toast.error('Le titre est obligatoire.'); return; }
     if (minAgeError) { toast.error(minAgeError); return; }
+    if (!maxParticipants || parseInt(maxParticipants, 10) <= 0) {
+      toast.error('Le nombre de participants maximum est obligatoire.');
+      return;
+    }
 
     setLoading(true);
     try {
@@ -216,21 +220,22 @@ export default function NewActivity() {
                 {minAgeError && <p className="text-xs text-destructive mt-1" style={{ fontFamily: 'Jost, sans-serif' }}>{minAgeError}</p>}
               </div>
               <div>
-                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 block" style={{ fontFamily: 'Jost, sans-serif' }}>👥 Places max</label>
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 block" style={{ fontFamily: 'Jost, sans-serif' }}>👥 Places max *</label>
                 <input
                   type="text"
                   inputMode="numeric"
                   className={inputClass}
                   style={{ fontFamily: 'Jost, sans-serif' }}
-                  placeholder="Illimité"
+                  placeholder="Ex: 8"
                   value={maxParticipants}
                   onChange={e => handleMaxParticipantsChange(e.target.value)}
+                  required
                 />
               </div>
             </div>
           </div>
 
-          <button type="submit" disabled={loading || !title.trim() || !!minAgeError}
+          <button type="submit" disabled={loading || !title.trim() || !!minAgeError || !maxParticipants}
             className="btn-ocean w-full py-4 text-base font-semibold disabled:opacity-50">
             {loading ? 'Création...' : "🚀 Créer l'activité"}
           </button>

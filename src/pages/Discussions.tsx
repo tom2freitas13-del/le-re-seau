@@ -51,6 +51,7 @@ export default function Discussions() {
   const { onlineCount } = usePresence();
   const { unreadTotal } = useUnreadMessages();
   const [salonUnread, setSalonUnread] = useState<Record<string, number>>({});
+  const [forumUnread, setForumUnread] = useState(0);
 
   useEffect(() => { if (!user) navigate('/auth'); }, [user]);
 
@@ -63,6 +64,25 @@ export default function Discussions() {
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    loadForumUnread();
+    const channel = supabase
+      .channel(`forum-unread-${user.id}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'forum_posts' }, () => loadForumUnread())
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user]);
+
+  const loadForumUnread = async () => {
+    if (!user) return;
+    const { data: read } = await supabase.from('forum_reads').select('last_read_at').eq('user_id', user.id).maybeSingle();
+    let query = supabase.from('forum_posts').select('*', { count: 'exact', head: true }).neq('author_id', user.id);
+    if (read) query = query.gt('created_at', read.last_read_at);
+    const { count } = await query;
+    setForumUnread(count || 0);
+  };
 
   const loadSalonUnread = async () => {
     if (!user) return;
@@ -91,7 +111,7 @@ export default function Discussions() {
     return <SalonView salonId={activeSalon} onBack={() => { setView('list'); loadSalonUnread(); }} />;
   }
   if (view === 'forum') {
-    return <ForumView onBack={() => setView('list')} />;
+    return <ForumView onBack={() => { setView('list'); loadForumUnread(); }} />;
   }
   if (view === 'messages') {
     return <MessagesView onBack={() => setView('list')} />;
@@ -134,7 +154,14 @@ export default function Discussions() {
         </button>
 
         <button onClick={() => setView('forum')} className="card-premium p-5 w-full text-left flex items-center gap-4">
-          <div className="h-14 w-14 rounded-2xl bg-sand-light flex items-center justify-center text-2xl flex-shrink-0">📰</div>
+          <div className="h-14 w-14 rounded-2xl bg-sand-light flex items-center justify-center text-2xl flex-shrink-0 relative">
+            📰
+            {forumUnread > 0 && (
+              <span className="absolute -top-1 -right-1 h-5 min-w-[20px] px-1 rounded-full bg-red-500 text-white text-[10px] font-semibold flex items-center justify-center">
+                {forumUnread > 9 ? '9+' : forumUnread}
+              </span>
+            )}
+          </div>
           <div className="flex-1">
             <h3 className="font-display text-xl font-semibold">Forum</h3>
             <p className="text-sm text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>Annonces, questions, partages</p>
@@ -511,6 +538,13 @@ function ForumView({ onBack }: { onBack: () => void }) {
   const photoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { loadPosts(); }, []);
+
+  // Marque le forum comme lu à l'entrée, pour que le badge de la liste
+  // des discussions se remette bien à zéro.
+  useEffect(() => {
+    if (!user) return;
+    supabase.from('forum_reads').upsert({ user_id: user.id, last_read_at: new Date().toISOString() }, { onConflict: 'user_id' }).then();
+  }, [user]);
 
   const loadPosts = async () => {
     const { data } = await supabase.from('forum_posts').select('*').order('created_at', { ascending: false }).limit(50);

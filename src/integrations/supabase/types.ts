@@ -115,6 +115,9 @@ export interface Database {
           group_id: string;
           sender_id: string;
           content: string;
+          is_system: boolean;
+          attachment_url: string | null;
+          attachment_type: 'audio' | 'image' | null;
           created_at: string;
         };
         Insert: {
@@ -122,9 +125,24 @@ export interface Database {
           group_id: string;
           sender_id: string;
           content: string;
+          is_system?: boolean;
+          attachment_url?: string | null;
+          attachment_type?: 'audio' | 'image' | null;
           created_at?: string;
         };
         Update: Partial<Database['public']['Tables']['chat_group_messages']['Insert']>;
+        Relationships: [];
+      };
+      forum_reads: {
+        Row: {
+          user_id: string;
+          last_read_at: string;
+        };
+        Insert: {
+          user_id: string;
+          last_read_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['forum_reads']['Insert']>;
         Relationships: [];
       };
       salon_reads: {
@@ -284,6 +302,7 @@ export interface Database {
           min_age: number | null;
           max_participants: number | null;
           photo_url: string | null;
+          group_id: string | null;
           created_at: string;
         };
         Insert: {
@@ -300,6 +319,7 @@ export interface Database {
           min_age?: number | null;
           max_participants?: number | null;
           photo_url?: string | null;
+          group_id?: string | null;
           created_at?: string;
         };
         Update: Partial<Database['public']['Tables']['activities']['Insert']>;
