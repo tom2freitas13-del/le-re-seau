@@ -3,6 +3,7 @@ import { Home, Users, MessageCircle, Briefcase, User, Map, Bell, X } from 'lucid
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/auth-context';
+import { useUnreadMessages } from '@/lib/unread-context';
 import { getPushPermissionState, isPushSupported, subscribeToPush } from '@/lib/push-notifications';
 
 const navItems = [
@@ -17,6 +18,7 @@ const navItems = [
 export default function BottomNav() {
   const location = useLocation();
   const { user } = useAuth();
+  const { unreadTotal } = useUnreadMessages();
   const [showPrompt, setShowPrompt] = useState(false);
 
   useEffect(() => {
@@ -76,10 +78,15 @@ export default function BottomNav() {
                 )}
                 style={{ fontFamily: 'Jost, sans-serif' }}>
                 <div className={cn(
-                  'p-1.5 rounded-xl transition-all duration-200',
+                  'relative p-1.5 rounded-xl transition-all duration-200',
                   active ? 'bg-ocean-light' : 'bg-transparent'
                 )}>
                   <Icon className={cn('h-[18px] w-[18px]', active ? 'stroke-primary' : '')} strokeWidth={active ? 2 : 1.5} />
+                  {path === '/discussions' && unreadTotal > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 h-4 min-w-[16px] px-1 rounded-full bg-red-500 text-white text-[9px] font-semibold flex items-center justify-center">
+                      {unreadTotal > 9 ? '9+' : unreadTotal}
+                    </span>
+                  )}
                 </div>
                 <span>{label}</span>
               </Link>

@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/lib/auth-context";
 import { PresenceProvider } from "@/lib/presence-context";
+import { UnreadProvider } from "@/lib/unread-context";
 import BannedScreen from "@/components/BannedScreen";
 import InstallBanner from "@/components/InstallBanner";
 import { useGlobalMessageNotifications } from "@/lib/useGlobalMessageNotifications";
@@ -83,7 +84,9 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <PresenceProvider>
-            <AppRoutes />
+            <UnreadProvider>
+              <AppRoutes />
+            </UnreadProvider>
           </PresenceProvider>
         </AuthProvider>
       </BrowserRouter>

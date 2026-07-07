@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 import { ReportButton } from '@/components/ReportModal';
 import { useBlockedUsers } from '@/lib/useBlockedUsers';
 import { usePresence } from '@/lib/presence-context';
+import { useUnreadMessages } from '@/lib/unread-context';
 
 interface SalonMessage {
   id: string;
@@ -42,33 +43,10 @@ export default function Discussions() {
   const navigate = useNavigate();
   const [view, setView] = useState<'list' | 'salon' | 'forum' | 'messages'>('list');
   const [activeSalon, setActiveSalon] = useState<string | null>(null);
-  const [unreadTotal, setUnreadTotal] = useState(0);
   const { onlineCount } = usePresence();
+  const { unreadTotal } = useUnreadMessages();
 
   useEffect(() => { if (!user) navigate('/auth'); }, [user]);
-
-  // Pastille sur la carte "Messages privés" : total des messages non lus
-  useEffect(() => {
-    if (!user) return;
-    loadUnreadTotal();
-    const channel = supabase
-      .channel(`unread-badge-${user.id}`)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `receiver_id=eq.${user.id}` }, () => {
-        loadUnreadTotal();
-      })
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [user]);
-
-  const loadUnreadTotal = async () => {
-    if (!user) return;
-    const { count } = await supabase
-      .from('messages')
-      .select('*', { count: 'exact', head: true })
-      .eq('receiver_id', user.id)
-      .eq('read', false);
-    setUnreadTotal(count || 0);
-  };
 
   if (view === 'salon' && activeSalon) {
     return <SalonView salonId={activeSalon} onBack={() => setView('list')} />;
@@ -77,7 +55,7 @@ export default function Discussions() {
     return <ForumView onBack={() => setView('list')} />;
   }
   if (view === 'messages') {
-    return <MessagesView onBack={() => { setView('list'); loadUnreadTotal(); }} />;
+    return <MessagesView onBack={() => setView('list')} />;
   }
 
   return (
