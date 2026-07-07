@@ -57,7 +57,7 @@ export interface Database {
           content: string;
           read: boolean;
           attachment_url: string | null;
-          attachment_type: 'audio' | null;
+          attachment_type: 'audio' | 'image' | null;
           created_at: string;
         };
         Insert: {
@@ -67,7 +67,7 @@ export interface Database {
           content: string;
           read?: boolean;
           attachment_url?: string | null;
-          attachment_type?: 'audio' | null;
+          attachment_type?: 'audio' | 'image' | null;
           created_at?: string;
         };
         Update: Partial<Database['public']['Tables']['messages']['Insert']>;

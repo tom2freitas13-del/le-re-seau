@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
-import { ArrowLeft, Send, MoreVertical, Check, CheckCheck, Mic, Square, SmilePlus } from 'lucide-react';
+import { ArrowLeft, Send, MoreVertical, Check, CheckCheck, Mic, Square, SmilePlus, Image as ImageIcon } from 'lucide-react';
 import { avatarFallbackInitial, formatLastSeen } from '@/lib/constants';
 import { ReportModal } from '@/components/ReportModal';
 import { useBlockedUsers } from '@/lib/useBlockedUsers';
@@ -17,8 +17,10 @@ interface Message {
   created_at: string;
   read?: boolean;
   attachment_url?: string | null;
-  attachment_type?: 'audio' | null;
+  attachment_type?: 'audio' | 'image' | null;
 }
+
+const MAX_PHOTO_SIZE_MB = 5;
 
 interface Reaction {
   message_id: string;
@@ -51,6 +53,8 @@ export default function Chat() {
   const audioChunksRef = useRef<Blob[]>([]);
   const [reactions, setReactions] = useState<Reaction[]>([]);
   const [pickerFor, setPickerFor] = useState<string | null>(null);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (authLoading) return;
@@ -207,6 +211,40 @@ export default function Chat() {
     });
   };
 
+  const handlePhotoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file || !user || !partnerId) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Merci de choisir un fichier image.');
+      return;
+    }
+    if (file.size > MAX_PHOTO_SIZE_MB * 1024 * 1024) {
+      toast.error(`L'image doit faire moins de ${MAX_PHOTO_SIZE_MB} Mo.`);
+      return;
+    }
+
+    setUploadingPhoto(true);
+    const ext = file.name.split('.').pop();
+    const path = `${user.id}/${Date.now()}.${ext}`;
+    const { error: uploadError } = await supabase.storage.from('chat-images').upload(path, file, { contentType: file.type });
+    if (uploadError) {
+      toast.error("Échec de l'envoi de la photo.");
+      setUploadingPhoto(false);
+      return;
+    }
+    const { data } = supabase.storage.from('chat-images').getPublicUrl(path);
+    await supabase.from('messages').insert({
+      sender_id: user.id,
+      receiver_id: partnerId,
+      content: '📷 Photo',
+      attachment_url: data.publicUrl,
+      attachment_type: 'image',
+    });
+    setUploadingPhoto(false);
+  };
+
   const toggleReaction = async (messageId: string, emoji: string) => {
     if (!user) return;
     setPickerFor(null);
@@ -303,6 +341,10 @@ export default function Chat() {
                       <div className={`max-w-[75%] rounded-2xl px-3 py-2 ${mine ? 'bg-primary' : 'bg-secondary'}`}>
                         <audio controls src={m.attachment_url} className="h-9 max-w-[220px]" />
                       </div>
+                    ) : m.attachment_type === 'image' && m.attachment_url ? (
+                      <a href={m.attachment_url} target="_blank" rel="noopener noreferrer" className="block max-w-[75%] rounded-2xl overflow-hidden">
+                        <img src={m.attachment_url} alt="Photo envoyée" className="max-h-64 w-auto object-cover" />
+                      </a>
                     ) : (
                       <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm ${mine ? 'bg-primary text-white' : 'bg-secondary text-foreground'}`}
                         style={{ fontFamily: 'Jost, sans-serif' }}>
@@ -362,6 +404,14 @@ export default function Chat() {
 
           <form onSubmit={handleSend} className="sticky bottom-0 bg-background border-t border-border/50 px-4 py-3 safe-area-bottom">
             <div className="max-w-lg mx-auto flex gap-2">
+              <input ref={photoInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoSelect} />
+              {!isRecording && (
+                <button type="button" onClick={() => photoInputRef.current?.click()} disabled={uploadingPhoto}
+                  className="h-11 w-11 rounded-full border border-border flex items-center justify-center flex-shrink-0 text-muted-foreground hover:text-foreground disabled:opacity-50"
+                  title="Envoyer une photo">
+                  <ImageIcon className="h-4 w-4" />
+                </button>
+              )}
               <input
                 value={content}
                 onChange={e => handleContentChange(e.target.value)}
