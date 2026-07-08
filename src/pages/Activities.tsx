@@ -5,8 +5,14 @@ import BottomNav from '@/components/BottomNav';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Calendar, MapPin, Users, Trash2, Map as MapIcon, MessageCircle } from 'lucide-react';
 import { toast } from 'sonner';
-import { ACTIVITY_CATEGORIES } from '@/lib/constants';
+import { ACTIVITY_CATEGORIES, avatarFallbackInitial } from '@/lib/constants';
 import LocalImage from '@/components/LocalImage';
+
+interface Participant {
+  user_id: string;
+  name: string | null;
+  photo_url: string | null;
+}
 
 interface Activity {
   id: string;
@@ -44,6 +50,7 @@ export default function Activities() {
   const navigate = useNavigate();
   const [activities, setActivities] = useState<Activity[]>([]);
   const [participantCounts, setParticipantCounts] = useState<Record<string, number>>({});
+  const [participantsByActivity, setParticipantsByActivity] = useState<Record<string, Participant[]>>({});
   const [myParticipations, setMyParticipations] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -69,6 +76,18 @@ export default function Activities() {
         });
         setParticipantCounts(counts);
         setMyParticipations(mine);
+
+        const userIds = Array.from(new Set(parts.map(p => p.user_id)));
+        if (userIds.length) {
+          const { data: profiles } = await supabase.from('profiles').select('user_id, name, photo_url').in('user_id', userIds);
+          const profileMap = new Map((profiles || []).map(p => [p.user_id, p]));
+          const byActivity: Record<string, Participant[]> = {};
+          parts.forEach(p => {
+            const profile = profileMap.get(p.user_id);
+            (byActivity[p.activity_id] ||= []).push({ user_id: p.user_id, name: profile?.name || null, photo_url: profile?.photo_url || null });
+          });
+          setParticipantsByActivity(byActivity);
+        }
       }
     }
     setLoading(false);
@@ -251,6 +270,29 @@ export default function Activities() {
                         {activity.max_participants ? ` / ${activity.max_participants}` : ''}
                       </span>
                     </div>
+                    {(participantsByActivity[activity.id]?.length || 0) > 0 && (
+                      <div className="flex items-center gap-2">
+                        <div className="flex -space-x-2 flex-shrink-0">
+                          {participantsByActivity[activity.id].slice(0, 4).map(p => (
+                            <div key={p.user_id} title={p.name || 'Utilisateur'}
+                              className="h-7 w-7 rounded-full bg-ocean-light border-2 border-card overflow-hidden flex items-center justify-center">
+                              {p.photo_url ? (
+                                <img src={p.photo_url} alt={p.name || ''} className="h-full w-full object-cover" />
+                              ) : (
+                                <span className="font-display text-xs text-primary/60">{avatarFallbackInitial(p.name)}</span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                        <p className="text-xs text-muted-foreground truncate" style={{ fontFamily: 'Jost, sans-serif' }}>
+                          {(() => {
+                            const names = participantsByActivity[activity.id].map(p => p.name || 'Quelqu\'un');
+                            if (names.length <= 2) return names.join(' et ');
+                            return `${names.slice(0, 2).join(', ')} et ${names.length - 2} autre${names.length - 2 > 1 ? 's' : ''}`;
+                          })()}
+                        </p>
+                      </div>
+                    )}
                     {isMine ? (
                       <div className="space-y-2">
                         <p className="text-xs text-center text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>

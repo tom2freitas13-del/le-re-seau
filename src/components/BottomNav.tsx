@@ -24,7 +24,7 @@ export default function BottomNav() {
   useEffect(() => {
     const check = async () => {
       if (!user) return;
-      if (localStorage.getItem('push-prompt-dismissed') === '1') return;
+      if (sessionStorage.getItem('push-prompt-dismissed') === '1') return;
       const supported = await isPushSupported();
       if (!supported) return;
       const permission = await getPushPermissionState();
@@ -37,11 +37,15 @@ export default function BottomNav() {
     if (!user) return;
     const ok = await subscribeToPush(user.id);
     setShowPrompt(false);
-    if (!ok) localStorage.setItem('push-prompt-dismissed', '1');
+    if (!ok) sessionStorage.setItem('push-prompt-dismissed', '1');
   };
 
+  // Volontairement en sessionStorage (pas localStorage) : on veut redemander
+  // à chaque nouvelle visite plutôt que de renoncer définitivement dès le
+  // premier "plus tard", tant que la communauté est petite et qu'on cherche
+  // à maximiser l'activation des notifications.
   const handleDismiss = () => {
-    localStorage.setItem('push-prompt-dismissed', '1');
+    sessionStorage.setItem('push-prompt-dismissed', '1');
     setShowPrompt(false);
   };
 

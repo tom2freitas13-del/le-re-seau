@@ -36,6 +36,10 @@ export default function GroupChat() {
   const audioChunksRef = useRef<Blob[]>([]);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const photoInputRef = useRef<HTMLInputElement>(null);
+  const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set());
+  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const stopTypingTimeout = useRef<ReturnType<typeof setTimeout>>();
+  const typingClearTimeouts = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   useEffect(() => {
     if (authLoading) return;
@@ -49,8 +53,22 @@ export default function GroupChat() {
         setMessages(prev => [...prev, m]);
         ensureSenderName(m.sender_id);
       })
+      .on('broadcast', { event: 'typing' }, ({ payload }) => {
+        if (!payload?.userId || payload.userId === user.id) return;
+        ensureSenderName(payload.userId);
+        clearTimeout(typingClearTimeouts.current[payload.userId]);
+        if (payload.typing) {
+          setTypingUsers(prev => new Set(prev).add(payload.userId));
+          typingClearTimeouts.current[payload.userId] = setTimeout(() => {
+            setTypingUsers(prev => { const s = new Set(prev); s.delete(payload.userId); return s; });
+          }, 4000);
+        } else {
+          setTypingUsers(prev => { const s = new Set(prev); s.delete(payload.userId); return s; });
+        }
+      })
       .subscribe();
 
+    channelRef.current = channel;
     return () => { supabase.removeChannel(channel); };
   }, [user, groupId, authLoading]);
 
@@ -106,12 +124,25 @@ export default function GroupChat() {
     });
   };
 
+  const sendTyping = (typing: boolean) => {
+    channelRef.current?.send({ type: 'broadcast', event: 'typing', payload: { userId: user?.id, typing } });
+  };
+
+  const handleContentChange = (value: string) => {
+    setContent(value);
+    sendTyping(true);
+    clearTimeout(stopTypingTimeout.current);
+    stopTypingTimeout.current = setTimeout(() => sendTyping(false), 2000);
+  };
+
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !groupId || !content.trim() || sending) return;
     setSending(true);
     const text = content.trim();
     setContent('');
+    clearTimeout(stopTypingTimeout.current);
+    sendTyping(false);
     const { error } = await supabase.from('chat_group_messages').insert({ group_id: groupId, sender_id: user.id, content: text });
     if (error) setContent(text);
     setSending(false);
@@ -257,6 +288,20 @@ export default function GroupChat() {
             </div>
           );
         })}
+        {typingUsers.size > 0 && (
+          <div className="flex flex-col gap-0.5">
+            <p className="text-[11px] text-muted-foreground pl-1" style={{ fontFamily: 'Jost, sans-serif' }}>
+              {Array.from(typingUsers).map(id => senderNames[id] || '...').join(', ')} {typingUsers.size > 1 ? 'écrivent' : 'écrit'}...
+            </p>
+            <div className="flex justify-start">
+              <div className="bg-secondary rounded-2xl px-4 py-2.5 flex items-center gap-1">
+                <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: '0ms' }} />
+                <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: '150ms' }} />
+                <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60 animate-bounce" style={{ animationDelay: '300ms' }} />
+              </div>
+            </div>
+          </div>
+        )}
         <div ref={bottomRef} />
       </div>
 
@@ -272,7 +317,7 @@ export default function GroupChat() {
           )}
           <input
             value={content}
-            onChange={e => setContent(e.target.value)}
+            onChange={e => handleContentChange(e.target.value)}
             placeholder="Écrire au groupe..."
             maxLength={2000}
             className="flex-1 px-4 py-3 rounded-full border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20"
