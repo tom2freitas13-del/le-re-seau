@@ -248,7 +248,7 @@ export default function Chat() {
     }
   };
 
-  const handleBack = () => (window.history.length > 1 ? navigate(-1) : navigate('/chat'));
+  const handleBack = () => (window.history.length > 1 ? navigate(-1) : navigate('/discussions'));
 
   if (authLoading) return null;
 
@@ -296,7 +296,7 @@ export default function Chat() {
                   🚩 Signaler {partner?.name || 'cet utilisateur'}
                 </button>
                 <button
-                  onClick={() => { if (partnerId) { blocked ? unblockUser(partnerId) : blockUser(partnerId); } setMenuOpen(false); if (!blocked) navigate('/chat'); }}
+                  onClick={() => { if (partnerId) { blocked ? unblockUser(partnerId) : blockUser(partnerId); } setMenuOpen(false); if (!blocked) navigate('/discussions'); }}
                   className="w-full text-left px-3 py-2 text-sm hover:bg-secondary flex items-center gap-2 text-destructive"
                   style={{ fontFamily: 'Jost, sans-serif' }}>
                   {blocked ? '✅ Débloquer' : '🚫 Bloquer'}

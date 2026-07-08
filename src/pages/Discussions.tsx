@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import BottomNav from '@/components/BottomNav';
 import { useNavigate } from 'react-router-dom';
-import { MessageCircle, Send, ArrowLeft, Heart, MessageSquare, Mail, Mic, Square, Image as ImageIcon, X } from 'lucide-react';
+import { MessageCircle, Send, ArrowLeft, Heart, MessageSquare, Mail, Mic, Square, Image as ImageIcon, X, Plus, Users, Check } from 'lucide-react';
 import { SALONS } from '@/lib/constants';
 import { toast } from 'sonner';
 import { avatarFallbackInitial } from '@/lib/constants';
@@ -41,6 +41,13 @@ interface PrivateConversation {
   lastMessage: string;
   lastDate: string;
   unreadCount: number;
+}
+
+interface GroupItem {
+  id: string;
+  name: string;
+  emoji: string | null;
+  description: string | null;
 }
 
 export default function Discussions() {
@@ -205,8 +212,39 @@ function MessagesView({ onBack }: { onBack: () => void }) {
   const [loading, setLoading] = useState(true);
   const { isBlocked } = useBlockedUsers();
   const { isOnline } = usePresence();
+  const [groups, setGroups] = useState<GroupItem[]>([]);
+  const [groupUnread, setGroupUnread] = useState<Record<string, number>>({});
+  const [showCreateGroup, setShowCreateGroup] = useState(false);
 
-  useEffect(() => { loadConversations(); }, []);
+  useEffect(() => { loadConversations(); loadGroups(); }, []);
+
+  const loadGroups = async () => {
+    if (!user) return;
+    const { data: memberships } = await supabase.from('chat_group_members').select('group_id').eq('user_id', user.id);
+    if (!memberships?.length) return;
+    const ids = memberships.map(m => m.group_id);
+    const { data } = await supabase.from('chat_groups').select('*').in('id', ids);
+    if (data) setGroups(data);
+
+    const { data: reads } = await supabase.from('group_reads').select('group_id, last_read_at').eq('user_id', user.id).in('group_id', ids);
+    const lastRead: Record<string, string> = {};
+    (reads || []).forEach(r => { lastRead[r.group_id] = r.last_read_at; });
+    const { data: msgs } = await supabase
+      .from('chat_group_messages')
+      .select('group_id, created_at')
+      .in('group_id', ids)
+      .neq('sender_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(500);
+    const counts: Record<string, number> = {};
+    (msgs || []).forEach(m => {
+      const threshold = lastRead[m.group_id];
+      if (!threshold || new Date(m.created_at) > new Date(threshold)) {
+        counts[m.group_id] = (counts[m.group_id] || 0) + 1;
+      }
+    });
+    setGroupUnread(counts);
+  };
 
   const loadConversations = async () => {
     if (!user) return;
@@ -254,15 +292,53 @@ function MessagesView({ onBack }: { onBack: () => void }) {
   return (
     <div className="min-h-screen bg-background">
       <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-md border-b border-border/50">
-        <div className="max-w-lg mx-auto px-4 py-3 flex items-center gap-3">
-          <button onClick={onBack} className="text-muted-foreground hover:text-foreground transition-colors">
-            <ArrowLeft className="h-5 w-5" />
+        <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <button onClick={onBack} className="text-muted-foreground hover:text-foreground transition-colors">
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <h1 className="font-display text-lg font-semibold">Messages privés</h1>
+          </div>
+          <button onClick={() => setShowCreateGroup(true)} className="btn-ocean flex items-center gap-1.5 py-2 px-3 text-sm">
+            <Plus className="h-4 w-4" /> Groupe
           </button>
-          <h1 className="font-display text-lg font-semibold">Messages privés</h1>
         </div>
       </div>
 
-      <div className="max-w-lg mx-auto px-4 pt-4 space-y-2 pb-8">
+      <div className="max-w-lg mx-auto px-4 pt-4 space-y-6 pb-8">
+        {groups.length > 0 && (
+          <div>
+            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2" style={{ fontFamily: 'Jost, sans-serif' }}>
+              Mes groupes
+            </h2>
+            <div className="space-y-2">
+              {groups.map(g => (
+                <button key={g.id} onClick={() => navigate(`/groups/${g.id}`)}
+                  className="card-premium p-4 flex items-center gap-3 w-full text-left relative">
+                  <div className="h-12 w-12 rounded-full bg-pine-light flex items-center justify-center text-xl flex-shrink-0">
+                    {g.emoji || '💬'}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-medium text-sm" style={{ fontFamily: 'Jost, sans-serif' }}>{g.name}</h3>
+                    {g.description && (
+                      <p className="text-xs text-muted-foreground truncate" style={{ fontFamily: 'Jost, sans-serif' }}>{g.description}</p>
+                    )}
+                  </div>
+                  {groupUnread[g.id] > 0 && (
+                    <span className="h-5 min-w-[20px] px-1.5 rounded-full bg-red-500 text-white text-[10px] font-semibold flex items-center justify-center flex-shrink-0">
+                      {groupUnread[g.id] > 9 ? '9+' : groupUnread[g.id]}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="space-y-2">
+        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2" style={{ fontFamily: 'Jost, sans-serif' }}>
+          Messages privés
+        </h2>
         {loading ? (
           <div className="space-y-2">
             {[1, 2, 3].map(i => <div key={i} className="h-16 rounded-2xl bg-muted animate-pulse" />)}
@@ -308,6 +384,84 @@ function MessagesView({ onBack }: { onBack: () => void }) {
             ))}
           </div>
         )}
+        </div>
+      </div>
+
+      {showCreateGroup && (
+        <CreateGroupModal
+          onClose={() => setShowCreateGroup(false)}
+          onCreated={(groupId) => { setShowCreateGroup(false); navigate(`/groups/${groupId}`); }}
+        />
+      )}
+    </div>
+  );
+}
+
+function CreateGroupModal({ onClose, onCreated }: { onClose: () => void; onCreated: (id: string) => void }) {
+  const { user } = useAuth();
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [emoji, setEmoji] = useState('💬');
+  const [loading, setLoading] = useState(false);
+  const emojiOptions = ['💬', '🏖️', '🚲', '🏄', '⛵', '🍷', '🥾', '🎾'];
+
+  const handleCreate = async () => {
+    if (!user) return;
+    if (!name.trim()) { toast.error('Le nom du groupe est obligatoire.'); return; }
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('chat_groups')
+      .insert({ name: name.trim(), description: description.trim() || null, emoji, created_by: user.id })
+      .select()
+      .single();
+    setLoading(false);
+    if (error || !data) { toast.error('Impossible de créer le groupe.'); return; }
+    toast.success('Groupe créé ! 🎉');
+    onCreated(data.id);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4" onClick={onClose}>
+      <div className="bg-card rounded-3xl p-6 w-full max-w-sm space-y-4" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between">
+          <h2 className="font-display text-xl font-semibold flex items-center gap-2">
+            <Users className="h-5 w-5 text-primary" /> Nouveau groupe
+          </h2>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          {emojiOptions.map(e => (
+            <button key={e} onClick={() => setEmoji(e)}
+              className={`h-10 w-10 rounded-full flex items-center justify-center text-lg transition-all ${emoji === e ? 'bg-ocean-light ring-2 ring-primary' : 'bg-secondary'}`}>
+              {e}
+            </button>
+          ))}
+        </div>
+
+        <input
+          value={name}
+          onChange={e => setName(e.target.value)}
+          maxLength={60}
+          placeholder="Nom du groupe *"
+          className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20"
+          style={{ fontFamily: 'Jost, sans-serif' }}
+        />
+        <input
+          value={description}
+          onChange={e => setDescription(e.target.value)}
+          maxLength={200}
+          placeholder="Description (optionnel)"
+          className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20"
+          style={{ fontFamily: 'Jost, sans-serif' }}
+        />
+
+        <button onClick={handleCreate} disabled={loading || !name.trim()}
+          className="btn-ocean w-full py-3.5 flex items-center justify-center gap-2 disabled:opacity-50">
+          <Check className="h-4 w-4" /> {loading ? 'Création...' : 'Créer le groupe'}
+        </button>
       </div>
     </div>
   );

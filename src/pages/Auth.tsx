@@ -143,7 +143,7 @@ export default function Auth() {
               style={{ fontFamily: 'Jost, sans-serif' }} />
             <div className="relative">
               <input type={showPwd ? 'text' : 'password'} placeholder="Mot de passe" value={password}
-                onChange={e => setPassword(e.target.value)} required minLength={6}
+                onChange={e => setPassword(e.target.value)} required minLength={8}
                 className="w-full px-4 py-3.5 rounded-xl border border-border/60 bg-white/80 text-sm outline-none focus:ring-2 focus:ring-primary/30 pr-10"
                 style={{ fontFamily: 'Jost, sans-serif' }} />
               <button type="button" onClick={() => setShowPwd(!showPwd)}
@@ -151,6 +151,11 @@ export default function Auth() {
                 {showPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
+            {!isLogin && (
+              <p className="text-xs text-muted-foreground -mt-1 px-1" style={{ fontFamily: 'Jost, sans-serif' }}>
+                8 caractères minimum
+              </p>
+            )}
             {!isLogin && (
               <label className="flex items-start gap-2 text-xs text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>
                 <input

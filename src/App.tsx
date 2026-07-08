@@ -1,3 +1,4 @@
+import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,26 +10,37 @@ import { UnreadProvider } from "@/lib/unread-context";
 import BannedScreen from "@/components/BannedScreen";
 import InstallBanner from "@/components/InstallBanner";
 import { useGlobalMessageNotifications } from "@/lib/useGlobalMessageNotifications";
-import Index from "./pages/Index";
-import Auth from "./pages/Auth";
-import Profile from "./pages/Profile";
-import Social from "./pages/Social";
-import Jobs from "./pages/Jobs";
-import NewJob from "./pages/NewJob";
-import ChatList from "./pages/ChatList";
-import Chat from "./pages/Chat";
-import GroupChat from "./pages/GroupChat";
-import Discussions from "./pages/Discussions";
-import Activities from "./pages/Activities";
-import NewActivity from "./pages/NewActivity";
-import MapView from "./pages/MapView";
-import About from "./pages/About";
-import CommunityRules from "./pages/CommunityRules";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import TermsOfService from "./pages/TermsOfService";
-import LegalNotice from "./pages/LegalNotice";
-import Admin from "./pages/Admin";
-import NotFound from "./pages/NotFound";
+
+// Chargées à la demande par route plutôt que toutes d'un bloc au premier
+// chargement — la carte (Leaflet) notamment pèse lourd et n'est utile
+// qu'à ceux qui visitent /map.
+const Index = lazy(() => import("./pages/Index"));
+const Auth = lazy(() => import("./pages/Auth"));
+const Profile = lazy(() => import("./pages/Profile"));
+const Social = lazy(() => import("./pages/Social"));
+const Jobs = lazy(() => import("./pages/Jobs"));
+const NewJob = lazy(() => import("./pages/NewJob"));
+const Chat = lazy(() => import("./pages/Chat"));
+const GroupChat = lazy(() => import("./pages/GroupChat"));
+const Discussions = lazy(() => import("./pages/Discussions"));
+const Activities = lazy(() => import("./pages/Activities"));
+const NewActivity = lazy(() => import("./pages/NewActivity"));
+const MapView = lazy(() => import("./pages/MapView"));
+const About = lazy(() => import("./pages/About"));
+const CommunityRules = lazy(() => import("./pages/CommunityRules"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const TermsOfService = lazy(() => import("./pages/TermsOfService"));
+const LegalNotice = lazy(() => import("./pages/LegalNotice"));
+const Admin = lazy(() => import("./pages/Admin"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+
+function RouteLoading() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="h-8 w-8 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
+    </div>
+  );
+}
 
 const queryClient = new QueryClient();
 
@@ -50,28 +62,30 @@ function AppRoutes() {
   return (
     <>
       <InstallBanner />
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/community-rules" element={<CommunityRules />} />
-        <Route path="/privacy" element={<PrivacyPolicy />} />
-        <Route path="/terms" element={<TermsOfService />} />
-        <Route path="/legal-notice" element={<LegalNotice />} />
-        <Route path="/auth" element={<Auth />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/social" element={<Social />} />
-        <Route path="/jobs" element={<Jobs />} />
-        <Route path="/jobs/new" element={<NewJob />} />
-        <Route path="/activities" element={<Activities />} />
-        <Route path="/activities/new" element={<NewActivity />} />
-        <Route path="/map" element={<MapView />} />
-        <Route path="/chat" element={<ChatList />} />
-        <Route path="/chat/:partnerId" element={<Chat />} />
-        <Route path="/groups/:groupId" element={<GroupChat />} />
-        <Route path="/discussions" element={<Discussions />} />
-        <Route path="/admin" element={<Admin />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+      <Suspense fallback={<RouteLoading />}>
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/community-rules" element={<CommunityRules />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsOfService />} />
+          <Route path="/legal-notice" element={<LegalNotice />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/social" element={<Social />} />
+          <Route path="/jobs" element={<Jobs />} />
+          <Route path="/jobs/new" element={<NewJob />} />
+          <Route path="/activities" element={<Activities />} />
+          <Route path="/activities/new" element={<NewActivity />} />
+          <Route path="/map" element={<MapView />} />
+          <Route path="/chat" element={<Discussions />} />
+          <Route path="/chat/:partnerId" element={<Chat />} />
+          <Route path="/groups/:groupId" element={<GroupChat />} />
+          <Route path="/discussions" element={<Discussions />} />
+          <Route path="/admin" element={<Admin />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Suspense>
     </>
   );
 }

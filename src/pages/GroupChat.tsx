@@ -183,10 +183,10 @@ export default function GroupChat() {
     }
     await supabase.from('chat_group_members').delete().eq('group_id', groupId).eq('user_id', user.id);
     toast.success('Vous avez quitté le groupe.');
-    navigate('/chat');
+    navigate('/discussions');
   };
 
-  const handleBack = () => (window.history.length > 1 ? navigate(-1) : navigate('/chat'));
+  const handleBack = () => (window.history.length > 1 ? navigate(-1) : navigate('/discussions'));
 
   if (authLoading) return null;
 

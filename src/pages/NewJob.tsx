@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { ArrowLeft, Briefcase } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import { cn } from '@/lib/utils';
+import LocationPicker from '@/components/LocationPicker';
 
 export default function NewJob() {
   const { user } = useAuth();
@@ -105,7 +106,11 @@ export default function NewJob() {
               <>
                 <div>
                   <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 block" style={{ fontFamily: 'Jost, sans-serif' }}>📍 Lieu</label>
-                  <input className={inputClass} style={{ fontFamily: 'Jost, sans-serif' }} placeholder="Ex: Saint-Martin-de-Ré" value={location} onChange={e => setLocation(e.target.value)} />
+                  <LocationPicker
+                    value={location}
+                    onChange={(label) => setLocation(label)}
+                    placeholder="Ex: Saint-Martin-de-Ré..."
+                  />
                 </div>
                 <div>
                   <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 block" style={{ fontFamily: 'Jost, sans-serif' }}>🕐 Disponibilité</label>
