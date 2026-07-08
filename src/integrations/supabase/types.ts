@@ -133,6 +133,22 @@ export interface Database {
         Update: Partial<Database['public']['Tables']['chat_group_messages']['Insert']>;
         Relationships: [];
       };
+      group_reads: {
+        Row: {
+          id: string;
+          user_id: string;
+          group_id: string;
+          last_read_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          group_id: string;
+          last_read_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['group_reads']['Insert']>;
+        Relationships: [];
+      };
       forum_reads: {
         Row: {
           user_id: string;

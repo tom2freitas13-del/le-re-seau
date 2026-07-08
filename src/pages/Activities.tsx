@@ -47,6 +47,7 @@ export default function Activities() {
   const [myParticipations, setMyParticipations] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [groupUnread, setGroupUnread] = useState<Record<string, number>>({});
 
   useEffect(() => {
     if (!user) { navigate('/auth'); return; }
@@ -71,6 +72,49 @@ export default function Activities() {
       }
     }
     setLoading(false);
+  };
+
+  useEffect(() => {
+    if (!user || activities.length === 0) return;
+    loadGroupUnread();
+  }, [user, activities, myParticipations]);
+
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel(`activity-group-unread-${user.id}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_group_messages' }, () => loadGroupUnread())
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user, activities, myParticipations]);
+
+  const loadGroupUnread = async () => {
+    if (!user) return;
+    const relevantGroupIds = activities
+      .filter(a => a.group_id && (a.author_id === user.id || myParticipations.has(a.id)))
+      .map(a => a.group_id as string);
+    if (!relevantGroupIds.length) { setGroupUnread({}); return; }
+
+    const { data: reads } = await supabase.from('group_reads').select('group_id, last_read_at').eq('user_id', user.id).in('group_id', relevantGroupIds);
+    const lastRead: Record<string, string> = {};
+    (reads || []).forEach(r => { lastRead[r.group_id] = r.last_read_at; });
+
+    const { data: msgs } = await supabase
+      .from('chat_group_messages')
+      .select('group_id, created_at')
+      .in('group_id', relevantGroupIds)
+      .neq('sender_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(500);
+
+    const counts: Record<string, number> = {};
+    (msgs || []).forEach(m => {
+      const threshold = lastRead[m.group_id];
+      if (!threshold || new Date(m.created_at) > new Date(threshold)) {
+        counts[m.group_id] = (counts[m.group_id] || 0) + 1;
+      }
+    });
+    setGroupUnread(counts);
   };
 
   const toggleParticipation = async (activityId: string) => {
@@ -214,8 +258,13 @@ export default function Activities() {
                         </p>
                         {activity.group_id && (
                           <button onClick={() => navigate(`/groups/${activity.group_id}`)}
-                            className="btn-ghost w-full flex items-center justify-center gap-2">
+                            className="btn-ghost w-full flex items-center justify-center gap-2 relative">
                             <MessageCircle className="h-4 w-4" /> Discuter
+                            {activity.group_id && groupUnread[activity.group_id] > 0 && (
+                              <span className="absolute top-1 right-3 h-5 min-w-[20px] px-1 rounded-full bg-red-500 text-white text-[10px] font-semibold flex items-center justify-center">
+                                {groupUnread[activity.group_id] > 9 ? '9+' : groupUnread[activity.group_id]}
+                              </span>
+                            )}
                           </button>
                         )}
                       </div>
@@ -229,8 +278,13 @@ export default function Activities() {
                         </button>
                         {joined && activity.group_id && (
                           <button onClick={() => navigate(`/groups/${activity.group_id}`)}
-                            className="btn-ghost w-full flex items-center justify-center gap-2">
+                            className="btn-ghost w-full flex items-center justify-center gap-2 relative">
                             <MessageCircle className="h-4 w-4" /> Discuter
+                            {groupUnread[activity.group_id] > 0 && (
+                              <span className="absolute top-1 right-3 h-5 min-w-[20px] px-1 rounded-full bg-red-500 text-white text-[10px] font-semibold flex items-center justify-center">
+                                {groupUnread[activity.group_id] > 9 ? '9+' : groupUnread[activity.group_id]}
+                              </span>
+                            )}
                           </button>
                         )}
                       </div>

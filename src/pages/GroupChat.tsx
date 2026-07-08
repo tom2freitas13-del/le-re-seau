@@ -54,6 +54,17 @@ export default function GroupChat() {
     return () => { supabase.removeChannel(channel); };
   }, [user, groupId, authLoading]);
 
+  // Marque le groupe comme lu à l'entrée et à la sortie, pour que le badge
+  // de non-lus se remette bien à zéro.
+  useEffect(() => {
+    if (!user || !groupId) return;
+    const markAsRead = () => {
+      supabase.from('group_reads').upsert({ user_id: user.id, group_id: groupId, last_read_at: new Date().toISOString() }, { onConflict: 'user_id,group_id' }).then();
+    };
+    markAsRead();
+    return markAsRead;
+  }, [user, groupId]);
+
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
   const init = async () => {
