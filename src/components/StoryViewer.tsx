@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { X, Eye } from 'lucide-react';
+import { X, Eye, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import { avatarFallbackInitial } from '@/lib/constants';
@@ -35,14 +36,16 @@ export default function StoryViewer({ groups, startGroupIndex, onClose }: {
   onClose: () => void;
 }) {
   const { user } = useAuth();
+  const [localGroups, setLocalGroups] = useState(groups);
   const [groupIndex, setGroupIndex] = useState(startGroupIndex);
   const [storyIndex, setStoryIndex] = useState(0);
   const [progress, setProgress] = useState(0);
   const [viewers, setViewers] = useState<{ name: string | null }[] | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const rafRef = useRef<number>();
   const startRef = useRef<number>(0);
 
-  const group = groups[groupIndex];
+  const group = localGroups[groupIndex];
   const story = group?.stories[storyIndex];
   const isMine = story?.user_id === user?.id;
 
@@ -50,7 +53,7 @@ export default function StoryViewer({ groups, startGroupIndex, onClose }: {
     if (!group) return;
     if (storyIndex < group.stories.length - 1) {
       setStoryIndex(i => i + 1);
-    } else if (groupIndex < groups.length - 1) {
+    } else if (groupIndex < localGroups.length - 1) {
       setGroupIndex(i => i + 1);
       setStoryIndex(0);
     } else {
@@ -62,9 +65,33 @@ export default function StoryViewer({ groups, startGroupIndex, onClose }: {
     if (storyIndex > 0) {
       setStoryIndex(i => i - 1);
     } else if (groupIndex > 0) {
-      const prevGroup = groups[groupIndex - 1];
+      const prevGroup = localGroups[groupIndex - 1];
       setGroupIndex(i => i - 1);
       setStoryIndex(prevGroup.stories.length - 1);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!story || deleting) return;
+    if (!window.confirm('Supprimer cette story ?')) return;
+    setDeleting(true);
+    const { error } = await supabase.from('stories').delete().eq('id', story.id);
+    setDeleting(false);
+    if (error) { toast.error("Impossible de supprimer la story."); return; }
+    toast.success('Story supprimée.');
+
+    const remainingStories = group.stories.filter(s => s.id !== story.id);
+    if (remainingStories.length > 0) {
+      const newGroups = [...localGroups];
+      newGroups[groupIndex] = { ...group, stories: remainingStories };
+      setLocalGroups(newGroups);
+      setStoryIndex(i => Math.min(i, remainingStories.length - 1));
+    } else {
+      const newGroups = localGroups.filter((_, i) => i !== groupIndex);
+      if (newGroups.length === 0) { onClose(); return; }
+      setLocalGroups(newGroups);
+      setStoryIndex(0);
+      setGroupIndex(i => Math.min(i, newGroups.length - 1));
     }
   };
 
@@ -129,6 +156,11 @@ export default function StoryViewer({ groups, startGroupIndex, onClose }: {
         </div>
         <p className="text-white text-sm font-medium flex-1" style={{ fontFamily: 'Jost, sans-serif' }}>{group.name || 'Membre'}</p>
         <p className="text-white/60 text-xs">{timeAgo(story.created_at)}</p>
+        {isMine && (
+          <button onClick={handleDelete} disabled={deleting} className="h-9 w-9 flex items-center justify-center text-white flex-shrink-0 disabled:opacity-50">
+            <Trash2 className="h-4.5 w-4.5" />
+          </button>
+        )}
         <button onClick={onClose} className="h-9 w-9 flex items-center justify-center text-white flex-shrink-0">
           <X className="h-5 w-5" />
         </button>
