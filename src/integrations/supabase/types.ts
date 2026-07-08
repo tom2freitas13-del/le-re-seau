@@ -319,6 +319,7 @@ export interface Database {
           max_participants: number | null;
           photo_url: string | null;
           group_id: string | null;
+          reminder_sent: boolean;
           created_at: string;
         };
         Insert: {
@@ -336,6 +337,7 @@ export interface Database {
           max_participants?: number | null;
           photo_url?: string | null;
           group_id?: string | null;
+          reminder_sent?: boolean;
           created_at?: string;
         };
         Update: Partial<Database['public']['Tables']['activities']['Insert']>;

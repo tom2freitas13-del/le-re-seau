@@ -3,11 +3,12 @@ import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import { toast } from 'sonner';
-import { LogOut, Camera, Instagram, Linkedin, Check, Info, ShieldCheck } from 'lucide-react';
+import { LogOut, Camera, Instagram, Linkedin, Check, Info, ShieldCheck, Bell, BellOff, Share } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import { cn } from '@/lib/utils';
 import { STATUS_OPTIONS, AVAILABILITY_OPTIONS, INTEREST_OPTIONS, MIN_AGE, MAX_AGE } from '@/lib/constants';
 import DeleteAccountButton from '@/components/DeleteAccountButton';
+import { isPushSupported, getPushPermissionState, subscribeToPush, unsubscribeFromPush, isIosSafari, isStandalonePwa } from '@/lib/push-notifications';
 
 const BIO_MAX = 300;
 const MAX_PHOTO_SIZE_MB = 5;
@@ -32,11 +33,46 @@ export default function Profile() {
   const [instagram, setInstagram] = useState('');
   const [linkedin, setLinkedin] = useState('');
   const [pendingReports, setPendingReports] = useState(0);
+  const [pushPermission, setPushPermission] = useState<NotificationPermission | 'unsupported'>('default');
+  const [pushSubscribed, setPushSubscribed] = useState(false);
+  const [pushLoading, setPushLoading] = useState(false);
 
   useEffect(() => {
     if (!user) { navigate('/auth'); return; }
     loadProfile();
   }, [user]);
+
+  useEffect(() => { refreshPushState(); }, []);
+
+  const refreshPushState = async () => {
+    const perm = await getPushPermissionState();
+    setPushPermission(perm);
+    if (perm === 'granted') {
+      const registration = await navigator.serviceWorker.getRegistration();
+      const subscription = await registration?.pushManager.getSubscription();
+      setPushSubscribed(!!subscription);
+    } else {
+      setPushSubscribed(false);
+    }
+  };
+
+  const handleEnablePush = async () => {
+    if (!user) return;
+    setPushLoading(true);
+    const ok = await subscribeToPush(user.id);
+    if (!ok) toast.error("Impossible d'activer les notifications. Vérifiez les autorisations de votre navigateur.");
+    await refreshPushState();
+    setPushLoading(false);
+  };
+
+  const handleDisablePush = async () => {
+    if (!user) return;
+    setPushLoading(true);
+    await unsubscribeFromPush(user.id);
+    await refreshPushState();
+    setPushLoading(false);
+    toast.success('Notifications désactivées.');
+  };
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -334,6 +370,45 @@ export default function Profile() {
           className="btn-ocean w-full py-4 text-base font-semibold flex items-center justify-center gap-2 disabled:opacity-60">
           {loading ? 'Sauvegarde...' : '✨ Enregistrer mon profil'}
         </button>
+
+        {/* Notifications push */}
+        <div className="card-premium p-5">
+          <SectionTitle>Notifications</SectionTitle>
+          {isIosSafari() && !isStandalonePwa() ? (
+            <div className="rounded-xl bg-ocean-light px-4 py-3 flex items-start gap-2.5">
+              <Share className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-primary" style={{ fontFamily: 'Jost, sans-serif' }}>
+                Sur iPhone, ajoutez d'abord Le Ré-seau à votre écran d'accueil (bouton Partager → "Sur l'écran d'accueil") pour pouvoir recevoir des notifications, puis revenez ici depuis cette icône.
+              </p>
+            </div>
+          ) : pushPermission === 'unsupported' ? (
+            <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>
+              Les notifications ne sont pas prises en charge sur ce navigateur.
+            </p>
+          ) : pushPermission === 'denied' ? (
+            <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>
+              Vous avez bloqué les notifications pour ce site. Pour les réactiver, passez par les réglages de votre navigateur ou de votre téléphone (Réglages → Notifications → Le Ré-seau, ou l'icône 🔒 à côté de l'adresse du site).
+            </p>
+          ) : pushSubscribed ? (
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm flex items-center gap-2" style={{ fontFamily: 'Jost, sans-serif' }}>
+                <Bell className="h-4 w-4 text-primary" /> Notifications activées
+              </p>
+              <button onClick={handleDisablePush} disabled={pushLoading} className="btn-ghost py-2 px-3 text-sm flex items-center gap-1.5 disabled:opacity-50">
+                <BellOff className="h-4 w-4" /> Désactiver
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>
+                Recevez une alerte pour les messages, activités et discussions.
+              </p>
+              <button onClick={handleEnablePush} disabled={pushLoading} className="btn-ocean py-2 px-3 text-sm flex items-center gap-1.5 flex-shrink-0 disabled:opacity-50">
+                <Bell className="h-4 w-4" /> Activer
+              </button>
+            </div>
+          )}
+        </div>
 
         {/* Zone de danger : suppression de compte (obligation RGPD) */}
         <div className="card-premium p-5 border border-destructive/20">

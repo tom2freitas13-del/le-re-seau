@@ -52,3 +52,29 @@ export async function subscribeToPush(userId: string): Promise<boolean> {
 
   return true;
 }
+
+export async function unsubscribeFromPush(userId: string): Promise<void> {
+  if (!(await isPushSupported())) return;
+  const registration = await navigator.serviceWorker.getRegistration();
+  const subscription = await registration?.pushManager.getSubscription();
+  if (subscription) {
+    await supabase.from('push_subscriptions').delete().eq('endpoint', subscription.endpoint);
+    await subscription.unsubscribe();
+  } else {
+    // Au cas où l'abonnement navigateur a déjà disparu mais pas la ligne en base.
+    await supabase.from('push_subscriptions').delete().eq('user_id', userId);
+  }
+}
+
+// iOS/iPadOS Safari ne délivre les notifications push que si le site a été
+// ajouté à l'écran d'accueil — impossible de le savoir via une permission,
+// il faut détecter la plateforme et le mode d'affichage.
+export function isIosSafari(): boolean {
+  const ua = window.navigator.userAgent;
+  const isIos = /iPad|iPhone|iPod/.test(ua) && !(window as any).MSStream;
+  return isIos;
+}
+
+export function isStandalonePwa(): boolean {
+  return window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true;
+}
