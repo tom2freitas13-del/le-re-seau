@@ -4,7 +4,7 @@ import { useAuth } from '@/lib/auth-context';
 import ProfileCard from '@/components/ProfileCard';
 import BottomNav from '@/components/BottomNav';
 import { useNavigate } from 'react-router-dom';
-import { Users, Sparkles, Compass, Clock } from 'lucide-react';
+import { Users, Sparkles, Compass, Clock, Search } from 'lucide-react';
 import { useBlockedUsers } from '@/lib/useBlockedUsers';
 import { usePresence } from '@/lib/presence-context';
 
@@ -55,12 +55,36 @@ export default function Social() {
   const [hasMore, setHasMore] = useState(true);
   const { isBlocked } = useBlockedUsers();
   const { onlineUserIds, onlineCount } = usePresence();
+  const [search, setSearch] = useState('');
+  const [searchResults, setSearchResults] = useState<Profile[] | null>(null);
+  const [searching, setSearching] = useState(false);
 
   useEffect(() => {
     if (!user) { navigate('/auth'); return; }
     loadMyProfile();
     loadProfilesPage(0, true);
   }, [user]);
+
+  // Recherche par nom sur l'ensemble des membres (pas seulement la page
+  // déjà chargée), pour retrouver tout le monde même au-delà de la pagination.
+  useEffect(() => {
+    if (!user) return;
+    const q = search.trim();
+    if (!q) { setSearchResults(null); return; }
+    setSearching(true);
+    const handle = setTimeout(async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('*')
+        .ilike('name', `${q}%`)
+        .not('name', 'is', null)
+        .neq('user_id', user.id)
+        .limit(50);
+      setSearchResults(data || []);
+      setSearching(false);
+    }, 300);
+    return () => clearTimeout(handle);
+  }, [search, user]);
 
   const loadMyProfile = async () => {
     if (!user) return;
@@ -120,6 +144,11 @@ export default function Social() {
     : activeTab === 'nearby' ? nearby
     : discover;
 
+  const isSearching = searchResults !== null;
+  const displayedList = isSearching
+    ? searchResults.filter(p => !isBlocked(p.user_id)).map(p => ({ profile: p, score: 0 }))
+    : currentList;
+
   return (
     <div className="min-h-screen pb-28 bg-background">
       {/* Header */}
@@ -142,8 +171,20 @@ export default function Social() {
             </div>
           </div>
 
+          {/* Recherche par nom */}
+          <div className="relative mb-3">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Rechercher un membre par son prénom..."
+              className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20"
+              style={{ fontFamily: 'Jost, sans-serif' }}
+            />
+          </div>
+
           {/* Tabs */}
-          <div className="flex gap-2">
+          <div className={`flex gap-2 ${isSearching ? 'opacity-40 pointer-events-none' : ''}`}>
             {tabs.map(({ id, label, icon: Icon }) => (
               <button key={id} onClick={() => setActiveTab(id)}
                 className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 ${
@@ -162,18 +203,20 @@ export default function Social() {
 
       {/* Content */}
       <div className="max-w-lg mx-auto px-4 pt-6">
-        {loading ? (
+        {(loading && !isSearching) || (isSearching && searching) ? (
           <div className="grid grid-cols-2 gap-3">
             {[1,2,3,4].map(i => (
               <div key={i} className="rounded-2xl bg-muted animate-pulse aspect-[3/4]" />
             ))}
           </div>
-        ) : currentList.length === 0 ? (
+        ) : displayedList.length === 0 ? (
           <div className="text-center py-16">
-            <div className="text-5xl mb-4">🏖️</div>
-            <h3 className="font-display text-xl mb-2">Personne ici pour l'instant</h3>
+            <div className="text-5xl mb-4">{isSearching ? '🔍' : '🏖️'}</div>
+            <h3 className="font-display text-xl mb-2">{isSearching ? 'Aucun résultat' : "Personne ici pour l'instant"}</h3>
             <p className="text-sm text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>
-              {activeTab === 'suggestions'
+              {isSearching
+                ? `Personne dont le prénom commence par "${search.trim()}".`
+                : activeTab === 'suggestions'
                 ? "Remplis tes centres d'intérêt dans ton profil pour voir des suggestions !"
                 : activeTab === 'nearby'
                 ? 'Personne avec la même disponibilité pour le moment.'
@@ -182,7 +225,7 @@ export default function Social() {
           </div>
         ) : (
           <>
-            {activeTab === 'suggestions' && myProfile?.interests?.length && (
+            {!isSearching && activeTab === 'suggestions' && myProfile?.interests?.length && (
               <div className="mb-4 px-4 py-3 rounded-2xl bg-ocean-light border border-primary/10 flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-primary flex-shrink-0" />
                 <p className="text-sm text-primary" style={{ fontFamily: 'Jost, sans-serif' }}>
@@ -191,11 +234,11 @@ export default function Social() {
               </div>
             )}
             <div className="grid grid-cols-2 gap-3">
-              {currentList.map(({ profile, score }) => (
+              {displayedList.map(({ profile, score }) => (
                 <ProfileCard key={profile.id} profile={profile} matchScore={score} />
               ))}
             </div>
-            {activeTab === 'discover' && hasMore && (
+            {!isSearching && activeTab === 'discover' && hasMore && (
               <button onClick={loadMore} className="btn-ghost w-full mt-4">
                 Voir plus de membres
               </button>

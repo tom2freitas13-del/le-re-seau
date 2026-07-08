@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Users, Briefcase, MessageCircle, Calendar, ArrowRight, Waves, TreePine, Sun } from 'lucide-react';
 import LocalImage from '@/components/LocalImage';
 import { usePresence } from '@/lib/presence-context';
+import BottomNav from '@/components/BottomNav';
 
 // Photos locales : mets tes fichiers dans public/images/ et ils seront
 // accessibles ici avec le chemin /images/nom-du-fichier.jpg
@@ -63,7 +64,7 @@ export default function Index() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className={`min-h-screen bg-background ${user ? 'pb-20' : ''}`}>
 
       {/* ── HERO ── */}
       <div className="relative h-screen min-h-[600px] max-h-[900px] overflow-hidden"
@@ -293,6 +294,7 @@ export default function Index() {
         </div>
       </footer>
 
+      {user && <BottomNav />}
     </div>
   );
 }
