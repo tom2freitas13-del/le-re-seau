@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { Users, Sparkles, Compass, Clock, Search } from 'lucide-react';
 import { useBlockedUsers } from '@/lib/useBlockedUsers';
 import { usePresence } from '@/lib/presence-context';
+import StoriesBar from '@/components/StoriesBar';
 
 interface Profile {
   id: string;
@@ -200,6 +201,12 @@ export default function Social() {
           </div>
         </div>
       </div>
+
+      {!isSearching && (
+        <div className="max-w-lg mx-auto px-4 border-b border-border/50">
+          <StoriesBar />
+        </div>
+      )}
 
       {/* Content */}
       <div className="max-w-lg mx-auto px-4 pt-6">

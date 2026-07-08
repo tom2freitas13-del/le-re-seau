@@ -133,6 +133,42 @@ export interface Database {
         Update: Partial<Database['public']['Tables']['chat_group_messages']['Insert']>;
         Relationships: [];
       };
+      stories: {
+        Row: {
+          id: string;
+          user_id: string;
+          image_url: string | null;
+          text: string | null;
+          background_color: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          image_url?: string | null;
+          text?: string | null;
+          background_color?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['stories']['Insert']>;
+        Relationships: [];
+      };
+      story_views: {
+        Row: {
+          id: string;
+          story_id: string;
+          viewer_id: string;
+          viewed_at: string;
+        };
+        Insert: {
+          id?: string;
+          story_id: string;
+          viewer_id: string;
+          viewed_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['story_views']['Insert']>;
+        Relationships: [];
+      };
       group_reads: {
         Row: {
           id: string;
