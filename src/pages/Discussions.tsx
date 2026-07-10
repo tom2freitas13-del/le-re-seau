@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import BottomNav from '@/components/BottomNav';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { MessageCircle, Send, ArrowLeft, Heart, MessageSquare, Mail, Mic, Square, Image as ImageIcon, X, Plus, Users, Check, Briefcase } from 'lucide-react';
 import { SALONS } from '@/lib/constants';
 import { toast } from 'sonner';
@@ -51,6 +52,7 @@ interface GroupItem {
 }
 
 export default function Discussions() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [view, setView] = useState<'list' | 'salon' | 'forum' | 'messages'>('list');
@@ -132,11 +134,11 @@ export default function Discussions() {
             <MessageCircle className="h-5 w-5 text-primary" strokeWidth={1.5} />
           </div>
           <div>
-            <h1 className="font-display text-2xl font-semibold">Discussions</h1>
+            <h1 className="font-display text-2xl font-semibold">{t('discussions.title')}</h1>
             {onlineCount > 0 && (
               <p className="text-xs text-muted-foreground flex items-center gap-1.5" style={{ fontFamily: 'Jost, sans-serif' }}>
                 <span className="h-1.5 w-1.5 rounded-full bg-green-400" />
-                {onlineCount} en ligne
+                {t('home.onlineCount', { count: onlineCount })}
               </p>
             )}
           </div>
@@ -155,8 +157,8 @@ export default function Discussions() {
             )}
           </div>
           <div className="flex-1">
-            <h3 className="font-display text-xl font-semibold">Messages privés</h3>
-            <p className="text-sm text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>Vos conversations avec les membres</p>
+            <h3 className="font-display text-xl font-semibold">{t('discussions.privateMessages')}</h3>
+            <p className="text-sm text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>{t('discussions.privateMessagesDesc')}</p>
           </div>
         </button>
 
@@ -170,14 +172,14 @@ export default function Discussions() {
             )}
           </div>
           <div className="flex-1">
-            <h3 className="font-display text-xl font-semibold">Forum</h3>
-            <p className="text-sm text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>Annonces, questions, partages</p>
+            <h3 className="font-display text-xl font-semibold">{t('discussions.forum')}</h3>
+            <p className="text-sm text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>{t('discussions.forumDesc')}</p>
           </div>
         </button>
 
         <div>
           <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2" style={{ fontFamily: 'Jost, sans-serif' }}>
-            Salons thématiques
+            {t('discussions.themedRooms')}
           </h2>
           <div className="grid grid-cols-2 gap-3">
             {SALONS.map(s => (
@@ -198,15 +200,15 @@ export default function Discussions() {
 
         <div>
           <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2" style={{ fontFamily: 'Jost, sans-serif' }}>
-            Entraide locale
+            {t('discussions.mutualAid')}
           </h2>
           <button onClick={() => navigate('/jobs')} className="card-premium p-5 w-full text-left flex items-center gap-4">
             <div className="h-14 w-14 rounded-2xl bg-sand-light flex items-center justify-center flex-shrink-0">
               <Briefcase className="h-6 w-6 text-gold" strokeWidth={1.5} />
             </div>
             <div className="flex-1">
-              <h3 className="font-display text-xl font-semibold">Services</h3>
-              <p className="text-sm text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>Offres et demandes d'entraide entre voisins</p>
+              <h3 className="font-display text-xl font-semibold">{t('discussions.services')}</h3>
+              <p className="text-sm text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>{t('discussions.servicesDesc')}</p>
             </div>
           </button>
         </div>

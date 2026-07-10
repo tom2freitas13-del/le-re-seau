@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { LANGUAGE_STORAGE_KEY, setLanguage } from '@/lib/i18n';
 
 interface AuthContextType {
   user: User | null;
@@ -50,9 +51,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // a été banni, et de débloquer l'accès aux outils de modération pour les admins.
   useEffect(() => {
     if (!user) { setIsAdmin(false); setIsBanned(false); return; }
-    supabase.from('profiles').select('is_admin, is_banned').eq('user_id', user.id).single().then(({ data }) => {
+    supabase.from('profiles').select('is_admin, is_banned, language').eq('user_id', user.id).single().then(({ data }) => {
       setIsAdmin(!!data?.is_admin);
       setIsBanned(!!data?.is_banned);
+      if (data?.language) {
+        const localChoice = localStorage.getItem(LANGUAGE_STORAGE_KEY);
+        if (!localChoice) {
+          // Pas de préférence locale explicite sur cet appareil : on applique celle du compte.
+          setLanguage(data.language);
+        } else if (localChoice !== data.language) {
+          // Un choix explicite existe déjà sur cet appareil (ex: visiteur qui a
+          // changé la langue avant de se connecter) : il gagne, on le remonte sur le compte.
+          supabase.from('profiles').update({ language: localChoice }).eq('user_id', user.id).then();
+        }
+      }
     });
   }, [user]);
 

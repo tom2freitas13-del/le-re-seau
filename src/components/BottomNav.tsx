@@ -1,21 +1,23 @@
 import { useEffect, useState } from 'react';
 import { Home, Users, MessageCircle, Calendar, User, Map, Bell, X } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/auth-context';
 import { useUnreadMessages } from '@/lib/unread-context';
 import { getPushPermissionState, isPushSupported, subscribeToPush } from '@/lib/push-notifications';
 
 const navItems = [
-  { icon: Home, label: 'Accueil', path: '/' },
-  { icon: Users, label: 'Commu.', path: '/social' },
-  { icon: Map, label: 'Carte', path: '/map' },
-  { icon: MessageCircle, label: 'Discuss.', path: '/discussions' },
-  { icon: Calendar, label: 'Activités', path: '/activities' },
-  { icon: User, label: 'Profil', path: '/profile' },
+  { icon: Home, labelKey: 'nav.home', path: '/' },
+  { icon: Users, labelKey: 'nav.community', path: '/social' },
+  { icon: Map, labelKey: 'nav.map', path: '/map' },
+  { icon: MessageCircle, labelKey: 'nav.discussions', path: '/discussions' },
+  { icon: Calendar, labelKey: 'nav.activities', path: '/activities' },
+  { icon: User, labelKey: 'nav.profile', path: '/profile' },
 ];
 
 export default function BottomNav() {
+  const { t } = useTranslation();
   const location = useLocation();
   const { user } = useAuth();
   const { unreadTotal } = useUnreadMessages();
@@ -56,10 +58,10 @@ export default function BottomNav() {
           <div className="max-w-lg mx-auto bg-primary text-white rounded-2xl px-4 py-3 flex items-center gap-3 shadow-lg">
             <Bell className="h-5 w-5 flex-shrink-0" />
             <p className="flex-1 text-xs" style={{ fontFamily: 'Jost, sans-serif' }}>
-              Active les notifications pour ne rater aucun message
+              {t('nav.enableNotifications')}
             </p>
             <button onClick={handleEnable} className="text-xs font-semibold bg-white/20 px-3 py-1.5 rounded-full flex-shrink-0">
-              Activer
+              {t('nav.enable')}
             </button>
             <button onClick={handleDismiss} className="flex-shrink-0">
               <X className="h-4 w-4" />
@@ -70,7 +72,7 @@ export default function BottomNav() {
       <nav className="fixed bottom-0 left-0 right-0 z-50 safe-area-bottom"
         style={{ background: 'rgba(255,253,248,0.92)', backdropFilter: 'blur(20px)', borderTop: '1px solid hsl(42 20% 88%)' }}>
         <div className="flex items-center justify-around py-1.5 max-w-lg mx-auto overflow-x-auto">
-          {navItems.map(({ icon: Icon, label, path }) => {
+          {navItems.map(({ icon: Icon, labelKey, path }) => {
             const active = location.pathname === path || (path !== '/' && location.pathname.startsWith(path));
             return (
               <Link key={path} to={path}
@@ -92,7 +94,7 @@ export default function BottomNav() {
                     </span>
                   )}
                 </div>
-                <span>{label}</span>
+                <span>{t(labelKey)}</span>
               </Link>
             );
           })}

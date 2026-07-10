@@ -4,6 +4,7 @@ import { useAuth } from '@/lib/auth-context';
 import ProfileCard from '@/components/ProfileCard';
 import BottomNav from '@/components/BottomNav';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Users, Sparkles, Compass, Clock, Search } from 'lucide-react';
 import { useBlockedUsers } from '@/lib/useBlockedUsers';
 import { usePresence } from '@/lib/presence-context';
@@ -36,9 +37,9 @@ function computeMatchScore(me: Profile, other: Profile): number {
 }
 
 const tabs = [
-  { id: 'suggestions', label: 'Pour vous', icon: Sparkles },
-  { id: 'discover', label: 'Découvrir', icon: Compass },
-  { id: 'nearby', label: 'Présents', icon: Clock },
+  { id: 'suggestions', labelKey: 'social.tabSuggestions', icon: Sparkles },
+  { id: 'discover', labelKey: 'social.tabDiscover', icon: Compass },
+  { id: 'nearby', labelKey: 'social.tabNearby', icon: Clock },
 ];
 
 // BUG FIX (#15) : pagination simple pour éviter de charger des centaines
@@ -46,6 +47,7 @@ const tabs = [
 const PAGE_SIZE = 20;
 
 export default function Social() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [profiles, setProfiles] = useState<Profile[]>([]);
@@ -160,12 +162,12 @@ export default function Social() {
               <Users className="h-5 w-5 text-primary" strokeWidth={1.5} />
             </div>
             <div>
-              <h1 className="font-display text-2xl font-semibold">Communauté</h1>
+              <h1 className="font-display text-2xl font-semibold">{t('social.title')}</h1>
               <p className="text-xs text-muted-foreground flex items-center gap-1.5" style={{ fontFamily: 'Jost, sans-serif' }}>
-                {profiles.length} membre{profiles.length > 1 ? 's' : ''} chargé{profiles.length > 1 ? 's' : ''}
+                {t('social.membersLoaded', { count: profiles.length })}
                 {onlineCount > 0 && (
                   <span className="flex items-center gap-1">
-                    · <span className="h-1.5 w-1.5 rounded-full bg-green-400" /> {onlineCount} en ligne
+                    · <span className="h-1.5 w-1.5 rounded-full bg-green-400" /> {t('home.onlineCount', { count: onlineCount })}
                   </span>
                 )}
               </p>
@@ -178,7 +180,7 @@ export default function Social() {
             <input
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder="Rechercher un membre par son prénom..."
+              placeholder={t('social.searchPlaceholder')}
               className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20"
               style={{ fontFamily: 'Jost, sans-serif' }}
             />
@@ -186,7 +188,7 @@ export default function Social() {
 
           {/* Tabs */}
           <div className={`flex gap-2 ${isSearching ? 'opacity-40 pointer-events-none' : ''}`}>
-            {tabs.map(({ id, label, icon: Icon }) => (
+            {tabs.map(({ id, labelKey, icon: Icon }) => (
               <button key={id} onClick={() => setActiveTab(id)}
                 className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 ${
                   activeTab === id
@@ -195,7 +197,7 @@ export default function Social() {
                 }`}
                 style={{ fontFamily: 'Jost, sans-serif' }}>
                 <Icon className="h-3.5 w-3.5" />
-                {label}
+                {t(labelKey)}
               </button>
             ))}
           </div>
@@ -219,15 +221,15 @@ export default function Social() {
         ) : displayedList.length === 0 ? (
           <div className="text-center py-16">
             <div className="text-5xl mb-4">{isSearching ? '🔍' : '🏖️'}</div>
-            <h3 className="font-display text-xl mb-2">{isSearching ? 'Aucun résultat' : "Personne ici pour l'instant"}</h3>
+            <h3 className="font-display text-xl mb-2">{isSearching ? t('social.noResults') : t('social.noOneYet')}</h3>
             <p className="text-sm text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>
               {isSearching
-                ? `Personne dont le prénom commence par "${search.trim()}".`
+                ? t('social.noResultsFor', { query: search.trim() })
                 : activeTab === 'suggestions'
-                ? "Remplis tes centres d'intérêt dans ton profil pour voir des suggestions !"
+                ? t('social.emptySuggestions')
                 : activeTab === 'nearby'
-                ? 'Personne avec la même disponibilité pour le moment.'
-                : 'Soyez le premier à rejoindre la communauté !'}
+                ? t('social.emptyNearby')
+                : t('social.emptyDiscover')}
             </p>
           </div>
         ) : (
@@ -236,7 +238,7 @@ export default function Social() {
               <div className="mb-4 px-4 py-3 rounded-2xl bg-ocean-light border border-primary/10 flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-primary flex-shrink-0" />
                 <p className="text-sm text-primary" style={{ fontFamily: 'Jost, sans-serif' }}>
-                  Profils triés par compatibilité avec vos intérêts
+                  {t('social.sortedByMatch')}
                 </p>
               </div>
             )}
@@ -247,7 +249,7 @@ export default function Social() {
             </div>
             {!isSearching && activeTab === 'discover' && hasMore && (
               <button onClick={loadMore} className="btn-ghost w-full mt-4">
-                Voir plus de membres
+                {t('social.loadMore')}
               </button>
             )}
           </>

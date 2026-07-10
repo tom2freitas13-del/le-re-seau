@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/integrations/supabase/client';
 import { Users, Briefcase, MessageCircle, Calendar, ArrowRight, Waves, TreePine, Sun } from 'lucide-react';
@@ -13,17 +14,17 @@ import BottomNav from '@/components/BottomNav';
 // (le <img> devient juste invisible via onError plutôt que de planter).
 
 const audiences = [
-  { emoji: '🧒', age: '14–25 ans', text: 'Trouve des gens pour faire du surf, du vélo ou un apéro sur la plage.' },
-  { emoji: '👨‍👩‍👧', age: '25–50 ans', text: "Connecte-toi avec les familles, organise des sorties, trouve un service local." },
-  { emoji: '🧓', age: '50–90 ans', text: "Rencontre tes voisins, partage des bons plans et garde le lien avec l'île." },
-];
+  { emoji: '🧒', ageKey: 'home.audience1Age', textKey: 'home.audience1Text' },
+  { emoji: '👨‍👩‍👧', ageKey: 'home.audience2Age', textKey: 'home.audience2Text' },
+  { emoji: '🧓', ageKey: 'home.audience3Age', textKey: 'home.audience3Text' },
+] as const;
 
 const features = [
-  { icon: Users, color: 'bg-ocean-light', iconColor: 'text-primary', title: 'Communauté', desc: 'Rencontrer et se lier avec les habitants et vacanciers de l\'île.', path: '/social' },
-  { icon: Calendar, color: 'bg-pine-light', iconColor: 'text-pine', title: 'Activités', desc: 'Proposer ou rejoindre des sorties organisées sur l\'île.', path: '/activities' },
-  { icon: MessageCircle, color: 'bg-pine-light', iconColor: 'text-pine', title: 'Discussions', desc: 'Des salons thématiques et un forum pour s\'entraider et partager.', path: '/discussions' },
-  { icon: Briefcase, color: 'bg-sand-light', iconColor: 'text-gold', title: 'Services locaux', desc: 'Trouver ou proposer des coups de main et petits boulots sur l\'île.', path: '/jobs' },
-];
+  { icon: Users, color: 'bg-ocean-light', iconColor: 'text-primary', titleKey: 'home.featureCommunityTitle', descKey: 'home.featureCommunityDesc', path: '/social' },
+  { icon: Calendar, color: 'bg-pine-light', iconColor: 'text-pine', titleKey: 'home.featureActivitiesTitle', descKey: 'home.featureActivitiesDesc', path: '/activities' },
+  { icon: MessageCircle, color: 'bg-pine-light', iconColor: 'text-pine', titleKey: 'home.featureDiscussionsTitle', descKey: 'home.featureDiscussionsDesc', path: '/discussions' },
+  { icon: Briefcase, color: 'bg-sand-light', iconColor: 'text-gold', titleKey: 'home.featureJobsTitle', descKey: 'home.featureJobsDesc', path: '/jobs' },
+] as const;
 
 interface SiteStats {
   total_members: number;
@@ -36,17 +37,18 @@ interface SiteStats {
 // dans public/images/iledere/ avec le nom exact indiqué dans `src`.
 // `aspect` varie pour donner l'effet mosaïque/Pinterest (certaines plus hautes, d'autres carrées).
 const ISLAND_PHOTOS = [
-  { src: '/images/iledere/photo-1.jpg', label: 'Lieu 1', emoji: '🏛️', bg: 'bg-ocean-light', aspect: 'aspect-[3/4]' },
-  { src: '/images/iledere/photo-2.jpg', label: 'Lieu 2', emoji: '🏖️', bg: 'bg-sand-light', aspect: 'aspect-square' },
-  { src: '/images/iledere/photo-3.jpg', label: 'Lieu 3', emoji: '🚲', bg: 'bg-pine-light', aspect: 'aspect-square' },
-  { src: '/images/iledere/photo-4.jpg', label: 'Lieu 4', emoji: '⛵', bg: 'bg-ocean-light', aspect: 'aspect-[3/4]' },
-  { src: '/images/iledere/photo-5.jpg', label: 'Lieu 5', emoji: '🌅', bg: 'bg-sand-light', aspect: 'aspect-[4/3]' },
-  { src: '/images/iledere/photo-6.jpg', label: 'Lieu 6', emoji: '🥾', bg: 'bg-pine-light', aspect: 'aspect-square' },
-  { src: '/images/iledere/photo-7.jpg', label: 'Lieu 7', emoji: '🍷', bg: 'bg-ocean-light', aspect: 'aspect-[3/4]' },
-  { src: '/images/iledere/photo-8.jpg', label: 'Lieu 8', emoji: '🐚', bg: 'bg-sand-light', aspect: 'aspect-square' },
+  { src: '/images/iledere/photo-1.jpg', n: 1, emoji: '🏛️', bg: 'bg-ocean-light', aspect: 'aspect-[3/4]' },
+  { src: '/images/iledere/photo-2.jpg', n: 2, emoji: '🏖️', bg: 'bg-sand-light', aspect: 'aspect-square' },
+  { src: '/images/iledere/photo-3.jpg', n: 3, emoji: '🚲', bg: 'bg-pine-light', aspect: 'aspect-square' },
+  { src: '/images/iledere/photo-4.jpg', n: 4, emoji: '⛵', bg: 'bg-ocean-light', aspect: 'aspect-[3/4]' },
+  { src: '/images/iledere/photo-5.jpg', n: 5, emoji: '🌅', bg: 'bg-sand-light', aspect: 'aspect-[4/3]' },
+  { src: '/images/iledere/photo-6.jpg', n: 6, emoji: '🥾', bg: 'bg-pine-light', aspect: 'aspect-square' },
+  { src: '/images/iledere/photo-7.jpg', n: 7, emoji: '🍷', bg: 'bg-ocean-light', aspect: 'aspect-[3/4]' },
+  { src: '/images/iledere/photo-8.jpg', n: 8, emoji: '🐚', bg: 'bg-sand-light', aspect: 'aspect-square' },
 ];
 
 export default function Index() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
   // BUG FIX (#8) : les statistiques ("+X membres", "Y disponibles aujourd'hui"...)
@@ -83,11 +85,11 @@ export default function Index() {
         <div className="absolute top-6 left-1/2 -translate-x-1/2 w-[92%] max-w-sm glass-dark text-white rounded-2xl px-4 py-2 text-xs tracking-wider uppercase"
         style={{ fontFamily: 'Jost, sans-serif' }}>
         <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
-          <span className="whitespace-nowrap">🌊 Île de Ré</span>
+          <span className="whitespace-nowrap">{t('home.badgeIsland')}</span>
           <span>•</span>
-          <span className="whitespace-nowrap">Communauté locale</span>
+          <span className="whitespace-nowrap">{t('home.badgeCommunity')}</span>
           <span>•</span>
-          <span className="whitespace-nowrap">Sans publicité</span>
+          <span className="whitespace-nowrap">{t('home.badgeNoAds')}</span>
         </div>
       </div>
 
@@ -96,7 +98,7 @@ export default function Index() {
             <div className="flex items-center justify-center gap-2 mb-4">
               <Waves className="h-5 w-5 text-sky-300" />
               <span className="text-sky-200 text-sm tracking-widest uppercase" style={{ fontFamily: 'Jost, sans-serif' }}>
-                Bienvenue sur
+                {t('home.welcomeTo')}
               </span>
               <Waves className="h-5 w-5 text-sky-300" />
             </div>
@@ -104,7 +106,7 @@ export default function Index() {
               Le Ré-seau
             </h1>
             <p className="text-white/80 text-lg md:text-xl max-w-sm mx-auto mb-8 font-light" style={{ fontFamily: 'Jost, sans-serif', fontWeight: 300 }}>
-              La communauté de ceux qui aiment l'Île de Ré — été comme hiver.
+              {t('home.heroSubtitle')}
             </p>
           </div>
 
@@ -113,13 +115,13 @@ export default function Index() {
               onClick={() => navigate(user ? '/social' : '/auth')}
               className="flex-1 btn-ocean text-center py-4 text-base font-semibold"
               style={{ boxShadow: '0 8px 32px rgba(28,94,120,0.4)' }}>
-              {user ? 'Rejoindre la communauté' : 'Créer mon profil'}
+              {user ? t('home.ctaJoin') : t('home.ctaCreateProfile')}
             </button>
             <button
               onClick={() => navigate('/social')}
               className="flex-1 glass text-foreground rounded-full px-6 py-4 text-sm font-medium tracking-wide transition-all hover:bg-white/90"
               style={{ fontFamily: 'Jost, sans-serif' }}>
-              Découvrir →
+              {t('home.ctaDiscover')}
             </button>
           </div>
 
@@ -132,12 +134,12 @@ export default function Index() {
               ))}
             </div>
             <span>
-              {stats ? `${stats.total_members} membre${stats.total_members !== 1 ? 's' : ''} sur l'île` : 'Rejoignez les premiers membres'}
+              {stats ? t('home.memberCount', { count: stats.total_members }) : t('home.joinFirstMembers')}
             </span>
             {onlineCount > 0 && (
               <span className="flex items-center gap-1.5 pl-2 border-l border-white/20">
                 <span className="h-1.5 w-1.5 rounded-full bg-green-400" />
-                {onlineCount} en ligne
+                {t('home.onlineCount', { count: onlineCount })}
               </span>
             )}
           </div>
@@ -147,20 +149,20 @@ export default function Index() {
       {/* ── POUR TOUS LES ÂGES ── */}
       <div className="px-4 py-14 max-w-lg mx-auto">
         <div className="text-center mb-10">
-          <span className="pill bg-sand-light text-sand-dark mb-3 inline-block">Une île, une communauté</span>
-          <h2 className="section-title mb-3">Fait pour tout le monde</h2>
+          <span className="pill bg-sand-light text-sand-dark mb-3 inline-block">{t('home.audienceBadge')}</span>
+          <h2 className="section-title mb-3">{t('home.audienceTitle')}</h2>
           <p className="text-muted-foreground text-sm" style={{ fontFamily: 'Jost, sans-serif' }}>
-            Que vous soyez résident toute l'année ou vacancier en été, Le Ré-seau est votre espace.
+            {t('home.audienceSubtitle')}
           </p>
         </div>
 
         <div className="space-y-4">
           {audiences.map((a) => (
-            <div key={a.age} className="card-premium p-5 flex items-start gap-4">
+            <div key={a.ageKey} className="card-premium p-5 flex items-start gap-4">
               <div className="text-3xl flex-shrink-0">{a.emoji}</div>
               <div>
-                <div className="pill bg-ocean-light text-primary inline-block mb-1.5">{a.age}</div>
-                <p className="text-sm text-foreground/80" style={{ fontFamily: 'Jost, sans-serif', lineHeight: 1.6 }}>{a.text}</p>
+                <div className="pill bg-ocean-light text-primary inline-block mb-1.5">{t(a.ageKey)}</div>
+                <p className="text-sm text-foreground/80" style={{ fontFamily: 'Jost, sans-serif', lineHeight: 1.6 }}>{t(a.textKey)}</p>
               </div>
             </div>
           ))}
@@ -172,15 +174,15 @@ export default function Index() {
         <div className="px-4 pb-14 max-w-lg mx-auto grid grid-cols-3 gap-3">
           <div className="card-premium p-4 text-center">
             <p className="font-display text-2xl font-semibold text-primary">{stats.total_members}</p>
-            <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>Membres</p>
+            <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>{t('home.statsMembers')}</p>
           </div>
           <div className="card-premium p-4 text-center">
             <p className="font-display text-2xl font-semibold text-primary">{stats.available_today}</p>
-            <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>Disponibles</p>
+            <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>{t('home.statsAvailable')}</p>
           </div>
           <div className="card-premium p-4 text-center">
             <p className="font-display text-2xl font-semibold text-primary">{stats.total_discussions}</p>
-            <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>Discussions</p>
+            <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>{t('home.statsDiscussions')}</p>
           </div>
         </div>
       )}
@@ -188,18 +190,18 @@ export default function Index() {
       {/* ── FEATURES ── */}
       <div className="px-4 pb-14 max-w-lg mx-auto">
         <div className="text-center mb-8">
-          <h2 className="section-title mb-2">Tout ce dont vous avez besoin</h2>
+          <h2 className="section-title mb-2">{t('home.featuresTitle')}</h2>
         </div>
         <div className="space-y-3">
           {features.map((f) => (
-            <button key={f.title} onClick={() => navigate(user ? f.path : '/auth')}
+            <button key={f.titleKey} onClick={() => navigate(user ? f.path : '/auth')}
               className="card-premium p-5 flex items-center gap-4 w-full text-left group">
               <div className={`h-14 w-14 rounded-2xl ${f.color} flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-105`}>
                 <f.icon className={`h-7 w-7 ${f.iconColor}`} strokeWidth={1.5} />
               </div>
               <div className="flex-1">
-                <h3 className="font-display text-xl font-semibold mb-0.5">{f.title}</h3>
-                <p className="text-sm text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif', lineHeight: 1.5 }}>{f.desc}</p>
+                <h3 className="font-display text-xl font-semibold mb-0.5">{t(f.titleKey)}</h3>
+                <p className="text-sm text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif', lineHeight: 1.5 }}>{t(f.descKey)}</p>
               </div>
               <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all flex-shrink-0" />
             </button>
@@ -209,22 +211,25 @@ export default function Index() {
 
       {/* ── ILE EN IMAGES ── */}
       <div className="px-4 pb-14 max-w-lg mx-auto">
-        <h2 className="section-title mb-6 text-center">L'île en images</h2>
+        <h2 className="section-title mb-6 text-center">{t('home.islandPhotosTitle')}</h2>
         {/* Mosaïque façon Pinterest : mets tes photos dans public/images/iledere/
             avec les noms ci-dessous (photo-1.jpg à photo-8.jpg). Tant qu'une photo
             n'y est pas, un visuel emoji+couleur s'affiche à la place de celle-ci. */}
         <div style={{ columns: 2, columnGap: '0.75rem' }}>
-          {ISLAND_PHOTOS.map((p, i) => (
-            <LocalImage
-              key={p.src}
-              src={p.src}
-              alt={p.label}
-              fallbackEmoji={p.emoji}
-              fallbackLabel={p.label}
-              fallbackBg={p.bg}
-              className={`rounded-2xl w-full mb-3 break-inside-avoid ${p.aspect}`}
-            />
-          ))}
+          {ISLAND_PHOTOS.map((p) => {
+            const label = t('home.islandPhotoLabel', { n: p.n });
+            return (
+              <LocalImage
+                key={p.src}
+                src={p.src}
+                alt={label}
+                fallbackEmoji={p.emoji}
+                fallbackLabel={label}
+                fallbackBg={p.bg}
+                className={`rounded-2xl w-full mb-3 break-inside-avoid ${p.aspect}`}
+              />
+            );
+          })}
         </div>
         <p className="text-center text-xs text-muted-foreground mt-3" style={{ fontFamily: 'Jost, sans-serif' }}>
         </p>
@@ -237,15 +242,15 @@ export default function Index() {
         <div className="relative px-8 py-10 text-center">
           <Sun className="h-8 w-8 text-yellow-300 mx-auto mb-3 animate-float" />
           <h2 className="font-display text-3xl font-semibold text-white mb-2">
-            Rejoignez l'aventure
+            {t('home.ctaFinalTitle')}
           </h2>
           <p className="text-white/70 text-sm mb-6 max-w-xs mx-auto" style={{ fontFamily: 'Jost, sans-serif' }}>
-            Gratuit, sans pub, fait avec ♥ pour l'île.
+            {t('home.ctaFinalSubtitle')}
           </p>
           <button onClick={() => navigate(user ? '/social' : '/auth')}
             className="bg-white text-primary rounded-full px-8 py-3.5 font-semibold text-sm tracking-wide hover:shadow-xl transition-all hover:-translate-y-0.5"
             style={{ fontFamily: 'Jost, sans-serif' }}>
-            {user ? 'Voir la communauté →' : 'Créer mon profil gratuit →'}
+            {user ? t('home.ctaFinalJoined') : t('home.ctaFinalCreate')}
           </button>
         </div>
       </div>
@@ -264,31 +269,31 @@ export default function Index() {
           </div>
 
           <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>
-            Une plateforme locale indépendante pour connecter les habitants et visiteurs de l’Île de Ré.
+            {t('home.footerTagline')}
           </p>
 
           {/* Links */}
           <div className="flex flex-col gap-2 text-sm">
             <Link to="/about" className="text-primary hover:underline">
-              À propos
+              {t('home.footerAbout')}
             </Link>
 
             <Link to="/community-rules" className="text-primary hover:underline">
-              Règles de la communauté
+              {t('home.footerRules')}
             </Link>
 
             <Link to="/privacy" className="text-primary hover:underline">
-              Politique de confidentialité
+              {t('home.footerPrivacy')}
             </Link>
 
             <Link to="/terms" className="text-primary hover:underline">
-              Conditions d’utilisation
+              {t('home.footerTerms')}
             </Link>
           </div>
 
           {/* Legal mini line */}
           <p className="text-[11px] text-muted-foreground pt-4 border-t border-border/40">
-            © {new Date().getFullYear()} Le Ré-seau — Tous droits réservés
+            © {new Date().getFullYear()} Le Ré-seau — {t('home.footerRights')}
           </p>
 
         </div>

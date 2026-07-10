@@ -25,6 +25,7 @@ export interface Database {
           is_admin: boolean;
           is_banned: boolean;
           last_seen: string | null;
+          language: 'fr' | 'en';
           created_at: string;
           updated_at: string;
         };
@@ -43,6 +44,7 @@ export interface Database {
           is_admin?: boolean;
           is_banned?: boolean;
           last_seen?: string | null;
+          language?: 'fr' | 'en';
           created_at?: string;
           updated_at?: string;
         };

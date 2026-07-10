@@ -3,12 +3,14 @@ import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import { toast } from 'sonner';
-import { LogOut, Camera, Instagram, Linkedin, Check, Info, ShieldCheck, Bell, BellOff, Share } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { LogOut, Camera, Instagram, Linkedin, Check, Info, ShieldCheck, Bell, BellOff, Share, Languages } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import { cn } from '@/lib/utils';
 import { STATUS_OPTIONS, AVAILABILITY_OPTIONS, INTEREST_OPTIONS, MIN_AGE, MAX_AGE } from '@/lib/constants';
 import DeleteAccountButton from '@/components/DeleteAccountButton';
 import { isPushSupported, getPushPermissionState, subscribeToPush, unsubscribeFromPush, isIosSafari, isStandalonePwa } from '@/lib/push-notifications';
+import { setLanguage } from '@/lib/i18n';
 
 const BIO_MAX = 300;
 const MAX_PHOTO_SIZE_MB = 5;
@@ -18,6 +20,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 }
 
 export default function Profile() {
+  const { t, i18n } = useTranslation();
   const { user, signOut, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -72,6 +75,15 @@ export default function Profile() {
     await refreshPushState();
     setPushLoading(false);
     toast.success('Notifications désactivées.');
+  };
+
+  // Change la langue immédiatement (localStorage), et la mémorise sur le
+  // compte si connecté pour qu'elle suive l'utilisateur d'un appareil à l'autre.
+  const handleLanguageChange = async (lang: 'fr' | 'en') => {
+    setLanguage(lang);
+    if (user) {
+      await supabase.from('profiles').update({ language: lang }).eq('user_id', user.id);
+    }
   };
 
   useEffect(() => {
@@ -177,12 +189,12 @@ export default function Profile() {
       {/* Header */}
       <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-md border-b border-border/50">
         <div className="max-w-lg mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="font-display text-2xl font-semibold">Mon Profil</h1>
+          <h1 className="font-display text-2xl font-semibold">{t('profile.title')}</h1>
           <div className="flex items-center gap-3">
             {isAdmin && (
               <Link to="/admin" className="relative text-xs text-destructive hover:text-destructive/80 transition-colors flex items-center gap-1 font-medium"
                 style={{ fontFamily: 'Jost, sans-serif' }}>
-                <ShieldCheck className="h-3.5 w-3.5" /> Modération
+                <ShieldCheck className="h-3.5 w-3.5" /> {t('profile.moderation')}
                 {pendingReports > 0 && (
                   <span className="h-4 min-w-[16px] px-1 rounded-full bg-red-500 text-white text-[9px] font-semibold flex items-center justify-center">
                     {pendingReports > 9 ? '9+' : pendingReports}
@@ -192,12 +204,12 @@ export default function Profile() {
             )}
             <Link to="/about" className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
               style={{ fontFamily: 'Jost, sans-serif' }}>
-              <Info className="h-3.5 w-3.5" /> À propos
+              <Info className="h-3.5 w-3.5" /> {t('profile.about')}
             </Link>
             <button onClick={() => { signOut(); navigate('/'); }}
               className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-destructive transition-colors"
               style={{ fontFamily: 'Jost, sans-serif' }}>
-              <LogOut className="h-4 w-4" /> Déconnexion
+              <LogOut className="h-4 w-4" /> {t('profile.logout')}
             </button>
           </div>
         </div>
@@ -370,6 +382,29 @@ export default function Profile() {
           className="btn-ocean w-full py-4 text-base font-semibold flex items-center justify-center gap-2 disabled:opacity-60">
           {loading ? 'Sauvegarde...' : '✨ Enregistrer mon profil'}
         </button>
+
+        {/* Langue */}
+        <div className="card-premium p-5">
+          <SectionTitle>{t('profile.language')}</SectionTitle>
+          <p className="text-xs text-muted-foreground mb-3" style={{ fontFamily: 'Jost, sans-serif' }}>
+            {t('profile.languageDesc')}
+          </p>
+          <div className="flex gap-2">
+            {(['fr', 'en'] as const).map(lang => (
+              <button key={lang} onClick={() => handleLanguageChange(lang)}
+                className={cn(
+                  'flex-1 rounded-full py-2.5 text-sm font-medium transition-all duration-200 border flex items-center justify-center gap-1.5',
+                  i18n.language === lang
+                    ? 'border-primary bg-primary text-white shadow-md shadow-primary/20'
+                    : 'border-border bg-background hover:bg-secondary text-foreground'
+                )}
+                style={{ fontFamily: 'Jost, sans-serif' }}>
+                <Languages className="h-3.5 w-3.5" />
+                {lang === 'fr' ? t('profile.french') : t('profile.english')}
+              </button>
+            ))}
+          </div>
+        </div>
 
         {/* Notifications push */}
         <div className="card-premium p-5">

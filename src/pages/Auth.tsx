@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useTranslation, Trans } from 'react-i18next';
 import { useAuth } from '@/lib/auth-context';
 import { Eye, EyeOff, Waves } from 'lucide-react';
 
@@ -9,6 +10,7 @@ import { Eye, EyeOff, Waves } from 'lucide-react';
 // d'afficher une image qui ne correspond pas à son contexte.
 
 export default function Auth() {
+  const { t } = useTranslation();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -33,9 +35,9 @@ export default function Auth() {
 
     if (error) {
       if (error === 'access_denied') {
-        toast.error("Connexion Google annulée. Vous pouvez réessayer ou utiliser l'email.");
+        toast.error(t('auth.googleCancelled'));
       } else {
-        toast.error(errorDescription || 'Une erreur est survenue lors de la connexion.');
+        toast.error(errorDescription || t('auth.oauthGenericError'));
       }
       // On nettoie l'URL pour ne pas re-déclencher le message au refresh
       window.history.replaceState({}, document.title, '/auth');
@@ -45,7 +47,7 @@ export default function Auth() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isLogin && !acceptedTerms) {
-      toast.error("Merci d'accepter les conditions d'utilisation et la politique de confidentialité.");
+      toast.error(t('auth.acceptTermsError'));
       return;
     }
     setLoading(true);
@@ -53,16 +55,16 @@ export default function Auth() {
       if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        toast.success('Connexion réussie ! 🌊');
+        toast.success(t('auth.loginSuccess'));
         navigate('/social');
       } else {
         const { error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin } });
         if (error) throw error;
-        toast.success('Inscription réussie ! Vérifiez votre email 📬');
+        toast.success(t('auth.signupSuccess'));
         navigate('/profile');
       }
     } catch (error: any) {
-      toast.error(error.message || 'Une erreur est survenue.');
+      toast.error(error.message || t('auth.genericError'));
     } finally {
       setLoading(false);
     }
@@ -79,7 +81,7 @@ export default function Auth() {
       // Le refus de l'utilisateur ("Deny") est géré plus tard par le useEffect ci-dessus,
       // au retour sur cette page.
       if (error) {
-        toast.error('Connexion Google impossible pour le moment.');
+        toast.error(t('auth.googleError'));
         setGoogleLoading(false);
       }
       // Si pas d'erreur, le navigateur est redirigé vers Google — pas besoin de faire autre chose ici.
@@ -111,7 +113,7 @@ export default function Auth() {
             Le Ré-seau
           </h1>
           <p className="text-white/70 text-sm" style={{ fontFamily: 'Jost, sans-serif' }}>
-            {isLogin ? "Bon retour sur l'île 🌊" : 'Rejoignez la communauté 🏖️'}
+            {isLogin ? t('auth.welcomeBack') : t('auth.joinCommunity')}
           </p>
         </div>
 
@@ -127,22 +129,22 @@ export default function Auth() {
               <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
             </svg>
-            {googleLoading ? 'Redirection...' : 'Continuer avec Google'}
+            {googleLoading ? t('auth.redirecting') : t('auth.continueWithGoogle')}
           </button>
 
           <div className="flex items-center gap-3 mb-5">
             <div className="flex-1 h-px bg-border/60" />
-            <span className="text-xs text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>ou</span>
+            <span className="text-xs text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>{t('common.or')}</span>
             <div className="flex-1 h-px bg-border/60" />
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-3">
-            <input type="email" placeholder="Adresse email" value={email}
+            <input type="email" placeholder={t('auth.email')} value={email}
               onChange={e => setEmail(e.target.value)} required
               className="w-full px-4 py-3.5 rounded-xl border border-border/60 bg-white/80 text-sm outline-none focus:ring-2 focus:ring-primary/30"
               style={{ fontFamily: 'Jost, sans-serif' }} />
             <div className="relative">
-              <input type={showPwd ? 'text' : 'password'} placeholder="Mot de passe" value={password}
+              <input type={showPwd ? 'text' : 'password'} placeholder={t('auth.password')} value={password}
                 onChange={e => setPassword(e.target.value)} required minLength={8}
                 className="w-full px-4 py-3.5 rounded-xl border border-border/60 bg-white/80 text-sm outline-none focus:ring-2 focus:ring-primary/30 pr-10"
                 style={{ fontFamily: 'Jost, sans-serif' }} />
@@ -153,7 +155,7 @@ export default function Auth() {
             </div>
             {!isLogin && (
               <p className="text-xs text-muted-foreground -mt-1 px-1" style={{ fontFamily: 'Jost, sans-serif' }}>
-                8 caractères minimum
+                {t('auth.minPassword')}
               </p>
             )}
             {!isLogin && (
@@ -166,23 +168,24 @@ export default function Auth() {
                   required
                 />
                 <span>
-                  J'ai au moins 15 ans et j'accepte les{' '}
-                  <Link to="/terms" target="_blank" className="text-primary underline">conditions d'utilisation</Link>
-                  {' '}et la{' '}
-                  <Link to="/privacy" target="_blank" className="text-primary underline">politique de confidentialité</Link>.
+                  <Trans i18nKey="auth.consent"
+                    components={{
+                      terms: <Link to="/terms" target="_blank" className="text-primary underline" />,
+                      privacy: <Link to="/privacy" target="_blank" className="text-primary underline" />,
+                    }} />
                 </span>
               </label>
             )}
             <button type="submit" disabled={loading} className="btn-ocean w-full py-4 text-base font-semibold disabled:opacity-60">
-              {loading ? '...' : isLogin ? 'Se connecter' : "S'inscrire"}
+              {loading ? '...' : isLogin ? t('auth.login') : t('auth.signup')}
             </button>
           </form>
 
           <button onClick={() => setIsLogin(!isLogin)}
             className="mt-4 w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors"
             style={{ fontFamily: 'Jost, sans-serif' }}>
-            {isLogin ? "Pas encore de compte ? " : "Déjà un compte ? "}
-            <span className="text-primary font-medium">{isLogin ? "S'inscrire" : "Se connecter"}</span>
+            {isLogin ? t('auth.noAccount') : t('auth.hasAccount')}
+            <span className="text-primary font-medium">{isLogin ? t('auth.signup') : t('auth.login')}</span>
           </button>
         </div>
       </div>
