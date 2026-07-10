@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import BottomNav from '@/components/BottomNav';
 import { useNavigate } from 'react-router-dom';
-import { MessageCircle, Send, ArrowLeft, Heart, MessageSquare, Mail, Mic, Square, Image as ImageIcon, X, Plus, Users, Check } from 'lucide-react';
+import { MessageCircle, Send, ArrowLeft, Heart, MessageSquare, Mail, Mic, Square, Image as ImageIcon, X, Plus, Users, Check, Briefcase } from 'lucide-react';
 import { SALONS } from '@/lib/constants';
 import { toast } from 'sonner';
 import { avatarFallbackInitial } from '@/lib/constants';
@@ -194,6 +194,21 @@ export default function Discussions() {
               </button>
             ))}
           </div>
+        </div>
+
+        <div>
+          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2" style={{ fontFamily: 'Jost, sans-serif' }}>
+            Entraide locale
+          </h2>
+          <button onClick={() => navigate('/jobs')} className="card-premium p-5 w-full text-left flex items-center gap-4">
+            <div className="h-14 w-14 rounded-2xl bg-sand-light flex items-center justify-center flex-shrink-0">
+              <Briefcase className="h-6 w-6 text-gold" strokeWidth={1.5} />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-display text-xl font-semibold">Services</h3>
+              <p className="text-sm text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>Offres et demandes d'entraide entre voisins</p>
+            </div>
+          </button>
         </div>
       </div>
       <BottomNav />
