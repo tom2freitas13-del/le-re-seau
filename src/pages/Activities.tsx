@@ -46,7 +46,7 @@ const CATEGORY_STYLE: Record<string, { bg: string; emoji: string; defaultPhoto: 
 };
 
 export default function Activities() {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [activities, setActivities] = useState<Activity[]>([]);
   const [participantCounts, setParticipantCounts] = useState<Record<string, number>>({});
@@ -154,10 +154,13 @@ export default function Activities() {
   };
 
   // BUG FIX (#6) : suppression de sa propre activité désormais possible.
+  // Les admins peuvent aussi supprimer n'importe quelle activité (modération) —
+  // la policy RLS l'autorise, donc on ne filtre pas sur author_id ici pour
+  // ne pas bloquer silencieusement la suppression par un admin.
   const handleDelete = async (id: string) => {
     if (!user) return;
     setDeletingId(id);
-    const { error } = await supabase.from('activities').delete().eq('id', id).eq('author_id', user.id);
+    const { error } = await supabase.from('activities').delete().eq('id', id);
     if (error) toast.error("Impossible de supprimer cette activité.");
     else {
       toast.success('Activité supprimée.');
@@ -215,6 +218,7 @@ export default function Activities() {
             {activities.map(activity => {
               const cat = ACTIVITY_CATEGORIES.find(c => c.value === activity.category);
               const isMine = activity.author_id === user?.id;
+              const canDelete = isMine || isAdmin;
               const joined = myParticipations.has(activity.id);
               const style = CATEGORY_STYLE[activity.category || 'autre'];
               return (
@@ -234,11 +238,11 @@ export default function Activities() {
                     {cat && (
                       <span className="absolute top-3 left-3 pill glass">{cat.emoji} {cat.label}</span>
                     )}
-                    {isMine && (
+                    {canDelete && (
                       <button
                         onClick={() => handleDelete(activity.id)}
                         disabled={deletingId === activity.id}
-                        title="Supprimer mon activité"
+                        title={isMine ? 'Supprimer mon activité' : 'Supprimer (modération)'}
                         className="absolute top-3 right-3 h-9 w-9 rounded-full glass flex items-center justify-center text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-50">
                         <Trash2 className="h-4 w-4" />
                       </button>
