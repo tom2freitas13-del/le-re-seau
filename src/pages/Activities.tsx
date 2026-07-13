@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import BottomNav from '@/components/BottomNav';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Plus, Calendar, MapPin, Users, Trash2, Map as MapIcon, MessageCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { ACTIVITY_CATEGORIES, avatarFallbackInitial } from '@/lib/constants';
@@ -46,6 +47,7 @@ const CATEGORY_STYLE: Record<string, { bg: string; emoji: string; defaultPhoto: 
 };
 
 export default function Activities() {
+  const { t, i18n } = useTranslation();
   const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -148,7 +150,7 @@ export default function Activities() {
       if (!error) {
         setMyParticipations(prev => new Set(prev).add(activityId));
         setParticipantCounts(prev => ({ ...prev, [activityId]: (prev[activityId] || 0) + 1 }));
-        toast.success('Inscription confirmée ! 🎉');
+        toast.success(t('activities.joinConfirmed'));
       }
     }
   };
@@ -161,9 +163,9 @@ export default function Activities() {
     if (!user) return;
     setDeletingId(id);
     const { error } = await supabase.from('activities').delete().eq('id', id);
-    if (error) toast.error("Impossible de supprimer cette activité.");
+    if (error) toast.error(t('activities.deleteError'));
     else {
-      toast.success('Activité supprimée.');
+      toast.success(t('activities.deleted'));
       setActivities(prev => prev.filter(a => a.id !== id));
     }
     setDeletingId(null);
@@ -171,7 +173,7 @@ export default function Activities() {
 
   const formatDate = (d: string | null) => {
     if (!d) return null;
-    return new Date(d).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
+    return new Date(d).toLocaleDateString(i18n.language === 'en' ? 'en-US' : 'fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
   };
 
   return (
@@ -183,17 +185,17 @@ export default function Activities() {
               <Calendar className="h-5 w-5 text-pine" strokeWidth={1.5} />
             </div>
             <div>
-              <h1 className="font-display text-2xl font-semibold">Activités</h1>
-              <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>Sorties organisées sur l'île</p>
+              <h1 className="font-display text-2xl font-semibold">{t('activities.title')}</h1>
+              <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>{t('activities.subtitle')}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={() => navigate('/map')} title="Voir sur la carte"
+            <button onClick={() => navigate('/map')} title={t('activities.viewOnMap')}
               className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center text-foreground hover:bg-ocean-light hover:text-primary transition-colors">
               <MapIcon className="h-4 w-4" />
             </button>
             <button onClick={() => navigate('/activities/new')} className="btn-ocean flex items-center gap-1.5 py-2.5">
-              <Plus className="h-4 w-4" /> Créer
+              <Plus className="h-4 w-4" /> {t('activities.create')}
             </button>
           </div>
         </div>
@@ -207,11 +209,11 @@ export default function Activities() {
         ) : activities.length === 0 ? (
           <div className="text-center py-16">
             <div className="text-5xl mb-4">📅</div>
-            <h3 className="font-display text-xl mb-2">Aucune activité prévue</h3>
+            <h3 className="font-display text-xl mb-2">{t('activities.noneScheduled')}</h3>
             <p className="text-sm text-muted-foreground mb-6" style={{ fontFamily: 'Jost, sans-serif' }}>
-              Soyez le premier à en proposer une !
+              {t('activities.beFirst')}
             </p>
-            <button onClick={() => navigate('/activities/new')} className="btn-ocean">Créer une activité</button>
+            <button onClick={() => navigate('/activities/new')} className="btn-ocean">{t('activities.createOne')}</button>
           </div>
         ) : (
           <div className="space-y-4">
@@ -236,13 +238,13 @@ export default function Activities() {
                       />
                     )}
                     {cat && (
-                      <span className="absolute top-3 left-3 pill glass">{cat.emoji} {cat.label}</span>
+                      <span className="absolute top-3 left-3 pill glass">{cat.emoji} {t(`activityCategories.${cat.value}`)}</span>
                     )}
                     {canDelete && (
                       <button
                         onClick={() => handleDelete(activity.id)}
                         disabled={deletingId === activity.id}
-                        title={isMine ? 'Supprimer mon activité' : 'Supprimer (modération)'}
+                        title={isMine ? t('activities.deleteMine') : t('activities.deleteModeration')}
                         className="absolute top-3 right-3 h-9 w-9 rounded-full glass flex items-center justify-center text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-50">
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -267,7 +269,7 @@ export default function Activities() {
                         </span>
                       )}
                       {activity.min_age != null && activity.min_age > 0 && (
-                        <span className="pill bg-sand-light text-sand-dark">{activity.min_age}+ ans</span>
+                        <span className="pill bg-sand-light text-sand-dark">{t('activities.minAge', { age: activity.min_age })}</span>
                       )}
                       <span className="pill bg-pine-light text-pine flex items-center gap-1">
                         <Users className="h-3 w-3" /> {participantCounts[activity.id] || 0}
@@ -278,7 +280,7 @@ export default function Activities() {
                       <div className="flex items-center gap-2">
                         <div className="flex -space-x-2 flex-shrink-0">
                           {participantsByActivity[activity.id].slice(0, 4).map(p => (
-                            <div key={p.user_id} title={p.name || 'Utilisateur'}
+                            <div key={p.user_id} title={p.name || t('admin.defaultUser')}
                               className="h-7 w-7 rounded-full bg-ocean-light border-2 border-card overflow-hidden flex items-center justify-center">
                               {p.photo_url ? (
                                 <img src={p.photo_url} alt={p.name || ''} className="h-full w-full object-cover" />
@@ -290,9 +292,9 @@ export default function Activities() {
                         </div>
                         <p className="text-xs text-muted-foreground truncate" style={{ fontFamily: 'Jost, sans-serif' }}>
                           {(() => {
-                            const names = participantsByActivity[activity.id].map(p => p.name || 'Quelqu\'un');
-                            if (names.length <= 2) return names.join(' et ');
-                            return `${names.slice(0, 2).join(', ')} et ${names.length - 2} autre${names.length - 2 > 1 ? 's' : ''}`;
+                            const names = participantsByActivity[activity.id].map(p => p.name || t('activities.someone'));
+                            if (names.length <= 2) return names.join(` ${t('activities.and')} `);
+                            return `${names.slice(0, 2).join(', ')} ${t('activities.andOthers', { count: names.length - 2 })}`;
                           })()}
                         </p>
                       </div>
@@ -300,12 +302,12 @@ export default function Activities() {
                     {isMine ? (
                       <div className="space-y-2">
                         <p className="text-xs text-center text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>
-                          C'est votre activité
+                          {t('activities.itsYours')}
                         </p>
                         {activity.group_id && (
                           <button onClick={() => navigate(`/groups/${activity.group_id}`)}
                             className="btn-ghost w-full flex items-center justify-center gap-2 relative">
-                            <MessageCircle className="h-4 w-4" /> Discuter
+                            <MessageCircle className="h-4 w-4" /> {t('activities.discuss')}
                             {activity.group_id && groupUnread[activity.group_id] > 0 && (
                               <span className="absolute top-1 right-3 h-5 min-w-[20px] px-1 rounded-full bg-red-500 text-white text-[10px] font-semibold flex items-center justify-center">
                                 {groupUnread[activity.group_id] > 9 ? '9+' : groupUnread[activity.group_id]}
@@ -320,12 +322,12 @@ export default function Activities() {
                           onClick={() => toggleParticipation(activity.id)}
                           disabled={!!activity.max_participants && !joined && (participantCounts[activity.id] || 0) >= activity.max_participants}
                           className={joined ? 'btn-ghost w-full disabled:opacity-50' : 'btn-ocean w-full disabled:opacity-50'}>
-                          {joined ? 'Se désinscrire' : 'Participer'}
+                          {joined ? t('activities.leave') : t('activities.join')}
                         </button>
                         {joined && activity.group_id && (
                           <button onClick={() => navigate(`/groups/${activity.group_id}`)}
                             className="btn-ghost w-full flex items-center justify-center gap-2 relative">
-                            <MessageCircle className="h-4 w-4" /> Discuter
+                            <MessageCircle className="h-4 w-4" /> {t('activities.discuss')}
                             {groupUnread[activity.group_id] > 0 && (
                               <span className="absolute top-1 right-3 h-5 min-w-[20px] px-1 rounded-full bg-red-500 text-white text-[10px] font-semibold flex items-center justify-center">
                                 {groupUnread[activity.group_id] > 9 ? '9+' : groupUnread[activity.group_id]}

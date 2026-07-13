@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Calendar, Camera, Map as MapIcon } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import { cn } from '@/lib/utils';
@@ -13,6 +14,7 @@ import MapLocationPicker from '@/components/MapLocationPicker';
 const MAX_PHOTO_SIZE_MB = 5;
 
 export default function NewActivity() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [title, setTitle] = useState('');
@@ -38,8 +40,8 @@ export default function NewActivity() {
     setMinAge(cleaned);
     if (cleaned === '') { setMinAgeError(''); return; }
     const num = parseInt(cleaned, 10);
-    if (num < 0) setMinAgeError("L'âge minimum ne peut pas être négatif.");
-    else if (num > MAX_AGE) setMinAgeError(`Maximum ${MAX_AGE} ans.`);
+    if (num < 0) setMinAgeError(t('newActivity.minAgeNegativeError'));
+    else if (num > MAX_AGE) setMinAgeError(t('newActivity.minAgeMaxError', { max: MAX_AGE }));
     else setMinAgeError('');
   };
 
@@ -51,8 +53,8 @@ export default function NewActivity() {
   const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith('image/')) { toast.error('Merci de choisir une image.'); return; }
-    if (file.size > MAX_PHOTO_SIZE_MB * 1024 * 1024) { toast.error(`Image trop lourde (max ${MAX_PHOTO_SIZE_MB} Mo).`); return; }
+    if (!file.type.startsWith('image/')) { toast.error(t('newActivity.photoTypeError')); return; }
+    if (file.size > MAX_PHOTO_SIZE_MB * 1024 * 1024) { toast.error(t('newActivity.photoSizeError', { max: MAX_PHOTO_SIZE_MB })); return; }
     setPhotoFile(file);
     setPhotoPreview(URL.createObjectURL(file));
   };
@@ -60,10 +62,10 @@ export default function NewActivity() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
-    if (!title.trim()) { toast.error('Le titre est obligatoire.'); return; }
+    if (!title.trim()) { toast.error(t('newActivity.titleRequiredError')); return; }
     if (minAgeError) { toast.error(minAgeError); return; }
     if (!maxParticipants || parseInt(maxParticipants, 10) <= 0) {
-      toast.error('Le nombre de participants maximum est obligatoire.');
+      toast.error(t('newActivity.maxParticipantsRequiredError'));
       return;
     }
 
@@ -95,10 +97,10 @@ export default function NewActivity() {
       });
       if (error) throw error;
 
-      toast.success('Activité créée ! 🎉');
+      toast.success(t('newActivity.createdSuccess'));
       navigate('/activities');
     } catch (error: any) {
-      toast.error(error.message || 'Une erreur est survenue.');
+      toast.error(error.message || t('newActivity.genericError'));
     } finally {
       setLoading(false);
     }
@@ -116,7 +118,7 @@ export default function NewActivity() {
           </button>
           <div className="flex items-center gap-2">
             <Calendar className="h-5 w-5 text-pine" strokeWidth={1.5} />
-            <h1 className="font-display text-2xl font-semibold">Créer une activité</h1>
+            <h1 className="font-display text-2xl font-semibold">{t('newActivity.title')}</h1>
           </div>
         </div>
       </div>
@@ -133,7 +135,7 @@ export default function NewActivity() {
                 <div className="text-center">
                   <Camera className="h-8 w-8 text-muted-foreground mx-auto mb-2" strokeWidth={1.5} />
                   <p className="text-sm text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>
-                    Ajouter une photo (optionnel)
+                    {t('newActivity.addPhoto')}
                   </p>
                 </div>
               )}
@@ -143,17 +145,17 @@ export default function NewActivity() {
 
           <div className="card-premium p-5 space-y-4">
             <div>
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 block" style={{ fontFamily: 'Jost, sans-serif' }}>Titre *</label>
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 block" style={{ fontFamily: 'Jost, sans-serif' }}>{t('newActivity.titleLabel')}</label>
               <input className={inputClass} style={{ fontFamily: 'Jost, sans-serif' }} maxLength={100}
-                placeholder="Ex: Sortie vélo au phare des Baleines" value={title} onChange={e => setTitle(e.target.value)} required />
+                placeholder={t('newActivity.titlePlaceholder')} value={title} onChange={e => setTitle(e.target.value)} required />
             </div>
             <div>
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 block" style={{ fontFamily: 'Jost, sans-serif' }}>Description</label>
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 block" style={{ fontFamily: 'Jost, sans-serif' }}>{t('newActivity.descriptionLabel')}</label>
               <textarea className={`${inputClass} resize-none`} style={{ fontFamily: 'Jost, sans-serif' }} maxLength={1000} rows={4}
-                placeholder="Décrivez votre activité..." value={description} onChange={e => setDescription(e.target.value)} />
+                placeholder={t('newActivity.descriptionPlaceholder')} value={description} onChange={e => setDescription(e.target.value)} />
             </div>
             <div>
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 block" style={{ fontFamily: 'Jost, sans-serif' }}>Catégorie</label>
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 block" style={{ fontFamily: 'Jost, sans-serif' }}>{t('newActivity.categoryLabel')}</label>
               <div className="flex flex-wrap gap-2">
                 {ACTIVITY_CATEGORIES.map(c => (
                   <button key={c.value} type="button" onClick={() => setCategory(c.value)}
@@ -162,7 +164,7 @@ export default function NewActivity() {
                       category === c.value ? 'border-primary bg-ocean-light text-primary' : 'border-border bg-background hover:bg-secondary'
                     )}
                     style={{ fontFamily: 'Jost, sans-serif' }}>
-                    {c.emoji} {c.label}
+                    {c.emoji} {t(`activityCategories.${c.value}`)}
                   </button>
                 ))}
               </div>
@@ -171,62 +173,62 @@ export default function NewActivity() {
 
           <div className="card-premium p-5 space-y-4">
             <div>
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 block" style={{ fontFamily: 'Jost, sans-serif' }}>📍 Lieu</label>
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 block" style={{ fontFamily: 'Jost, sans-serif' }}>{t('newActivity.locationLabel')}</label>
               <div className="flex gap-2">
                 <div className="flex-1">
                   <LocationPicker
                     value={location}
                     onChange={(label, lat, lng) => { setLocation(label); setCoords({ lat, lng }); }}
-                    placeholder="Ex: Plage de la Conche, Ars-en-Ré..."
+                    placeholder={t('newActivity.locationPlaceholder')}
                   />
                 </div>
-                <button type="button" onClick={() => setShowMapPicker(true)} title="Choisir sur la carte"
+                <button type="button" onClick={() => setShowMapPicker(true)} title={t('newActivity.pickOnMap')}
                   className="h-[46px] w-[46px] flex-shrink-0 rounded-xl border border-border bg-background flex items-center justify-center hover:bg-secondary transition-colors">
                   <MapIcon className="h-4 w-4" />
                 </button>
               </div>
               {coords.lat && coords.lng ? (
                 <p className="text-xs text-pine mt-1.5 flex items-center gap-1" style={{ fontFamily: 'Jost, sans-serif' }}>
-                  ✓ Lieu localisé — apparaîtra sur la carte
+                  {t('newActivity.locationSet')}
                 </p>
               ) : location.trim() ? (
                 <p className="text-xs text-muted-foreground mt-1.5" style={{ fontFamily: 'Jost, sans-serif' }}>
-                  Choisissez une suggestion pour que l'activité apparaisse sur la carte
+                  {t('newActivity.locationHint')}
                 </p>
               ) : null}
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 block" style={{ fontFamily: 'Jost, sans-serif' }}>📅 Date</label>
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 block" style={{ fontFamily: 'Jost, sans-serif' }}>{t('newActivity.dateLabel')}</label>
                 <input type="date" min={today} className={inputClass} style={{ fontFamily: 'Jost, sans-serif' }} value={date} onChange={e => setDate(e.target.value)} />
               </div>
               <div>
-                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 block" style={{ fontFamily: 'Jost, sans-serif' }}>🕐 Heure</label>
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 block" style={{ fontFamily: 'Jost, sans-serif' }}>{t('newActivity.timeLabel')}</label>
                 <input type="time" className={inputClass} style={{ fontFamily: 'Jost, sans-serif' }} value={time} onChange={e => setTime(e.target.value)} />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 block" style={{ fontFamily: 'Jost, sans-serif' }}>🔞 Âge min.</label>
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 block" style={{ fontFamily: 'Jost, sans-serif' }}>{t('newActivity.minAgeLabel')}</label>
                 <input
                   type="text"
                   inputMode="numeric"
                   className={cn(inputClass, minAgeError && 'border-destructive focus:ring-destructive/20')}
                   style={{ fontFamily: 'Jost, sans-serif' }}
-                  placeholder="Aucun"
+                  placeholder={t('newActivity.minAgePlaceholder')}
                   value={minAge}
                   onChange={e => handleMinAgeChange(e.target.value)}
                 />
                 {minAgeError && <p className="text-xs text-destructive mt-1" style={{ fontFamily: 'Jost, sans-serif' }}>{minAgeError}</p>}
               </div>
               <div>
-                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 block" style={{ fontFamily: 'Jost, sans-serif' }}>👥 Places max *</label>
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 block" style={{ fontFamily: 'Jost, sans-serif' }}>{t('newActivity.maxParticipantsLabel')}</label>
                 <input
                   type="text"
                   inputMode="numeric"
                   className={inputClass}
                   style={{ fontFamily: 'Jost, sans-serif' }}
-                  placeholder="Ex: 8"
+                  placeholder={t('newActivity.maxParticipantsPlaceholder')}
                   value={maxParticipants}
                   onChange={e => handleMaxParticipantsChange(e.target.value)}
                   required
@@ -237,7 +239,7 @@ export default function NewActivity() {
 
           <button type="submit" disabled={loading || !title.trim() || !!minAgeError || !maxParticipants}
             className="btn-ocean w-full py-4 text-base font-semibold disabled:opacity-50">
-            {loading ? 'Création...' : "🚀 Créer l'activité"}
+            {loading ? t('newActivity.creating') : t('newActivity.submit')}
           </button>
         </form>
       </div>
