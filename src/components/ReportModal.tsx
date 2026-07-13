@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import { Flag, X } from 'lucide-react';
 import { REPORT_REASONS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
@@ -21,6 +22,7 @@ interface ReportModalProps {
  * S'utilise avec le composant ReportButton ci-dessous, ou directement.
  */
 export function ReportModal({ targetType, targetId, targetUserId, onClose }: ReportModalProps) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [reason, setReason] = useState<string>('');
   const [details, setDetails] = useState('');
@@ -40,7 +42,7 @@ export function ReportModal({ targetType, targetId, targetUserId, onClose }: Rep
     });
     setSubmitting(false);
     if (error) {
-      toast.error("Impossible d'envoyer le signalement. Réessayez.");
+      toast.error(t('reportModal.sendError'));
       return;
     }
     setDone(true);
@@ -51,7 +53,7 @@ export function ReportModal({ targetType, targetId, targetUserId, onClose }: Rep
       <div className="bg-card rounded-3xl p-6 w-full max-w-sm space-y-4" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between">
           <h2 className="font-display text-xl font-semibold flex items-center gap-2">
-            <Flag className="h-5 w-5 text-destructive" /> Signaler
+            <Flag className="h-5 w-5 text-destructive" /> {t('reportModal.title')}
           </h2>
           <button onClick={onClose} className="min-h-10 min-w-10 flex items-center justify-center -mr-2 text-muted-foreground hover:text-foreground">
             <X className="h-5 w-5" />
@@ -62,14 +64,14 @@ export function ReportModal({ targetType, targetId, targetUserId, onClose }: Rep
           <div className="text-center py-4 space-y-2">
             <p className="text-2xl">✅</p>
             <p className="text-sm" style={{ fontFamily: 'Jost, sans-serif' }}>
-              Signalement envoyé. Merci de nous aider à garder Le Ré-seau sûr — notre équipe va l'examiner.
+              {t('reportModal.sentTitle')}
             </p>
-            <button onClick={onClose} className="btn-ghost w-full mt-2">Fermer</button>
+            <button onClick={onClose} className="btn-ghost w-full mt-2">{t('reportModal.close')}</button>
           </div>
         ) : (
           <>
             <p className="text-sm text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>
-              Pourquoi signalez-vous ce contenu ?
+              {t('reportModal.why')}
             </p>
             <div className="space-y-2">
               {REPORT_REASONS.map(r => (
@@ -79,7 +81,7 @@ export function ReportModal({ targetType, targetId, targetUserId, onClose }: Rep
                     reason === r.value ? 'border-destructive bg-destructive/10 text-destructive' : 'border-border bg-background hover:bg-secondary'
                   )}
                   style={{ fontFamily: 'Jost, sans-serif' }}>
-                  {r.label}
+                  {t(`reportReasons.${r.value}`)}
                 </button>
               ))}
             </div>
@@ -87,14 +89,14 @@ export function ReportModal({ targetType, targetId, targetUserId, onClose }: Rep
               value={details}
               onChange={e => setDetails(e.target.value)}
               maxLength={500}
-              placeholder="Précisez si besoin (optionnel)"
+              placeholder={t('reportModal.detailsPlaceholder')}
               rows={3}
               className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20 resize-none"
               style={{ fontFamily: 'Jost, sans-serif' }}
             />
             <button onClick={handleSubmit} disabled={!reason || submitting}
               className="w-full rounded-full bg-destructive text-white py-3.5 font-semibold text-sm disabled:opacity-50">
-              {submitting ? 'Envoi...' : 'Envoyer le signalement'}
+              {submitting ? t('reportModal.sending') : t('reportModal.submit')}
             </button>
           </>
         )}
@@ -116,12 +118,13 @@ interface ReportButtonProps {
  * À placer sur n'importe quel contenu (profil, message, post...).
  */
 export function ReportButton({ targetType, targetId, targetUserId, className, label }: ReportButtonProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   return (
     <>
       <button
         onClick={(e) => { e.stopPropagation(); setOpen(true); }}
-        title="Signaler"
+        title={t('reportModal.title')}
         className={className || 'min-h-10 min-w-10 flex items-center justify-center text-muted-foreground hover:text-destructive transition-colors px-2.5 rounded-lg hover:bg-destructive/10'}>
         <Flag className="h-4 w-4" />
         {label && <span className="ml-1.5 text-xs">{label}</span>}

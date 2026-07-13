@@ -7,7 +7,80 @@
     "send": "Send",
     "publish": "Publish",
     "create": "Create",
-    "or": "or"
+    "or": "or",
+    "online": "Online",
+    "offline": "Offline",
+    "lastSeenJustNow": "Seen just now",
+    "lastSeenMinAgo": "Seen {{count}} min ago",
+    "lastSeenHoursAgo": "Seen {{count}}h ago",
+    "lastSeenYesterday": "Seen yesterday",
+    "lastSeenDaysAgo": "Seen {{count}}d ago",
+    "lastSeenOnDate": "Seen on {{date}}"
+  },
+  "statusOptions": {
+    "resident": "I live on the island",
+    "frequent": "I come often",
+    "vacation": "I'm on vacation"
+  },
+  "statusLabels": {
+    "resident": "Resident",
+    "frequent": "Frequent visitor",
+    "vacation": "On vacation"
+  },
+  "availabilityOptions": {
+    "weekend": "This weekend",
+    "week": "This week",
+    "summer": "This summer",
+    "year": "All year"
+  },
+  "interestOptions": {
+    "plage": "Beach",
+    "vélo": "Cycling",
+    "tennis": "Tennis",
+    "surf": "Surfing",
+    "apéro": "Drinks",
+    "bateau": "Boating",
+    "running": "Running",
+    "pêche": "Fishing",
+    "yoga": "Yoga",
+    "randonnée": "Hiking"
+  },
+  "jobCategories": {
+    "all": "All",
+    "jardinage": "Gardening",
+    "bricolage": "Handyman",
+    "garde": "Childcare",
+    "livraison": "Delivery",
+    "menage": "Cleaning",
+    "autre": "Other"
+  },
+  "salons": {
+    "plage": { "label": "Beach", "desc": "Spots, conditions, beach tips" },
+    "velo": { "label": "Cycling", "desc": "Routes, rides, rentals" },
+    "surf": { "label": "Surf", "desc": "Sessions, weather, secret spots" },
+    "apero": { "label": "Drinks", "desc": "Good spots, terraces, meetups" },
+    "bateau": { "label": "Boating", "desc": "Outings, crews, races" },
+    "emploi": { "label": "Services", "desc": "A helping hand, odd jobs" },
+    "famille": { "label": "Families", "desc": "Kids activities, childcare" },
+    "general": { "label": "General", "desc": "Free-flowing chat among islanders" }
+  },
+  "activityCategories": {
+    "plage": "Beach",
+    "velo": "Cycling",
+    "surf": "Surf",
+    "apero": "Drinks",
+    "bateau": "Boating",
+    "randonnee": "Hiking",
+    "sport": "Sport",
+    "autre": "Other"
+  },
+  "reportReasons": {
+    "spam": "Spam or advertising",
+    "harcelement": "Harassment or hostile behaviour",
+    "contenu_inapproprie": "Inappropriate content",
+    "arnaque": "Scam or fraud attempt",
+    "faux_profil": "Fake profile / impersonation",
+    "autre": "Other reason"
   },
   "nav": {
     "home": "Home",
@@ -115,6 +188,64 @@
     "services": "Services",
     "servicesDesc": "Offers and requests for help between neighbours"
   },
+  "admin": {
+    "title": "Moderation",
+    "subtitle": "Admins-only area",
+    "filterPending": "Pending",
+    "filterReviewed": "Reviewed",
+    "filterDismissed": "Dismissed",
+    "filterAll": "All",
+    "nothingToReport": "Nothing to report",
+    "noReportsInCategory": "No reports in this category.",
+    "reportedBy": "Reported by:",
+    "concerns": "About:",
+    "banned": "Banned",
+    "markReviewed": "Mark reviewed",
+    "dismiss": "Dismiss",
+    "unban": "Unban",
+    "ban": "Ban user",
+    "updateError": "Error updating.",
+    "reportReviewed": "Report marked as reviewed.",
+    "reportDismissed": "Report dismissed.",
+    "banStatusError": "Error updating ban status.",
+    "userUnbanned": "User unbanned.",
+    "userBanned": "User banned.",
+    "defaultUser": "User",
+    "targetType": {
+      "profile": "Profile",
+      "message": "Private message",
+      "group_message": "Group message",
+      "salon_message": "Chat room message",
+      "forum_post": "Forum post",
+      "forum_comment": "Comment",
+      "job_offer": "Job offer",
+      "job_request": "Service request",
+      "activity": "Activity"
+    }
+  },
+  "reportModal": {
+    "title": "Report",
+    "sentTitle": "Report sent. Thanks for helping keep Le Ré-seau safe — our team will review it.",
+    "close": "Close",
+    "why": "Why are you reporting this content?",
+    "detailsPlaceholder": "Add details if needed (optional)",
+    "sending": "Sending...",
+    "submit": "Send report",
+    "sendError": "Couldn't send the report. Please try again."
+  },
+  "profileDetail": {
+    "matchPercent": "⭐ {{score}}% match with your interests",
+    "interestsTitle": "Interests"
+  },
+  "profileCard": {
+    "admin": "Admin",
+    "online": "Online",
+    "anonymous": "Anonymous",
+    "message": "Message",
+    "report": "🚩 Report",
+    "unblock": "✅ Unblock",
+    "block": "🚫 Block"
+  },
   "profile": {
     "title": "My Profile",
     "moderation": "Moderation",
@@ -123,6 +254,40 @@
     "language": "Language",
     "languageDesc": "Choose the site's display language.",
     "french": "French",
-    "english": "English"
+    "english": "English",
+    "loadingPhoto": "Loading...",
+    "infoSection": "Information",
+    "firstName": "First name *",
+    "age": "Age",
+    "ageMinError": "Minimum age is {{min}}.",
+    "ageMaxError": "Maximum age is {{max}}.",
+    "bioPlaceholder": "A short bio... Who are you on the island?",
+    "socialNetworks": "Social networks",
+    "instagramPlaceholder": "Your Instagram handle",
+    "linkedinPlaceholder": "Your LinkedIn handle",
+    "myStatus": "My status on the island",
+    "availability": "Availability",
+    "interests": "Interests",
+    "interestsDesc": "Select your activities — they're used to suggest compatible profiles.",
+    "saving": "Saving...",
+    "saveProfile": "✨ Save my profile",
+    "notifications": "Notifications",
+    "iosNotifHint": "On iPhone, first add Le Ré-seau to your home screen (Share button → \"Add to Home Screen\") to be able to receive notifications, then come back here from that icon.",
+    "notifUnsupported": "Notifications aren't supported on this browser.",
+    "notifDenied": "You've blocked notifications for this site. To turn them back on, go through your browser or phone settings (Settings → Notifications → Le Ré-seau, or the 🔒 icon next to the site address).",
+    "notifEnabled": "Notifications enabled",
+    "notifDisable": "Disable",
+    "notifDesc": "Get an alert for messages, activities and discussions.",
+    "notifEnable": "Enable",
+    "dangerZone": "Danger zone",
+    "deleteAccountDesc": "Deleting your account is permanent and removes all your data.",
+    "nameRequiredError": "Please enter your first name.",
+    "photoTypeError": "Please choose an image file.",
+    "photoSizeError": "The image must be under {{max}} MB.",
+    "photoUploadError": "Error uploading the photo.",
+    "saveError": "Error saving.",
+    "saveSuccess": "Profile updated ✨",
+    "pushEnableError": "Couldn't enable notifications. Check your browser permissions.",
+    "pushDisabled": "Notifications disabled."
   }
 }

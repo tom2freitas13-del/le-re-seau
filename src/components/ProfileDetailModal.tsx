@@ -1,5 +1,6 @@
 import { X, MessageCircle, Instagram, Linkedin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { avatarFallbackInitial } from '@/lib/constants';
 import { statusConfig, interestConfig, ProfileCardProfile, AdminBadge } from '@/components/ProfileCard';
 
@@ -16,6 +17,7 @@ interface ProfileDetailModalProps {
  * long pour tenir dans la carte de la liste.
  */
 export default function ProfileDetailModal({ profile, matchScore, onClose }: ProfileDetailModalProps) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const status = profile.status ? statusConfig[profile.status] : null;
 
@@ -47,13 +49,13 @@ export default function ProfileDetailModal({ profile, matchScore, onClose }: Pro
           <div className={`absolute top-4 right-4 flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium glass ${status.color}`}
             style={{ fontFamily: 'Jost, sans-serif' }}>
             <div className={`h-1.5 w-1.5 rounded-full ${status.dot} flex-shrink-0`} />
-            <span>{status.label}</span>
+            <span>{t(`statusLabels.${profile.status}`)}</span>
           </div>
         )}
 
         <div className="absolute bottom-0 left-0 right-0 p-5">
           <h2 className="font-display text-3xl font-semibold text-white flex items-center gap-2" style={{ textShadow: '0 1px 8px rgba(0,0,0,0.4)' }}>
-            {profile.name || 'Anonyme'}{profile.age ? `, ${profile.age}` : ''}
+            {profile.name || t('profileCard.anonymous')}{profile.age ? `, ${profile.age}` : ''}
             {profile.is_admin && <AdminBadge />}
           </h2>
         </div>
@@ -62,7 +64,7 @@ export default function ProfileDetailModal({ profile, matchScore, onClose }: Pro
       <div className="max-w-lg mx-auto p-5 pb-28 space-y-5">
         {matchScore !== undefined && matchScore > 0 && (
           <p className="text-sm text-pine font-medium" style={{ fontFamily: 'Jost, sans-serif' }}>
-            ⭐ {matchScore}% de compatibilité avec tes centres d'intérêt
+            {t('profileDetail.matchPercent', { score: matchScore })}
           </p>
         )}
 
@@ -75,14 +77,14 @@ export default function ProfileDetailModal({ profile, matchScore, onClose }: Pro
         {profile.interests && profile.interests.length > 0 && (
           <div>
             <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2" style={{ fontFamily: 'Jost, sans-serif' }}>
-              Centres d'intérêt
+              {t('profileDetail.interestsTitle')}
             </h3>
             <div className="flex flex-wrap gap-1.5">
               {profile.interests.map((interest) => {
                 const conf = interestConfig[interest];
                 return (
                   <span key={interest} className="pill bg-secondary text-secondary-foreground">
-                    {conf?.emoji || ''} {conf?.label || interest}
+                    {conf?.emoji || ''} {conf ? t(`interestOptions.${interest}`) : interest}
                   </span>
                 );
               })}
@@ -113,7 +115,7 @@ export default function ProfileDetailModal({ profile, matchScore, onClose }: Pro
           onClick={() => navigate(`/chat/${profile.user_id}`)}
           className="max-w-lg mx-auto w-full btn-ocean flex items-center justify-center gap-2 py-3 text-sm">
           <MessageCircle className="h-4 w-4" />
-          Message
+          {t('profileCard.message')}
         </button>
       </div>
     </div>

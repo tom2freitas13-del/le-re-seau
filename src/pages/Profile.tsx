@@ -63,7 +63,7 @@ export default function Profile() {
     if (!user) return;
     setPushLoading(true);
     const ok = await subscribeToPush(user.id);
-    if (!ok) toast.error("Impossible d'activer les notifications. Vérifiez les autorisations de votre navigateur.");
+    if (!ok) toast.error(t('profile.pushEnableError'));
     await refreshPushState();
     setPushLoading(false);
   };
@@ -74,7 +74,7 @@ export default function Profile() {
     await unsubscribeFromPush(user.id);
     await refreshPushState();
     setPushLoading(false);
-    toast.success('Notifications désactivées.');
+    toast.success(t('profile.pushDisabled'));
   };
 
   // Change la langue immédiatement (localStorage), et la mémorise sur le
@@ -123,8 +123,8 @@ export default function Profile() {
     setAge(cleaned);
     if (cleaned === '') { setAgeError(''); return; }
     const num = parseInt(cleaned, 10);
-    if (num < MIN_AGE) setAgeError(`L'âge minimum est ${MIN_AGE} ans.`);
-    else if (num > MAX_AGE) setAgeError(`L'âge maximum est ${MAX_AGE} ans.`);
+    if (num < MIN_AGE) setAgeError(t('profile.ageMinError', { min: MIN_AGE }));
+    else if (num > MAX_AGE) setAgeError(t('profile.ageMaxError', { max: MAX_AGE }));
     else setAgeError('');
   };
 
@@ -133,11 +133,11 @@ export default function Profile() {
     if (!file || !user) return;
 
     if (!file.type.startsWith('image/')) {
-      toast.error('Merci de choisir un fichier image.');
+      toast.error(t('profile.photoTypeError'));
       return;
     }
     if (file.size > MAX_PHOTO_SIZE_MB * 1024 * 1024) {
-      toast.error(`L'image doit faire moins de ${MAX_PHOTO_SIZE_MB} Mo.`);
+      toast.error(t('profile.photoSizeError', { max: MAX_PHOTO_SIZE_MB }));
       return;
     }
 
@@ -145,7 +145,7 @@ export default function Profile() {
     const ext = file.name.split('.').pop();
     const path = `${user.id}/${Date.now()}.${ext}`;
     const { error } = await supabase.storage.from('avatars').upload(path, file, { upsert: true });
-    if (error) { toast.error('Erreur lors de l\'envoi de la photo.'); setUploading(false); return; }
+    if (error) { toast.error(t('profile.photoUploadError')); setUploading(false); return; }
     const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path);
     setPhotoUrl(publicUrl);
     setUploading(false);
@@ -159,7 +159,7 @@ export default function Profile() {
 
     // BUG FIX (#12) : nom requis, validations avant envoi.
     if (!name.trim()) {
-      toast.error('Merci de renseigner votre prénom.');
+      toast.error(t('profile.nameRequiredError'));
       return;
     }
     if (ageError) {
@@ -179,8 +179,8 @@ export default function Profile() {
       instagram: instagram.trim() || null,
       linkedin: linkedin.trim() || null,
     }).eq('user_id', user.id);
-    if (error) toast.error('Erreur lors de la sauvegarde.');
-    else toast.success('Profil mis à jour ✨');
+    if (error) toast.error(t('profile.saveError'));
+    else toast.success(t('profile.saveSuccess'));
     setLoading(false);
   };
 
@@ -238,14 +238,14 @@ export default function Profile() {
             <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} disabled={uploading} />
           </label>
         </div>
-        {uploading && <p className="text-center text-sm text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>Chargement...</p>}
+        {uploading && <p className="text-center text-sm text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>{t('profile.loadingPhoto')}</p>}
 
         {/* Infos de base */}
         <div className="card-premium p-5 space-y-3">
-          <SectionTitle>Informations</SectionTitle>
+          <SectionTitle>{t('profile.infoSection')}</SectionTitle>
           <input
             type="text"
-            placeholder="Prénom *"
+            placeholder={t('profile.firstName')}
             value={name}
             maxLength={40}
             onChange={e => setName(e.target.value)}
@@ -256,7 +256,7 @@ export default function Profile() {
             <input
               type="text"
               inputMode="numeric"
-              placeholder="Âge"
+              placeholder={t('profile.age')}
               value={age}
               onChange={e => handleAgeChange(e.target.value)}
               className={cn(
@@ -269,7 +269,7 @@ export default function Profile() {
           </div>
           <div>
             <textarea
-              placeholder="Une petite bio... Qui êtes-vous sur l'île ?"
+              placeholder={t('profile.bioPlaceholder')}
               value={bio}
               maxLength={BIO_MAX}
               onChange={e => setBio(e.target.value)}
@@ -285,14 +285,14 @@ export default function Profile() {
 
         {/* Réseaux sociaux */}
         <div className="card-premium p-5 space-y-3">
-          <SectionTitle>Réseaux sociaux</SectionTitle>
+          <SectionTitle>{t('profile.socialNetworks')}</SectionTitle>
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
               <Instagram className="h-4 w-4 text-white" />
             </div>
             <input
               type="text"
-              placeholder="Votre pseudo Instagram"
+              placeholder={t('profile.instagramPlaceholder')}
               value={instagram}
               maxLength={50}
               onChange={e => setInstagram(e.target.value.replace(/^@/, ''))}
@@ -306,7 +306,7 @@ export default function Profile() {
             </div>
             <input
               type="text"
-              placeholder="Votre pseudo LinkedIn"
+              placeholder={t('profile.linkedinPlaceholder')}
               value={linkedin}
               maxLength={50}
               onChange={e => setLinkedin(e.target.value)}
@@ -318,7 +318,7 @@ export default function Profile() {
 
         {/* Statut */}
         <div className="card-premium p-5">
-          <SectionTitle>Mon statut sur l'île</SectionTitle>
+          <SectionTitle>{t('profile.myStatus')}</SectionTitle>
           <div className="space-y-2">
             {STATUS_OPTIONS.map(opt => (
               <button key={opt.value} onClick={() => setStatus(opt.value)}
@@ -330,7 +330,7 @@ export default function Profile() {
                 )}
                 style={{ fontFamily: 'Jost, sans-serif' }}>
                 <span className="text-xl">{opt.emoji}</span>
-                <span>{opt.label}</span>
+                <span>{t(`statusOptions.${opt.value}`)}</span>
                 {status === opt.value && <Check className="h-4 w-4 ml-auto" />}
               </button>
             ))}
@@ -339,7 +339,7 @@ export default function Profile() {
 
         {/* Disponibilité */}
         <div className="card-premium p-5">
-          <SectionTitle>Disponibilité</SectionTitle>
+          <SectionTitle>{t('profile.availability')}</SectionTitle>
           <div className="flex flex-wrap gap-2">
             {AVAILABILITY_OPTIONS.map(opt => (
               <button key={opt.value} onClick={() => setAvailability(opt.value)}
@@ -350,7 +350,7 @@ export default function Profile() {
                     : 'border-border bg-background hover:bg-secondary text-foreground'
                 )}
                 style={{ fontFamily: 'Jost, sans-serif' }}>
-                {opt.label}
+                {t(`availabilityOptions.${opt.value}`)}
               </button>
             ))}
           </div>
@@ -358,9 +358,9 @@ export default function Profile() {
 
         {/* Centres d'intérêt */}
         <div className="card-premium p-5">
-          <SectionTitle>Centres d'intérêt</SectionTitle>
+          <SectionTitle>{t('profile.interests')}</SectionTitle>
           <p className="text-xs text-muted-foreground mb-3" style={{ fontFamily: 'Jost, sans-serif' }}>
-            Sélectionnez vos activités — elles servent à vous proposer des profils compatibles.
+            {t('profile.interestsDesc')}
           </p>
           <div className="flex flex-wrap gap-2">
             {INTEREST_OPTIONS.map(opt => (
@@ -372,7 +372,7 @@ export default function Profile() {
                     : 'border-border bg-background hover:bg-secondary text-foreground'
                 )}
                 style={{ fontFamily: 'Jost, sans-serif' }}>
-                {opt.emoji} {opt.value}
+                {opt.emoji} {t(`interestOptions.${opt.value}`)}
               </button>
             ))}
           </div>
@@ -380,7 +380,7 @@ export default function Profile() {
 
         <button onClick={handleSave} disabled={loading || !!ageError}
           className="btn-ocean w-full py-4 text-base font-semibold flex items-center justify-center gap-2 disabled:opacity-60">
-          {loading ? 'Sauvegarde...' : '✨ Enregistrer mon profil'}
+          {loading ? t('profile.saving') : t('profile.saveProfile')}
         </button>
 
         {/* Langue */}
@@ -408,38 +408,38 @@ export default function Profile() {
 
         {/* Notifications push */}
         <div className="card-premium p-5">
-          <SectionTitle>Notifications</SectionTitle>
+          <SectionTitle>{t('profile.notifications')}</SectionTitle>
           {isIosSafari() && !isStandalonePwa() ? (
             <div className="rounded-xl bg-ocean-light px-4 py-3 flex items-start gap-2.5">
               <Share className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
               <p className="text-xs text-primary" style={{ fontFamily: 'Jost, sans-serif' }}>
-                Sur iPhone, ajoutez d'abord Le Ré-seau à votre écran d'accueil (bouton Partager → "Sur l'écran d'accueil") pour pouvoir recevoir des notifications, puis revenez ici depuis cette icône.
+                {t('profile.iosNotifHint')}
               </p>
             </div>
           ) : pushPermission === 'unsupported' ? (
             <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>
-              Les notifications ne sont pas prises en charge sur ce navigateur.
+              {t('profile.notifUnsupported')}
             </p>
           ) : pushPermission === 'denied' ? (
             <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>
-              Vous avez bloqué les notifications pour ce site. Pour les réactiver, passez par les réglages de votre navigateur ou de votre téléphone (Réglages → Notifications → Le Ré-seau, ou l'icône 🔒 à côté de l'adresse du site).
+              {t('profile.notifDenied')}
             </p>
           ) : pushSubscribed ? (
             <div className="flex items-center justify-between gap-3">
               <p className="text-sm flex items-center gap-2" style={{ fontFamily: 'Jost, sans-serif' }}>
-                <Bell className="h-4 w-4 text-primary" /> Notifications activées
+                <Bell className="h-4 w-4 text-primary" /> {t('profile.notifEnabled')}
               </p>
               <button onClick={handleDisablePush} disabled={pushLoading} className="btn-ghost py-2 px-3 text-sm flex items-center gap-1.5 disabled:opacity-50">
-                <BellOff className="h-4 w-4" /> Désactiver
+                <BellOff className="h-4 w-4" /> {t('profile.notifDisable')}
               </button>
             </div>
           ) : (
             <div className="flex items-center justify-between gap-3">
               <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>
-                Recevez une alerte pour les messages, activités et discussions.
+                {t('profile.notifDesc')}
               </p>
               <button onClick={handleEnablePush} disabled={pushLoading} className="btn-ocean py-2 px-3 text-sm flex items-center gap-1.5 flex-shrink-0 disabled:opacity-50">
-                <Bell className="h-4 w-4" /> Activer
+                <Bell className="h-4 w-4" /> {t('profile.notifEnable')}
               </button>
             </div>
           )}
@@ -447,9 +447,9 @@ export default function Profile() {
 
         {/* Zone de danger : suppression de compte (obligation RGPD) */}
         <div className="card-premium p-5 border border-destructive/20">
-          <h3 className="font-display text-lg font-semibold mb-1 text-destructive">Zone de danger</h3>
+          <h3 className="font-display text-lg font-semibold mb-1 text-destructive">{t('profile.dangerZone')}</h3>
           <p className="text-xs text-muted-foreground mb-4" style={{ fontFamily: 'Jost, sans-serif' }}>
-            La suppression de votre compte est définitive et supprime toutes vos données.
+            {t('profile.deleteAccountDesc')}
           </p>
           <DeleteAccountButton />
         </div>

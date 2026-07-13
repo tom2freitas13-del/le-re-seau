@@ -1,16 +1,21 @@
 // Constantes partagées de l'application — un seul point de vérité
+// NOTE i18n : `value`/`id` sont les identifiants stockés en base (ne pas traduire,
+// ne pas changer). Les libellés affichés se traduisent via i18next, avec des clés
+// nommées d'après `value`/`id` (ex: t('statusOptions.' + value)) — voir Profile.tsx,
+// ProfileCard.tsx, Discussions.tsx, Activities.tsx, NewActivity.tsx, MapView.tsx,
+// ReportModal.tsx, Admin.tsx pour les points d'utilisation.
 
 export const STATUS_OPTIONS = [
-  { value: 'resident', emoji: '🏡', label: "J'habite sur l'île" },
-  { value: 'frequent', emoji: '🚗', label: 'Je viens souvent' },
-  { value: 'vacation', emoji: '☀️', label: 'Je suis en vacances' },
+  { value: 'resident', emoji: '🏡' },
+  { value: 'frequent', emoji: '🚗' },
+  { value: 'vacation', emoji: '☀️' },
 ] as const;
 
 export const AVAILABILITY_OPTIONS = [
-  { value: 'weekend', label: 'Ce week-end' },
-  { value: 'week', label: 'Cette semaine' },
-  { value: 'summer', label: 'Cet été' },
-  { value: 'year', label: "Toute l'année" },
+  { value: 'weekend' },
+  { value: 'week' },
+  { value: 'summer' },
+  { value: 'year' },
 ] as const;
 
 export const INTEREST_OPTIONS = [
@@ -27,35 +32,35 @@ export const INTEREST_OPTIONS = [
 ] as const;
 
 export const JOB_CATEGORIES = [
-  { value: '', label: 'Tous', emoji: '🗂️' },
-  { value: 'jardinage', label: 'Jardinage', emoji: '🌿' },
-  { value: 'bricolage', label: 'Bricolage', emoji: '🔨' },
-  { value: 'garde', label: 'Garde enfant', emoji: '👶' },
-  { value: 'livraison', label: 'Livraison', emoji: '🛵' },
-  { value: 'menage', label: 'Ménage', emoji: '🧹' },
-  { value: 'autre', label: 'Autre', emoji: '✨' },
+  { value: '', emoji: '🗂️' },
+  { value: 'jardinage', emoji: '🌿' },
+  { value: 'bricolage', emoji: '🔨' },
+  { value: 'garde', emoji: '👶' },
+  { value: 'livraison', emoji: '🛵' },
+  { value: 'menage', emoji: '🧹' },
+  { value: 'autre', emoji: '✨' },
 ] as const;
 
 export const SALONS = [
-  { id: 'plage', emoji: '🏖️', label: 'Plage', desc: 'Spots, conditions, bons plans plage' },
-  { id: 'velo', emoji: '🚲', label: 'Vélo', desc: 'Itinéraires, balades, location' },
-  { id: 'surf', emoji: '🏄', label: 'Surf', desc: 'Sessions, météo, spots secrets' },
-  { id: 'apero', emoji: '🍷', label: 'Apéro', desc: 'Bons plans, terrasses, rencontres' },
-  { id: 'bateau', emoji: '⛵', label: 'Nautisme', desc: 'Sorties, équipages, régates' },
-  { id: 'emploi', emoji: '💼', label: 'Services', desc: 'Coups de main, petits boulots' },
-  { id: 'famille', emoji: '👨‍👩‍👧', label: 'Familles', desc: 'Activités enfants, gardiennage' },
-  { id: 'general', emoji: '💬', label: 'Général', desc: 'Discussions libres entre îliens' },
+  { id: 'plage', emoji: '🏖️' },
+  { id: 'velo', emoji: '🚲' },
+  { id: 'surf', emoji: '🏄' },
+  { id: 'apero', emoji: '🍷' },
+  { id: 'bateau', emoji: '⛵' },
+  { id: 'emploi', emoji: '💼' },
+  { id: 'famille', emoji: '👨‍👩‍👧' },
+  { id: 'general', emoji: '💬' },
 ] as const;
 
 export const ACTIVITY_CATEGORIES = [
-  { value: 'plage', label: 'Plage', emoji: '🏖️' },
-  { value: 'velo', label: 'Vélo', emoji: '🚲' },
-  { value: 'surf', label: 'Surf', emoji: '🏄' },
-  { value: 'apero', label: 'Apéro', emoji: '🍷' },
-  { value: 'bateau', label: 'Nautisme', emoji: '⛵' },
-  { value: 'randonnee', label: 'Randonnée', emoji: '🥾' },
-  { value: 'sport', label: 'Sport', emoji: '🏃' },
-  { value: 'autre', label: 'Autre', emoji: '✨' },
+  { value: 'plage', emoji: '🏖️' },
+  { value: 'velo', emoji: '🚲' },
+  { value: 'surf', emoji: '🏄' },
+  { value: 'apero', emoji: '🍷' },
+  { value: 'bateau', emoji: '⛵' },
+  { value: 'randonnee', emoji: '🥾' },
+  { value: 'sport', emoji: '🏃' },
+  { value: 'autre', emoji: '✨' },
 ] as const;
 
 export const MIN_AGE = 15;
@@ -63,12 +68,12 @@ export const MAX_AGE = 120;
 
 // Raisons de signalement disponibles dans le système de modération
 export const REPORT_REASONS = [
-  { value: 'spam', label: 'Spam ou publicité' },
-  { value: 'harcelement', label: 'Harcèlement ou comportement hostile' },
-  { value: 'contenu_inapproprie', label: 'Contenu inapproprié' },
-  { value: 'arnaque', label: 'Arnaque ou tentative de fraude' },
-  { value: 'faux_profil', label: 'Faux profil / usurpation' },
-  { value: 'autre', label: 'Autre raison' },
+  { value: 'spam' },
+  { value: 'harcelement' },
+  { value: 'contenu_inapproprie' },
+  { value: 'arnaque' },
+  { value: 'faux_profil' },
+  { value: 'autre' },
 ] as const;
 
 // Génère une URL de fallback non-trompeuse (pas une vraie photo de visage)
@@ -77,17 +82,20 @@ export function avatarFallbackInitial(name: string | null | undefined): string {
   return (name?.trim()?.[0] || '?').toUpperCase();
 }
 
-// Formate "vu il y a Xmin/Xh" ou une heure/date pour l'affichage hors-ligne
-export function formatLastSeen(lastSeen: string | null | undefined): string {
-  if (!lastSeen) return 'Hors ligne';
+type TFunc = (key: string, options?: Record<string, unknown>) => string;
+
+// Formate "vu il y a Xmin/Xh" ou une heure/date pour l'affichage hors-ligne.
+// Prend `t` en paramètre (plutôt qu'un hook) car utilisé hors composants React.
+export function formatLastSeen(lastSeen: string | null | undefined, t: TFunc): string {
+  if (!lastSeen) return t('common.offline');
   const diffMs = Date.now() - new Date(lastSeen).getTime();
   const diffMin = Math.floor(diffMs / 60_000);
-  if (diffMin < 1) return "Vu à l'instant";
-  if (diffMin < 60) return `Vu il y a ${diffMin} min`;
+  if (diffMin < 1) return t('common.lastSeenJustNow');
+  if (diffMin < 60) return t('common.lastSeenMinAgo', { count: diffMin });
   const diffH = Math.floor(diffMin / 60);
-  if (diffH < 24) return `Vu il y a ${diffH} h`;
+  if (diffH < 24) return t('common.lastSeenHoursAgo', { count: diffH });
   const diffDays = Math.floor(diffH / 24);
-  if (diffDays === 1) return 'Vu hier';
-  if (diffDays < 7) return `Vu il y a ${diffDays} j`;
-  return `Vu le ${new Date(lastSeen).toLocaleDateString('fr-FR')}`;
+  if (diffDays === 1) return t('common.lastSeenYesterday');
+  if (diffDays < 7) return t('common.lastSeenDaysAgo', { count: diffDays });
+  return t('common.lastSeenOnDate', { date: new Date(lastSeen).toLocaleDateString() });
 }

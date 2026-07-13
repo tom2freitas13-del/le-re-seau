@@ -1,6 +1,7 @@
 import { MessageCircle, Instagram, Linkedin, Star, MoreVertical, ShieldCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { avatarFallbackInitial } from '@/lib/constants';
 import { ReportModal } from '@/components/ReportModal';
 import BlockButton from '@/components/BlockButton';
@@ -24,16 +25,17 @@ export interface ProfileCardProfile {
 }
 
 export function AdminBadge({ compact = false }: { compact?: boolean }) {
+  const { t } = useTranslation();
   if (compact) {
     return (
-      <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-gradient-to-r from-amber-400 to-amber-600 flex-shrink-0" title="Admin">
+      <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-gradient-to-r from-amber-400 to-amber-600 flex-shrink-0" title={t('profileCard.admin')}>
         <ShieldCheck className="h-2.5 w-2.5 text-white" />
       </span>
     );
   }
   return (
     <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-400 to-amber-600 px-2 py-0.5 text-[10px] font-semibold text-white flex-shrink-0">
-      <ShieldCheck className="h-3 w-3" /> Admin
+      <ShieldCheck className="h-3 w-3" /> {t('profileCard.admin')}
     </span>
   );
 }
@@ -43,26 +45,29 @@ interface ProfileCardProps {
   matchScore?: number;
 }
 
-export const statusConfig: Record<string, { label: string; color: string; dot: string }> = {
-  resident: { label: 'Résident·e', color: 'bg-pine-light text-pine', dot: 'bg-pine' },
-  frequent: { label: 'Vient souvent', color: 'bg-ocean-light text-primary', dot: 'bg-primary' },
-  vacation: { label: 'En vacances', color: 'bg-sand-light text-sand-dark', dot: 'bg-gold' },
+// Le libellé affiché vient de la traduction i18n (clés statusLabels.*/interestOptions.*
+// nommées d'après ces mêmes clés d'objet) — voir usages ci-dessous et dans ProfileDetailModal.
+export const statusConfig: Record<string, { color: string; dot: string }> = {
+  resident: { color: 'bg-pine-light text-pine', dot: 'bg-pine' },
+  frequent: { color: 'bg-ocean-light text-primary', dot: 'bg-primary' },
+  vacation: { color: 'bg-sand-light text-sand-dark', dot: 'bg-gold' },
 };
 
-export const interestConfig: Record<string, { emoji: string; label: string }> = {
-  plage: { emoji: '🏖️', label: 'Plage' },
-  vélo: { emoji: '🚲', label: 'Vélo' },
-  tennis: { emoji: '🎾', label: 'Tennis' },
-  surf: { emoji: '🏄', label: 'Surf' },
-  apéro: { emoji: '🍷', label: 'Apéro' },
-  bateau: { emoji: '⛵', label: 'Bateau' },
-  running: { emoji: '🏃', label: 'Running' },
-  pêche: { emoji: '🎣', label: 'Pêche' },
-  yoga: { emoji: '🧘', label: 'Yoga' },
-  randonnée: { emoji: '🥾', label: 'Rando' },
+export const interestConfig: Record<string, { emoji: string }> = {
+  plage: { emoji: '🏖️' },
+  vélo: { emoji: '🚲' },
+  tennis: { emoji: '🎾' },
+  surf: { emoji: '🏄' },
+  apéro: { emoji: '🍷' },
+  bateau: { emoji: '⛵' },
+  running: { emoji: '🏃' },
+  pêche: { emoji: '🎣' },
+  yoga: { emoji: '🧘' },
+  randonnée: { emoji: '🥾' },
 };
 
 export default function ProfileCard({ profile, matchScore }: ProfileCardProps) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const status = profile.status ? statusConfig[profile.status] : null;
   const [menuOpen, setMenuOpen] = useState(false);
@@ -112,7 +117,7 @@ export default function ProfileCard({ profile, matchScore }: ProfileCardProps) {
             <div className={`flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-medium glass max-w-[68%] ${status.color}`}
               style={{ fontFamily: 'Jost, sans-serif' }}>
               <div className={`h-1.5 w-1.5 rounded-full ${status.dot} flex-shrink-0`} />
-              <span className="truncate">{status.label}</span>
+              <span className="truncate">{t(`statusLabels.${profile.status}`)}</span>
             </div>
           ) : <span />}
 
@@ -139,13 +144,13 @@ export default function ProfileCard({ profile, matchScore }: ProfileCardProps) {
                   onClick={() => { setReportOpen(true); setMenuOpen(false); }}
                   className="w-full text-left px-3 py-2 text-sm hover:bg-secondary flex items-center gap-2"
                   style={{ fontFamily: 'Jost, sans-serif' }}>
-                  🚩 Signaler
+                  {t('profileCard.report')}
                 </button>
                 <button
                   onClick={() => { blocked ? unblockUser(profile.user_id) : blockUser(profile.user_id); setMenuOpen(false); }}
                   className="w-full text-left px-3 py-2 text-sm hover:bg-secondary flex items-center gap-2 text-destructive"
                   style={{ fontFamily: 'Jost, sans-serif' }}>
-                  {blocked ? '✅ Débloquer' : '🚫 Bloquer'}
+                  {blocked ? t('profileCard.unblock') : t('profileCard.block')}
                 </button>
               </div>
             )}
@@ -155,9 +160,9 @@ export default function ProfileCard({ profile, matchScore }: ProfileCardProps) {
         {/* Name on photo */}
         <div className="absolute bottom-0 left-0 right-0 p-4">
           <h3 className="font-display text-2xl font-semibold text-white flex flex-wrap items-center gap-2" style={{ textShadow: '0 1px 8px rgba(0,0,0,0.4)' }}>
-            {profile.name || 'Anonyme'}{profile.age ? `, ${profile.age}` : ''}
+            {profile.name || t('profileCard.anonymous')}{profile.age ? `, ${profile.age}` : ''}
             {online && (
-              <span className="inline-flex h-2.5 w-2.5 rounded-full bg-green-400 ring-2 ring-white/80 flex-shrink-0" title="En ligne" />
+              <span className="inline-flex h-2.5 w-2.5 rounded-full bg-green-400 ring-2 ring-white/80 flex-shrink-0" title={t('profileCard.online')} />
             )}
             {profile.is_admin && <AdminBadge compact />}
           </h3>
@@ -180,7 +185,7 @@ export default function ProfileCard({ profile, matchScore }: ProfileCardProps) {
                 const conf = interestConfig[interest];
                 return (
                   <span key={interest} className="pill bg-secondary text-secondary-foreground">
-                    {conf?.emoji || ''} {conf?.label || interest}
+                    {conf?.emoji || ''} {conf ? t(`interestOptions.${interest}`) : interest}
                   </span>
                 );
               })}
@@ -197,7 +202,7 @@ export default function ProfileCard({ profile, matchScore }: ProfileCardProps) {
             onClick={() => navigate(`/chat/${profile.user_id}`)}
             className="w-full btn-ocean flex items-center justify-center gap-2 py-2.5 text-sm">
             <MessageCircle className="h-4 w-4" />
-            Message
+            {t('profileCard.message')}
           </button>
 
           {(profile.instagram || profile.linkedin) && (

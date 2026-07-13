@@ -7,7 +7,80 @@
     "send": "Envoyer",
     "publish": "Publier",
     "create": "Créer",
-    "or": "ou"
+    "or": "ou",
+    "online": "En ligne",
+    "offline": "Hors ligne",
+    "lastSeenJustNow": "Vu à l'instant",
+    "lastSeenMinAgo": "Vu il y a {{count}} min",
+    "lastSeenHoursAgo": "Vu il y a {{count}} h",
+    "lastSeenYesterday": "Vu hier",
+    "lastSeenDaysAgo": "Vu il y a {{count}} j",
+    "lastSeenOnDate": "Vu le {{date}}"
+  },
+  "statusOptions": {
+    "resident": "J'habite sur l'île",
+    "frequent": "Je viens souvent",
+    "vacation": "Je suis en vacances"
+  },
+  "statusLabels": {
+    "resident": "Résident·e",
+    "frequent": "Vient souvent",
+    "vacation": "En vacances"
+  },
+  "availabilityOptions": {
+    "weekend": "Ce week-end",
+    "week": "Cette semaine",
+    "summer": "Cet été",
+    "year": "Toute l'année"
+  },
+  "interestOptions": {
+    "plage": "Plage",
+    "vélo": "Vélo",
+    "tennis": "Tennis",
+    "surf": "Surf",
+    "apéro": "Apéro",
+    "bateau": "Bateau",
+    "running": "Running",
+    "pêche": "Pêche",
+    "yoga": "Yoga",
+    "randonnée": "Rando"
+  },
+  "jobCategories": {
+    "all": "Tous",
+    "jardinage": "Jardinage",
+    "bricolage": "Bricolage",
+    "garde": "Garde enfant",
+    "livraison": "Livraison",
+    "menage": "Ménage",
+    "autre": "Autre"
+  },
+  "salons": {
+    "plage": { "label": "Plage", "desc": "Spots, conditions, bons plans plage" },
+    "velo": { "label": "Vélo", "desc": "Itinéraires, balades, location" },
+    "surf": { "label": "Surf", "desc": "Sessions, météo, spots secrets" },
+    "apero": { "label": "Apéro", "desc": "Bons plans, terrasses, rencontres" },
+    "bateau": { "label": "Nautisme", "desc": "Sorties, équipages, régates" },
+    "emploi": { "label": "Services", "desc": "Coups de main, petits boulots" },
+    "famille": { "label": "Familles", "desc": "Activités enfants, gardiennage" },
+    "general": { "label": "Général", "desc": "Discussions libres entre îliens" }
+  },
+  "activityCategories": {
+    "plage": "Plage",
+    "velo": "Vélo",
+    "surf": "Surf",
+    "apero": "Apéro",
+    "bateau": "Nautisme",
+    "randonnee": "Randonnée",
+    "sport": "Sport",
+    "autre": "Autre"
+  },
+  "reportReasons": {
+    "spam": "Spam ou publicité",
+    "harcelement": "Harcèlement ou comportement hostile",
+    "contenu_inapproprie": "Contenu inapproprié",
+    "arnaque": "Arnaque ou tentative de fraude",
+    "faux_profil": "Faux profil / usurpation",
+    "autre": "Autre raison"
   },
   "nav": {
     "home": "Accueil",
@@ -115,6 +188,64 @@
     "services": "Services",
     "servicesDesc": "Offres et demandes d'entraide entre voisins"
   },
+  "admin": {
+    "title": "Modération",
+    "subtitle": "Espace réservé aux admins",
+    "filterPending": "À traiter",
+    "filterReviewed": "Traités",
+    "filterDismissed": "Classés",
+    "filterAll": "Tous",
+    "nothingToReport": "Rien à signaler",
+    "noReportsInCategory": "Aucun signalement dans cette catégorie.",
+    "reportedBy": "Signalé par :",
+    "concerns": "Concerne :",
+    "banned": "Banni",
+    "markReviewed": "Marquer traité",
+    "dismiss": "Classer sans suite",
+    "unban": "Débannir",
+    "ban": "Bannir l'utilisateur",
+    "updateError": "Erreur lors de la mise à jour.",
+    "reportReviewed": "Signalement traité.",
+    "reportDismissed": "Signalement classé sans suite.",
+    "banStatusError": "Erreur lors de la mise à jour du statut.",
+    "userUnbanned": "Utilisateur débanni.",
+    "userBanned": "Utilisateur banni.",
+    "defaultUser": "Utilisateur",
+    "targetType": {
+      "profile": "Profil",
+      "message": "Message privé",
+      "group_message": "Message de groupe",
+      "salon_message": "Message de salon",
+      "forum_post": "Post du forum",
+      "forum_comment": "Commentaire",
+      "job_offer": "Offre d'emploi",
+      "job_request": "Demande de service",
+      "activity": "Activité"
+    }
+  },
+  "reportModal": {
+    "title": "Signaler",
+    "sentTitle": "Signalement envoyé. Merci de nous aider à garder Le Ré-seau sûr — notre équipe va l'examiner.",
+    "close": "Fermer",
+    "why": "Pourquoi signalez-vous ce contenu ?",
+    "detailsPlaceholder": "Précisez si besoin (optionnel)",
+    "sending": "Envoi...",
+    "submit": "Envoyer le signalement",
+    "sendError": "Impossible d'envoyer le signalement. Réessayez."
+  },
+  "profileDetail": {
+    "matchPercent": "⭐ {{score}}% de compatibilité avec tes centres d'intérêt",
+    "interestsTitle": "Centres d'intérêt"
+  },
+  "profileCard": {
+    "admin": "Admin",
+    "online": "En ligne",
+    "anonymous": "Anonyme",
+    "message": "Message",
+    "report": "🚩 Signaler",
+    "unblock": "✅ Débloquer",
+    "block": "🚫 Bloquer"
+  },
   "profile": {
     "title": "Mon Profil",
     "moderation": "Modération",
@@ -123,6 +254,40 @@
     "language": "Langue",
     "languageDesc": "Choisissez la langue d'affichage du site.",
     "french": "Français",
-    "english": "Anglais"
+    "english": "Anglais",
+    "loadingPhoto": "Chargement...",
+    "infoSection": "Informations",
+    "firstName": "Prénom *",
+    "age": "Âge",
+    "ageMinError": "L'âge minimum est {{min}} ans.",
+    "ageMaxError": "L'âge maximum est {{max}} ans.",
+    "bioPlaceholder": "Une petite bio... Qui êtes-vous sur l'île ?",
+    "socialNetworks": "Réseaux sociaux",
+    "instagramPlaceholder": "Votre pseudo Instagram",
+    "linkedinPlaceholder": "Votre pseudo LinkedIn",
+    "myStatus": "Mon statut sur l'île",
+    "availability": "Disponibilité",
+    "interests": "Centres d'intérêt",
+    "interestsDesc": "Sélectionnez vos activités — elles servent à vous proposer des profils compatibles.",
+    "saving": "Sauvegarde...",
+    "saveProfile": "✨ Enregistrer mon profil",
+    "notifications": "Notifications",
+    "iosNotifHint": "Sur iPhone, ajoutez d'abord Le Ré-seau à votre écran d'accueil (bouton Partager → \"Sur l'écran d'accueil\") pour pouvoir recevoir des notifications, puis revenez ici depuis cette icône.",
+    "notifUnsupported": "Les notifications ne sont pas prises en charge sur ce navigateur.",
+    "notifDenied": "Vous avez bloqué les notifications pour ce site. Pour les réactiver, passez par les réglages de votre navigateur ou de votre téléphone (Réglages → Notifications → Le Ré-seau, ou l'icône 🔒 à côté de l'adresse du site).",
+    "notifEnabled": "Notifications activées",
+    "notifDisable": "Désactiver",
+    "notifDesc": "Recevez une alerte pour les messages, activités et discussions.",
+    "notifEnable": "Activer",
+    "dangerZone": "Zone de danger",
+    "deleteAccountDesc": "La suppression de votre compte est définitive et supprime toutes vos données.",
+    "nameRequiredError": "Merci de renseigner votre prénom.",
+    "photoTypeError": "Merci de choisir un fichier image.",
+    "photoSizeError": "L'image doit faire moins de {{max}} Mo.",
+    "photoUploadError": "Erreur lors de l'envoi de la photo.",
+    "saveError": "Erreur lors de la sauvegarde.",
+    "saveSuccess": "Profil mis à jour ✨",
+    "pushEnableError": "Impossible d'activer les notifications. Vérifiez les autorisations de votre navigateur.",
+    "pushDisabled": "Notifications désactivées."
   }
 }
