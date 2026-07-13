@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { X, Eye, Trash2 } from 'lucide-react';
+import { X, Eye, Trash2, Send } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
@@ -44,8 +44,12 @@ export default function StoryViewer({ groups, startGroupIndex, onClose }: {
   const [progress, setProgress] = useState(0);
   const [viewers, setViewers] = useState<{ name: string | null }[] | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [replyText, setReplyText] = useState('');
+  const [sendingReply, setSendingReply] = useState(false);
+  const [paused, setPaused] = useState(false);
   const rafRef = useRef<number>();
   const startRef = useRef<number>(0);
+  const progressRef = useRef(0);
 
   const group = localGroups[groupIndex];
   const story = group?.stories[storyIndex];
@@ -107,13 +111,26 @@ export default function StoryViewer({ groups, startGroupIndex, onClose }: {
     setViewers(null);
   }, [story?.id, user]);
 
-  // Barre de progression + avance automatique.
+  // Remet la progression à zéro à chaque changement de story (pas au pause/reprise).
   useEffect(() => {
     setProgress(0);
-    startRef.current = performance.now();
+    progressRef.current = 0;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [groupIndex, storyIndex]);
+
+  // Barre de progression + avance automatique. En pause (réponse en cours de
+  // frappe), on ne fait qu'annuler la boucle ; à la reprise, on repart de la
+  // progression déjà atteinte plutôt que de tout recommencer à zéro.
+  useEffect(() => {
+    if (paused) {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      return;
+    }
+    startRef.current = performance.now() - progressRef.current * STORY_DURATION_MS;
     const tick = (now: number) => {
       const elapsed = now - startRef.current;
       const pct = Math.min(elapsed / STORY_DURATION_MS, 1);
+      progressRef.current = pct;
       setProgress(pct);
       if (pct >= 1) {
         goNextStory();
@@ -124,7 +141,7 @@ export default function StoryViewer({ groups, startGroupIndex, onClose }: {
     rafRef.current = requestAnimationFrame(tick);
     return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [groupIndex, storyIndex]);
+  }, [groupIndex, storyIndex, paused]);
 
   const loadViewers = async () => {
     if (!story) return;
@@ -133,6 +150,22 @@ export default function StoryViewer({ groups, startGroupIndex, onClose }: {
     const ids = data.map(v => v.viewer_id);
     const { data: profiles } = await supabase.from('profiles').select('user_id, name').in('user_id', ids);
     setViewers((profiles || []).map(p => ({ name: p.name })));
+  };
+
+  const handleSendReply = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user || !story || !replyText.trim() || sendingReply) return;
+    setSendingReply(true);
+    const { error } = await supabase.from('messages').insert({
+      sender_id: user.id,
+      receiver_id: story.user_id,
+      content: replyText.trim(),
+    });
+    setSendingReply(false);
+    if (error) { toast.error(t('storyViewer.replyError')); return; }
+    toast.success(t('storyViewer.replySent'));
+    setReplyText('');
+    setPaused(false);
   };
 
   if (!group || !story) return null;
@@ -207,6 +240,27 @@ export default function StoryViewer({ groups, startGroupIndex, onClose }: {
             </div>
           )}
         </div>
+      )}
+
+      {!isMine && (
+        <form onSubmit={handleSendReply} className="px-4 pb-6 pt-2 safe-area-bottom flex items-center gap-2">
+          <input
+            value={replyText}
+            onChange={e => setReplyText(e.target.value)}
+            onFocus={() => setPaused(true)}
+            onBlur={() => { if (!replyText.trim()) setPaused(false); }}
+            maxLength={1000}
+            placeholder={t('storyViewer.replyPlaceholder', { name: group.name || t('storyViewer.defaultMember') })}
+            className="flex-1 px-4 py-2.5 rounded-full border border-white/30 bg-white/10 text-white placeholder-white/60 text-sm outline-none focus:ring-2 focus:ring-white/40"
+            style={{ fontFamily: 'Jost, sans-serif' }}
+          />
+          {replyText.trim() && (
+            <button type="submit" disabled={sendingReply}
+              className="h-10 w-10 rounded-full bg-white text-black flex items-center justify-center flex-shrink-0 disabled:opacity-50">
+              <Send className="h-4 w-4" />
+            </button>
+          )}
+        </form>
       )}
     </div>
   );

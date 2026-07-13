@@ -352,7 +352,10 @@
     "noViewers": "No one has viewed this story yet.",
     "justNow": "just now",
     "minAgo": "{{count}} min",
-    "hoursAgo": "{{count}}h"
+    "hoursAgo": "{{count}}h",
+    "replyPlaceholder": "Reply to {{name}}...",
+    "replySent": "Reply sent!",
+    "replyError": "Couldn't send the reply."
   },
   "createStoryModal": {
     "title": "New story",

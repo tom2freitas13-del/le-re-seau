@@ -352,7 +352,10 @@
     "noViewers": "Personne n'a encore vu cette story.",
     "justNow": "à l'instant",
     "minAgo": "{{count}} min",
-    "hoursAgo": "{{count}} h"
+    "hoursAgo": "{{count}} h",
+    "replyPlaceholder": "Répondre à {{name}}...",
+    "replySent": "Réponse envoyée !",
+    "replyError": "Impossible d'envoyer la réponse."
   },
   "createStoryModal": {
     "title": "Nouvelle story",
