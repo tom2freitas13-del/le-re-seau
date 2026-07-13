@@ -3,11 +3,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import BottomNav from '@/components/BottomNav';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Plus, MapPin, Clock, Euro, MessageCircle, Briefcase, Search, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
 export default function Jobs() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [offers, setOffers] = useState<any[]>([]);
@@ -39,9 +41,9 @@ export default function Jobs() {
     setDeletingId(id);
     const { error } = await supabase.from(table).delete().eq('id', id).eq('author_id', user.id);
     if (error) {
-      toast.error("Impossible de supprimer cette annonce.");
+      toast.error(t('jobs.deleteError'));
     } else {
-      toast.success('Annonce supprimée.');
+      toast.success(t('jobs.deleted'));
       if (table === 'job_offers') setOffers(prev => prev.filter(o => o.id !== id));
       else setRequests(prev => prev.filter(r => r.id !== id));
     }
@@ -62,12 +64,12 @@ export default function Jobs() {
                 <Briefcase className="h-5 w-5 text-gold" strokeWidth={1.5} />
               </div>
               <div>
-                <h1 className="font-display text-2xl font-semibold">Services</h1>
-                <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>Entraide locale sur l'île</p>
+                <h1 className="font-display text-2xl font-semibold">{t('jobs.title')}</h1>
+                <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>{t('jobs.subtitle')}</p>
               </div>
             </div>
             <button onClick={() => navigate('/jobs/new')} className="btn-ocean flex items-center gap-1.5 py-2.5">
-              <Plus className="h-4 w-4" /> Publier
+              <Plus className="h-4 w-4" /> {t('jobs.publish')}
             </button>
           </div>
 
@@ -77,7 +79,7 @@ export default function Jobs() {
             <input
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder="Rechercher..."
+              placeholder={t('jobs.searchPlaceholder')}
               className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20"
               style={{ fontFamily: 'Jost, sans-serif' }}
             />
@@ -88,12 +90,12 @@ export default function Jobs() {
             <button onClick={() => setActiveTab('offers')}
               className={cn('flex-1 rounded-full py-2 text-sm font-medium transition-all', activeTab === 'offers' ? 'bg-primary text-white shadow-md shadow-primary/20' : 'bg-secondary text-muted-foreground')}
               style={{ fontFamily: 'Jost, sans-serif' }}>
-              💼 Offres ({offers.length})
+              {t('jobs.offers', { count: offers.length })}
             </button>
             <button onClick={() => setActiveTab('requests')}
               className={cn('flex-1 rounded-full py-2 text-sm font-medium transition-all', activeTab === 'requests' ? 'bg-primary text-white shadow-md shadow-primary/20' : 'bg-secondary text-muted-foreground')}
               style={{ fontFamily: 'Jost, sans-serif' }}>
-              🙋 Demandes ({requests.length})
+              {t('jobs.requests', { count: requests.length })}
             </button>
           </div>
         </div>
@@ -104,14 +106,14 @@ export default function Jobs() {
           <div className="text-center py-16">
             <div className="text-5xl mb-4">{activeTab === 'offers' ? '💼' : '🙋'}</div>
             <h3 className="font-display text-xl mb-2">
-              {search ? 'Aucun résultat' : 'Aucune annonce pour le moment'}
+              {search ? t('jobs.noResults') : t('jobs.noneYet')}
             </h3>
             <p className="text-sm text-muted-foreground mb-6" style={{ fontFamily: 'Jost, sans-serif' }}>
-              {search ? 'Essayez un autre mot-clé.' : 'Soyez le premier à publier !'}
+              {search ? t('jobs.tryOtherKeyword') : t('jobs.beFirstToPublish')}
             </p>
             {!search && (
               <button onClick={() => navigate('/jobs/new')} className="btn-ocean">
-                Publier une annonce
+                {t('jobs.publishAd')}
               </button>
             )}
           </div>
@@ -135,7 +137,7 @@ export default function Jobs() {
                       <button
                         onClick={() => handleDelete(item.id, table)}
                         disabled={deletingId === item.id}
-                        title="Supprimer mon annonce"
+                        title={t('jobs.deleteMine')}
                         className="text-muted-foreground hover:text-destructive transition-colors p-1.5 rounded-lg hover:bg-destructive/10 disabled:opacity-50 flex-shrink-0">
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -144,7 +146,7 @@ export default function Jobs() {
 
                   <div className="flex flex-wrap gap-2">
                     {isMine && (
-                      <span className="pill bg-pine-light text-pine">Votre annonce</span>
+                      <span className="pill bg-pine-light text-pine">{t('jobs.yourAd')}</span>
                     )}
                     {item.location && (
                       <span className="pill bg-ocean-light text-primary flex items-center gap-1">
@@ -168,7 +170,7 @@ export default function Jobs() {
                       onClick={() => navigate(`/chat/${item.author_id}`)}
                       className="btn-ghost w-full flex items-center justify-center gap-2 py-2.5">
                       <MessageCircle className="h-4 w-4" />
-                      {activeTab === 'offers' ? "Répondre à l'offre" : 'Contacter'}
+                      {activeTab === 'offers' ? t('jobs.replyToOffer') : t('jobs.contact')}
                     </button>
                   )}
                 </div>
