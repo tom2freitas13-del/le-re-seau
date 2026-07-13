@@ -86,7 +86,7 @@ export default function Auth() {
       }
       // Si pas d'erreur, le navigateur est redirigé vers Google — pas besoin de faire autre chose ici.
     } catch {
-      toast.error('Connexion Google impossible pour le moment.');
+      toast.error(t('auth.googleError'));
       setGoogleLoading(false);
     }
   };

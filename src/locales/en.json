@@ -191,6 +191,12 @@
   "locationPicker": {
     "defaultPlaceholder": "Search for a place on the island..."
   },
+  "blockedUsers": {
+    "blockError": "Couldn't block this user.",
+    "blockedSuccess": "User blocked. You will no longer see their content.",
+    "unblockError": "Couldn't unblock this user.",
+    "unblockedSuccess": "User unblocked."
+  },
   "legalNotice": {
     "title": "Legal Notice",
     "back": "Back",
@@ -562,6 +568,7 @@
   "newActivity": {
     "title": "Create an activity",
     "addPhoto": "Add a photo (optional)",
+    "photoPreview": "Preview",
     "titleLabel": "Title *",
     "titlePlaceholder": "E.g. Bike ride to Phare des Baleines",
     "descriptionLabel": "Description",

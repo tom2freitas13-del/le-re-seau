@@ -191,6 +191,12 @@
   "locationPicker": {
     "defaultPlaceholder": "Rechercher un lieu sur l'île..."
   },
+  "blockedUsers": {
+    "blockError": "Impossible de bloquer cet utilisateur.",
+    "blockedSuccess": "Utilisateur bloqué. Vous ne verrez plus son contenu.",
+    "unblockError": "Impossible de débloquer cet utilisateur.",
+    "unblockedSuccess": "Utilisateur débloqué."
+  },
   "legalNotice": {
     "title": "Mentions légales",
     "back": "Retour",
@@ -562,6 +568,7 @@
   "newActivity": {
     "title": "Créer une activité",
     "addPhoto": "Ajouter une photo (optionnel)",
+    "photoPreview": "Aperçu",
     "titleLabel": "Titre *",
     "titlePlaceholder": "Ex: Sortie vélo au phare des Baleines",
     "descriptionLabel": "Description",

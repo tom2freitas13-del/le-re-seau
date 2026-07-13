@@ -130,7 +130,7 @@ export default function NewActivity() {
           <label className="block cursor-pointer">
             <div className="relative aspect-[16/9] rounded-2xl overflow-hidden bg-muted border-2 border-dashed border-border flex items-center justify-center group hover:border-primary/40 transition-colors">
               {photoPreview ? (
-                <img src={photoPreview} alt="Aperçu" className="h-full w-full object-cover" />
+                <img src={photoPreview} alt={t('newActivity.photoPreview')} className="h-full w-full object-cover" />
               ) : (
                 <div className="text-center">
                   <Camera className="h-8 w-8 text-muted-foreground mx-auto mb-2" strokeWidth={1.5} />
