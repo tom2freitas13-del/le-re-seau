@@ -188,6 +188,20 @@
     "services": "Services",
     "servicesDesc": "Offers and requests for help between neighbours"
   },
+  "mapView": {
+    "title": "Map",
+    "activityCount_one": "{{count}} activity on the island",
+    "activityCount_other": "{{count}} activities on the island",
+    "viewList": "View list",
+    "all": "All",
+    "loadingMap": "Loading map...",
+    "mapErrorTitle": "The map couldn't be displayed.",
+    "mapErrorMessage": "Reload the page to try again.",
+    "noneLocated": "No located activity yet.",
+    "createAria": "Create an activity",
+    "activity": "Activity",
+    "viewActivity": "View activity"
+  },
   "newActivity": {
     "title": "Create an activity",
     "addPhoto": "Add a photo (optional)",

@@ -188,6 +188,20 @@
     "services": "Services",
     "servicesDesc": "Offres et demandes d'entraide entre voisins"
   },
+  "mapView": {
+    "title": "Carte",
+    "activityCount_one": "{{count}} activité sur l'île",
+    "activityCount_other": "{{count}} activités sur l'île",
+    "viewList": "Voir la liste",
+    "all": "Toutes",
+    "loadingMap": "Chargement de la carte...",
+    "mapErrorTitle": "La carte n'a pas pu s'afficher.",
+    "mapErrorMessage": "Rechargez la page pour réessayer.",
+    "noneLocated": "Aucune activité localisée pour le moment.",
+    "createAria": "Créer une activité",
+    "activity": "Activité",
+    "viewActivity": "Voir l'activité"
+  },
   "newActivity": {
     "title": "Créer une activité",
     "addPhoto": "Ajouter une photo (optionnel)",

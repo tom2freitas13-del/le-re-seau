@@ -5,6 +5,7 @@ import 'leaflet/dist/leaflet.css';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import BottomNav from '@/components/BottomNav';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { Map as MapIcon, Calendar, MapPin, Users, X, List, Plus } from 'lucide-react';
@@ -83,6 +84,7 @@ function LeafletMap({ activities, onSelect }: { activities: MapActivity[]; onSel
 }
 
 export default function MapView() {
+  const { t, i18n } = useTranslation();
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [activities, setActivities] = useState<MapActivity[]>([]);
@@ -129,7 +131,7 @@ export default function MapView() {
 
   const formatDate = (d: string | null) => {
     if (!d) return null;
-    return new Date(d).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
+    return new Date(d).toLocaleDateString(i18n.language === 'en' ? 'en-US' : 'fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
   };
 
   if (authLoading) return null;
@@ -143,12 +145,12 @@ export default function MapView() {
               <MapIcon className="h-5 w-5 text-primary" strokeWidth={1.5} />
             </div>
             <div className="flex-1">
-              <h1 className="font-display text-2xl font-semibold">Carte</h1>
+              <h1 className="font-display text-2xl font-semibold">{t('mapView.title')}</h1>
               <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>
-                {filtered.length} activité{filtered.length > 1 ? 's' : ''} sur l'île
+                {t('mapView.activityCount', { count: filtered.length })}
               </p>
             </div>
-            <button onClick={() => navigate('/activities')} title="Voir la liste"
+            <button onClick={() => navigate('/activities')} title={t('mapView.viewList')}
               className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center text-foreground hover:bg-ocean-light hover:text-primary transition-colors">
               <List className="h-4 w-4" />
             </button>
@@ -160,14 +162,14 @@ export default function MapView() {
               className={cn('rounded-full px-3.5 py-1.5 text-xs font-medium transition-all flex-shrink-0',
                 !categoryFilter ? 'bg-primary text-white' : 'bg-secondary text-muted-foreground')}
               style={{ fontFamily: 'Jost, sans-serif' }}>
-              Toutes
+              {t('mapView.all')}
             </button>
             {ACTIVITY_CATEGORIES.map(c => (
               <button key={c.value} onClick={() => setCategoryFilter(categoryFilter === c.value ? null : c.value)}
                 className={cn('rounded-full px-3.5 py-1.5 text-xs font-medium transition-all flex-shrink-0',
                   categoryFilter === c.value ? 'bg-primary text-white' : 'bg-secondary text-muted-foreground')}
                 style={{ fontFamily: 'Jost, sans-serif' }}>
-                {c.emoji} {c.label}
+                {c.emoji} {t(`activityCategories.${c.value}`)}
               </button>
             ))}
           </div>
@@ -178,10 +180,10 @@ export default function MapView() {
       <div className="flex-1 relative" style={{ minHeight: '60vh' }}>
         {loading ? (
           <div className="absolute inset-0 flex items-center justify-center bg-muted">
-            <p className="text-sm text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>Chargement de la carte...</p>
+            <p className="text-sm text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>{t('mapView.loadingMap')}</p>
           </div>
         ) : (
-          <ErrorBoundary fallbackTitle="La carte n'a pas pu s'afficher." fallbackMessage="Rechargez la page pour réessayer.">
+          <ErrorBoundary fallbackTitle={t('mapView.mapErrorTitle')} fallbackMessage={t('mapView.mapErrorMessage')}>
             <LeafletMap activities={filtered} onSelect={setSelected} />
           </ErrorBoundary>
         )}
@@ -191,7 +193,7 @@ export default function MapView() {
             <div className="text-center px-6">
               <p className="text-4xl mb-3">🗺️</p>
               <p className="text-sm text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>
-                Aucune activité localisée pour le moment.
+                {t('mapView.noneLocated')}
               </p>
             </div>
           </div>
@@ -200,7 +202,7 @@ export default function MapView() {
 
       <button onClick={() => navigate('/activities/new')}
         className="fixed bottom-24 right-4 z-40 h-14 w-14 rounded-full bg-primary text-white shadow-xl flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
-        style={{ boxShadow: '0 8px 24px rgba(28,94,120,0.4)' }} aria-label="Créer une activité">
+        style={{ boxShadow: '0 8px 24px rgba(28,94,120,0.4)' }} aria-label={t('mapView.createAria')}>
         <Plus className="h-6 w-6" />
       </button>
 
@@ -213,7 +215,7 @@ export default function MapView() {
             </button>
             <span className="pill bg-ocean-light text-primary mb-2 inline-block">
               {ACTIVITY_CATEGORIES.find(c => c.value === selected.category)?.emoji}{' '}
-              {ACTIVITY_CATEGORIES.find(c => c.value === selected.category)?.label || 'Activité'}
+              {selected.category ? t(`activityCategories.${selected.category}`) : t('mapView.activity')}
             </span>
             <h3 className="font-display text-lg font-semibold mb-2">{selected.title}</h3>
             <div className="flex flex-wrap gap-2 text-xs mb-3">
@@ -232,7 +234,7 @@ export default function MapView() {
               </span>
             </div>
             <button onClick={() => navigate('/activities')} className="btn-ocean w-full py-2.5 text-sm">
-              Voir l'activité
+              {t('mapView.viewActivity')}
             </button>
           </div>
         </div>
