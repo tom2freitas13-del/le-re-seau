@@ -188,6 +188,27 @@
     "services": "Services",
     "servicesDesc": "Offres et demandes d'entraide entre voisins"
   },
+  "chat": {
+    "conversation": "Conversation",
+    "reportUser": "🚩 Signaler {{name}}",
+    "thisUser": "cet utilisateur",
+    "unblock": "✅ Débloquer",
+    "block": "🚫 Bloquer",
+    "blockedMessage": "Vous avez bloqué {{name}}. Débloquez-le depuis le menu pour reprendre la conversation.",
+    "sentPhoto": "Photo envoyée",
+    "sendPhoto": "Envoyer une photo",
+    "messagePlaceholder": "Écrire un message...",
+    "stopAndSend": "Arrêter et envoyer",
+    "voiceMessage": "Message vocal",
+    "voiceMessageContent": "🎤 Message vocal",
+    "photoContent": "📷 Photo",
+    "micUnsupported": "L'enregistrement audio n'est pas supporté sur cet appareil.",
+    "micPermissionError": "Impossible d'accéder au micro. Vérifiez les autorisations.",
+    "voiceSendError": "Échec de l'envoi du message vocal.",
+    "photoTypeError": "Merci de choisir un fichier image.",
+    "photoSizeError": "L'image doit faire moins de {{max}} Mo.",
+    "photoSendError": "Échec de l'envoi de la photo."
+  },
   "newJob": {
     "title": "Publier une annonce",
     "tabOffer": "💼 Je propose",

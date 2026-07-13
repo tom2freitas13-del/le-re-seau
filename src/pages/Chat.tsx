@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import { ArrowLeft, Send, MoreVertical, Check, CheckCheck, Mic, Square, SmilePlus, Image as ImageIcon } from 'lucide-react';
@@ -31,6 +32,7 @@ interface Reaction {
 const REACTION_EMOJIS = ['❤️', '😂', '👍', '😮', '😢'];
 
 export default function Chat() {
+  const { t } = useTranslation();
   const { partnerId } = useParams<{ partnerId: string }>();
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -164,7 +166,7 @@ export default function Chat() {
 
   const handleStartRecording = async () => {
     if (!navigator.mediaDevices?.getUserMedia) {
-      toast.error("L'enregistrement audio n'est pas supporté sur cet appareil.");
+      toast.error(t('chat.micUnsupported'));
       return;
     }
     try {
@@ -182,7 +184,7 @@ export default function Chat() {
       recorder.start();
       setIsRecording(true);
     } catch {
-      toast.error("Impossible d'accéder au micro. Vérifiez les autorisations.");
+      toast.error(t('chat.micPermissionError'));
     }
   };
 
@@ -194,11 +196,11 @@ export default function Chat() {
   const handleUploadVoice = async (blob: Blob, mimeType: string) => {
     if (!user || !partnerId) return;
     const url = await uploadVoiceMessage('chat-audio', user.id, blob, mimeType);
-    if (!url) { toast.error("Échec de l'envoi du message vocal."); return; }
+    if (!url) { toast.error(t('chat.voiceSendError')); return; }
     await supabase.from('messages').insert({
       sender_id: user.id,
       receiver_id: partnerId,
-      content: '🎤 Message vocal',
+      content: t('chat.voiceMessageContent'),
       attachment_url: url,
       attachment_type: 'audio',
     });
@@ -210,25 +212,25 @@ export default function Chat() {
     if (!file || !user || !partnerId) return;
 
     if (!file.type.startsWith('image/')) {
-      toast.error('Merci de choisir un fichier image.');
+      toast.error(t('chat.photoTypeError'));
       return;
     }
     if (file.size > MAX_PHOTO_SIZE_MB * 1024 * 1024) {
-      toast.error(`L'image doit faire moins de ${MAX_PHOTO_SIZE_MB} Mo.`);
+      toast.error(t('chat.photoSizeError', { max: MAX_PHOTO_SIZE_MB }));
       return;
     }
 
     setUploadingPhoto(true);
     const url = await uploadPhoto('chat-images', user.id, file);
     if (!url) {
-      toast.error("Échec de l'envoi de la photo.");
+      toast.error(t('chat.photoSendError'));
       setUploadingPhoto(false);
       return;
     }
     await supabase.from('messages').insert({
       sender_id: user.id,
       receiver_id: partnerId,
-      content: '📷 Photo',
+      content: t('chat.photoContent'),
       attachment_url: url,
       attachment_type: 'image',
     });
@@ -270,16 +272,16 @@ export default function Chat() {
               )}
             </div>
             {partnerOnline && (
-              <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-green-400 ring-2 ring-background" title="En ligne" />
+              <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-green-400 ring-2 ring-background" title={t('common.online')} />
             )}
           </div>
           <div className="flex-1 min-w-0">
             <h1 className="font-display text-lg font-semibold flex items-center gap-1.5 min-w-0">
-              <span className="truncate">{partner?.name || 'Conversation'}</span>
+              <span className="truncate">{partner?.name || t('chat.conversation')}</span>
               {partner?.is_admin && <AdminBadge />}
             </h1>
             <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>
-              {partnerOnline ? 'En ligne' : formatLastSeen(partner?.last_seen)}
+              {partnerOnline ? t('common.online') : formatLastSeen(partner?.last_seen, t)}
             </p>
           </div>
 
@@ -293,13 +295,13 @@ export default function Chat() {
                   onClick={() => { setReportOpen(true); setMenuOpen(false); }}
                   className="w-full text-left px-3 py-2 text-sm hover:bg-secondary flex items-center gap-2"
                   style={{ fontFamily: 'Jost, sans-serif' }}>
-                  🚩 Signaler {partner?.name || 'cet utilisateur'}
+                  {t('chat.reportUser', { name: partner?.name || t('chat.thisUser') })}
                 </button>
                 <button
                   onClick={() => { if (partnerId) { blocked ? unblockUser(partnerId) : blockUser(partnerId); } setMenuOpen(false); if (!blocked) navigate('/discussions'); }}
                   className="w-full text-left px-3 py-2 text-sm hover:bg-secondary flex items-center gap-2 text-destructive"
                   style={{ fontFamily: 'Jost, sans-serif' }}>
-                  {blocked ? '✅ Débloquer' : '🚫 Bloquer'}
+                  {blocked ? t('chat.unblock') : t('chat.block')}
                 </button>
               </div>
             )}
@@ -315,7 +317,7 @@ export default function Chat() {
         <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
           <p className="text-4xl mb-3">🚫</p>
           <p className="text-sm text-muted-foreground max-w-xs" style={{ fontFamily: 'Jost, sans-serif' }}>
-            Vous avez bloqué {partner?.name || 'cet utilisateur'}. Débloquez-le depuis le menu pour reprendre la conversation.
+            {t('chat.blockedMessage', { name: partner?.name || t('chat.thisUser') })}
           </p>
         </div>
       ) : (
@@ -336,7 +338,7 @@ export default function Chat() {
                       </div>
                     ) : m.attachment_type === 'image' && m.attachment_url ? (
                       <a href={m.attachment_url} target="_blank" rel="noopener noreferrer" className="block max-w-[75%] rounded-2xl overflow-hidden">
-                        <img src={m.attachment_url} alt="Photo envoyée" className="max-h-64 w-auto object-cover" />
+                        <img src={m.attachment_url} alt={t('chat.sentPhoto')} className="max-h-64 w-auto object-cover" />
                       </a>
                     ) : (
                       <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm ${mine ? 'bg-primary text-white' : 'bg-secondary text-foreground'}`}
@@ -401,14 +403,14 @@ export default function Chat() {
               {!isRecording && (
                 <button type="button" onClick={() => photoInputRef.current?.click()} disabled={uploadingPhoto}
                   className="h-11 w-11 rounded-full border border-border flex items-center justify-center flex-shrink-0 text-muted-foreground hover:text-foreground disabled:opacity-50"
-                  title="Envoyer une photo">
+                  title={t('chat.sendPhoto')}>
                   <ImageIcon className="h-4 w-4" />
                 </button>
               )}
               <input
                 value={content}
                 onChange={e => handleContentChange(e.target.value)}
-                placeholder="Écrire un message..."
+                placeholder={t('chat.messagePlaceholder')}
                 maxLength={2000}
                 className="flex-1 px-4 py-3 rounded-full border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20"
                 style={{ fontFamily: 'Jost, sans-serif' }}
@@ -421,7 +423,7 @@ export default function Chat() {
               ) : (
                 <button type="button" onClick={isRecording ? handleStopRecording : handleStartRecording}
                   className={`h-11 w-11 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${isRecording ? 'bg-destructive text-white animate-pulse' : 'bg-primary text-white'}`}
-                  title={isRecording ? 'Arrêter et envoyer' : 'Message vocal'}>
+                  title={isRecording ? t('chat.stopAndSend') : t('chat.voiceMessage')}>
                   {isRecording ? <Square className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
                 </button>
               )}

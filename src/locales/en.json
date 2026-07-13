@@ -188,6 +188,27 @@
     "services": "Services",
     "servicesDesc": "Offers and requests for help between neighbours"
   },
+  "chat": {
+    "conversation": "Conversation",
+    "reportUser": "🚩 Report {{name}}",
+    "thisUser": "this user",
+    "unblock": "✅ Unblock",
+    "block": "🚫 Block",
+    "blockedMessage": "You've blocked {{name}}. Unblock them from the menu to resume the conversation.",
+    "sentPhoto": "Sent photo",
+    "sendPhoto": "Send a photo",
+    "messagePlaceholder": "Write a message...",
+    "stopAndSend": "Stop and send",
+    "voiceMessage": "Voice message",
+    "voiceMessageContent": "🎤 Voice message",
+    "photoContent": "📷 Photo",
+    "micUnsupported": "Audio recording isn't supported on this device.",
+    "micPermissionError": "Couldn't access the microphone. Check your permissions.",
+    "voiceSendError": "Couldn't send the voice message.",
+    "photoTypeError": "Please choose an image file.",
+    "photoSizeError": "The image must be under {{max}} MB.",
+    "photoSendError": "Couldn't send the photo."
+  },
   "newJob": {
     "title": "Post an ad",
     "tabOffer": "💼 I'm offering",
