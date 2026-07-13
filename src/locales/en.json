@@ -188,6 +188,38 @@
     "services": "Services",
     "servicesDesc": "Offers and requests for help between neighbours"
   },
+  "locationPicker": {
+    "defaultPlaceholder": "Search for a place on the island..."
+  },
+  "mapLocationPicker": {
+    "title": "Tap the map to place the location",
+    "mapErrorTitle": "The map couldn't be displayed.",
+    "mapErrorMessage": "Reload the page to try again.",
+    "resolvingName": "Looking up the place name...",
+    "tapMap": "Tap a spot on the map",
+    "confirm": "Confirm this location",
+    "selectedPoint": "Selected point ({{lat}}, {{lng}})"
+  },
+  "blockButton": {
+    "confirmBlock": "Confirm block",
+    "cancel": "Cancel",
+    "unblock": "Unblock",
+    "blockUser": "Block this user"
+  },
+  "deleteAccount": {
+    "button": "Delete my account",
+    "confirmTitle": "Delete permanently?",
+    "confirmBody": "This action is <strong>irreversible</strong>. Your profile, messages, posts, ads and all your data will be permanently deleted. You won't be able to recover this account.",
+    "typeToConfirm": "Type <strong>{{word}}</strong> to confirm:",
+    "confirmWord": "DELETE",
+    "cancel": "Cancel",
+    "deleting": "Deleting...",
+    "confirmButton": "Delete permanently",
+    "sessionError": "Session not found.",
+    "unknownError": "Unknown error.",
+    "success": "Your account and all your data have been deleted.",
+    "genericError": "Couldn't delete the account right now. Try again or contact us."
+  },
   "messagesView": {
     "title": "Private messages",
     "newGroup": "Group",

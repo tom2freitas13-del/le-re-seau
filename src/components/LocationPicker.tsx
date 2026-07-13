@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { MapPin, Search, X, Loader2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { searchAddress, GeocodingResult } from '@/lib/geocoding';
 
 interface LocationPickerProps {
@@ -16,6 +17,7 @@ interface LocationPickerProps {
  * libre mais sans coordonnées (l'activité n'apparaîtra simplement pas sur la carte).
  */
 export default function LocationPicker({ value, onChange, placeholder }: LocationPickerProps) {
+  const { t } = useTranslation();
   const [query, setQuery] = useState(value);
   const [results, setResults] = useState<GeocodingResult[]>([]);
   const [loading, setLoading] = useState(false);
@@ -60,7 +62,7 @@ export default function LocationPicker({ value, onChange, placeholder }: Locatio
           value={query}
           onChange={e => handleInputChange(e.target.value)}
           onFocus={() => results.length > 0 && setOpen(true)}
-          placeholder={placeholder || 'Rechercher un lieu sur l\'île...'}
+          placeholder={placeholder || t('locationPicker.defaultPlaceholder')}
           className="w-full pl-9 pr-9 py-3.5 rounded-xl border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all"
           style={{ fontFamily: 'Jost, sans-serif' }}
         />

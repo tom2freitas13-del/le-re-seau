@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { UserX, UserCheck } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 
 interface BlockButtonProps {
@@ -14,6 +15,7 @@ interface BlockButtonProps {
  * avant de bloquer pour éviter les clics accidentels.
  */
 export default function BlockButton({ isBlocked, onBlock, onUnblock, className }: BlockButtonProps) {
+  const { t } = useTranslation();
   const [confirming, setConfirming] = useState(false);
 
   if (confirming) {
@@ -22,12 +24,12 @@ export default function BlockButton({ isBlocked, onBlock, onUnblock, className }
         <button
           onClick={(e) => { e.stopPropagation(); onBlock(); setConfirming(false); }}
           className="text-xs font-medium text-destructive px-3 py-1.5 rounded-full bg-destructive/10">
-          Confirmer le blocage
+          {t('blockButton.confirmBlock')}
         </button>
         <button
           onClick={(e) => { e.stopPropagation(); setConfirming(false); }}
           className="text-xs text-muted-foreground px-3 py-1.5">
-          Annuler
+          {t('blockButton.cancel')}
         </button>
       </div>
     );
@@ -39,7 +41,7 @@ export default function BlockButton({ isBlocked, onBlock, onUnblock, className }
         onClick={(e) => { e.stopPropagation(); onUnblock(); }}
         className={cn('flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors p-1.5 rounded-lg hover:bg-secondary', className)}>
         <UserCheck className="h-4 w-4" />
-        Débloquer
+        {t('blockButton.unblock')}
       </button>
     );
   }
@@ -47,7 +49,7 @@ export default function BlockButton({ isBlocked, onBlock, onUnblock, className }
   return (
     <button
       onClick={(e) => { e.stopPropagation(); setConfirming(true); }}
-      title="Bloquer cet utilisateur"
+      title={t('blockButton.blockUser')}
       className={cn('text-muted-foreground hover:text-destructive transition-colors p-1.5 rounded-lg hover:bg-destructive/10', className)}>
       <UserX className="h-4 w-4" />
     </button>

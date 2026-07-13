@@ -188,6 +188,38 @@
     "services": "Services",
     "servicesDesc": "Offres et demandes d'entraide entre voisins"
   },
+  "locationPicker": {
+    "defaultPlaceholder": "Rechercher un lieu sur l'île..."
+  },
+  "mapLocationPicker": {
+    "title": "Touchez la carte pour placer le lieu",
+    "mapErrorTitle": "La carte n'a pas pu s'afficher.",
+    "mapErrorMessage": "Rechargez la page pour réessayer.",
+    "resolvingName": "Recherche du nom du lieu...",
+    "tapMap": "Touchez un endroit sur la carte",
+    "confirm": "Valider ce lieu",
+    "selectedPoint": "Point sélectionné ({{lat}}, {{lng}})"
+  },
+  "blockButton": {
+    "confirmBlock": "Confirmer le blocage",
+    "cancel": "Annuler",
+    "unblock": "Débloquer",
+    "blockUser": "Bloquer cet utilisateur"
+  },
+  "deleteAccount": {
+    "button": "Supprimer mon compte",
+    "confirmTitle": "Supprimer définitivement ?",
+    "confirmBody": "Cette action est <strong>irréversible</strong>. Votre profil, vos messages, vos posts, vos annonces et toutes vos données seront supprimés définitivement. Vous ne pourrez pas récupérer ce compte.",
+    "typeToConfirm": "Tapez <strong>{{word}}</strong> pour confirmer :",
+    "confirmWord": "SUPPRIMER",
+    "cancel": "Annuler",
+    "deleting": "Suppression...",
+    "confirmButton": "Supprimer définitivement",
+    "sessionError": "Session introuvable.",
+    "unknownError": "Erreur inconnue.",
+    "success": "Votre compte et toutes vos données ont été supprimés.",
+    "genericError": "Impossible de supprimer le compte pour le moment. Réessayez ou contactez-nous."
+  },
   "messagesView": {
     "title": "Messages privés",
     "newGroup": "Groupe",
