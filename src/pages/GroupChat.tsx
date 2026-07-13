@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import { ArrowLeft, Send, LogOut, Mic, Square, Image as ImageIcon } from 'lucide-react';
@@ -19,6 +20,7 @@ interface GroupMessage {
 }
 
 export default function GroupChat() {
+  const { t } = useTranslation();
   const { groupId } = useParams<{ groupId: string }>();
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -118,7 +120,7 @@ export default function GroupChat() {
     setSenderNames(prev => {
       if (prev[senderId]) return prev;
       supabase.from('profiles').select('name').eq('user_id', senderId).single().then(({ data }) => {
-        if (data) setSenderNames(p => ({ ...p, [senderId]: data.name || 'Utilisateur' }));
+        if (data) setSenderNames(p => ({ ...p, [senderId]: data.name || t('groupChat.defaultUser') }));
       });
       return prev;
     });
@@ -150,7 +152,7 @@ export default function GroupChat() {
 
   const handleStartRecording = async () => {
     if (!navigator.mediaDevices?.getUserMedia) {
-      toast.error("L'enregistrement audio n'est pas supporté sur cet appareil.");
+      toast.error(t('groupChat.micUnsupported'));
       return;
     }
     try {
@@ -168,7 +170,7 @@ export default function GroupChat() {
       recorder.start();
       setIsRecording(true);
     } catch {
-      toast.error("Impossible d'accéder au micro. Vérifiez les autorisations.");
+      toast.error(t('groupChat.micPermissionError'));
     }
   };
 
@@ -180,9 +182,9 @@ export default function GroupChat() {
   const handleUploadVoice = async (blob: Blob, mimeType: string) => {
     if (!user || !groupId) return;
     const url = await uploadVoiceMessage('chat-audio', user.id, blob, mimeType);
-    if (!url) { toast.error("Échec de l'envoi du message vocal."); return; }
+    if (!url) { toast.error(t('groupChat.voiceSendError')); return; }
     await supabase.from('chat_group_messages').insert({
-      group_id: groupId, sender_id: user.id, content: '🎤 Message vocal', attachment_url: url, attachment_type: 'audio',
+      group_id: groupId, sender_id: user.id, content: t('groupChat.voiceMessageContent'), attachment_url: url, attachment_type: 'audio',
     });
   };
 
@@ -190,14 +192,14 @@ export default function GroupChat() {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file || !user || !groupId) return;
-    if (!file.type.startsWith('image/')) { toast.error('Merci de choisir un fichier image.'); return; }
-    if (file.size > MAX_PHOTO_SIZE_MB * 1024 * 1024) { toast.error(`L'image doit faire moins de ${MAX_PHOTO_SIZE_MB} Mo.`); return; }
+    if (!file.type.startsWith('image/')) { toast.error(t('groupChat.photoTypeError')); return; }
+    if (file.size > MAX_PHOTO_SIZE_MB * 1024 * 1024) { toast.error(t('groupChat.photoSizeError', { max: MAX_PHOTO_SIZE_MB })); return; }
 
     setUploadingPhoto(true);
     const url = await uploadPhoto('chat-images', user.id, file);
-    if (!url) { toast.error("Échec de l'envoi de la photo."); setUploadingPhoto(false); return; }
+    if (!url) { toast.error(t('groupChat.photoSendError')); setUploadingPhoto(false); return; }
     await supabase.from('chat_group_messages').insert({
-      group_id: groupId, sender_id: user.id, content: '📷 Photo', attachment_url: url, attachment_type: 'image',
+      group_id: groupId, sender_id: user.id, content: t('groupChat.photoContent'), attachment_url: url, attachment_type: 'image',
     });
     setUploadingPhoto(false);
   };
@@ -208,12 +210,12 @@ export default function GroupChat() {
       // Groupe d'activité : quitter le groupe = quitter l'activité (le
       // message système et le retrait du groupe sont gérés par le trigger).
       await supabase.from('activity_participants').delete().eq('activity_id', linkedActivityId).eq('user_id', user.id);
-      toast.success("Vous avez quitté l'activité.");
+      toast.success(t('groupChat.leftActivity'));
       navigate('/activities');
       return;
     }
     await supabase.from('chat_group_members').delete().eq('group_id', groupId).eq('user_id', user.id);
-    toast.success('Vous avez quitté le groupe.');
+    toast.success(t('groupChat.leftGroup'));
     navigate('/discussions');
   };
 
@@ -225,11 +227,11 @@ export default function GroupChat() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center bg-background">
         <p className="text-4xl mb-3">🔒</p>
-        <h1 className="font-display text-xl font-semibold mb-2">Accès réservé aux participants</h1>
+        <h1 className="font-display text-xl font-semibold mb-2">{t('groupChat.accessRestrictedTitle')}</h1>
         <p className="text-sm text-muted-foreground max-w-xs mb-6" style={{ fontFamily: 'Jost, sans-serif' }}>
-          Rejoignez l'activité pour accéder à sa discussion et échanger avec les autres participants.
+          {t('groupChat.accessRestrictedMessage')}
         </p>
-        <button onClick={() => navigate('/activities')} className="btn-ocean">Voir les activités</button>
+        <button onClick={() => navigate('/activities')} className="btn-ocean">{t('groupChat.viewActivities')}</button>
       </div>
     );
   }
@@ -245,9 +247,9 @@ export default function GroupChat() {
             <div className="h-9 w-9 rounded-full bg-pine-light flex items-center justify-center text-lg flex-shrink-0">
               {group?.emoji || '💬'}
             </div>
-            <h1 className="font-display text-lg font-semibold">{group?.name || 'Groupe'}</h1>
+            <h1 className="font-display text-lg font-semibold">{group?.name || t('groupChat.group')}</h1>
           </div>
-          <button onClick={handleLeave} title="Quitter le groupe" className="text-muted-foreground hover:text-destructive transition-colors">
+          <button onClick={handleLeave} title={t('groupChat.leaveGroup')} className="text-muted-foreground hover:text-destructive transition-colors">
             <LogOut className="h-4 w-4" />
           </button>
         </div>
@@ -274,7 +276,7 @@ export default function GroupChat() {
                 </div>
               ) : m.attachment_type === 'image' && m.attachment_url ? (
                 <a href={m.attachment_url} target="_blank" rel="noopener noreferrer" className="block max-w-[75%] rounded-2xl overflow-hidden">
-                  <img src={m.attachment_url} alt="Photo envoyée" className="max-h-64 w-auto object-cover" />
+                  <img src={m.attachment_url} alt={t('groupChat.sentPhoto')} className="max-h-64 w-auto object-cover" />
                 </a>
               ) : (
                 <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm ${mine ? 'bg-primary text-white' : 'bg-secondary text-foreground'}`}
@@ -291,7 +293,7 @@ export default function GroupChat() {
         {typingUsers.size > 0 && (
           <div className="flex flex-col gap-0.5">
             <p className="text-[11px] text-muted-foreground pl-1" style={{ fontFamily: 'Jost, sans-serif' }}>
-              {Array.from(typingUsers).map(id => senderNames[id] || '...').join(', ')} {typingUsers.size > 1 ? 'écrivent' : 'écrit'}...
+              {t('groupChat.typing', { count: typingUsers.size, names: Array.from(typingUsers).map(id => senderNames[id] || '...').join(', ') })}
             </p>
             <div className="flex justify-start">
               <div className="bg-secondary rounded-2xl px-4 py-2.5 flex items-center gap-1">
@@ -311,14 +313,14 @@ export default function GroupChat() {
           {!isRecording && (
             <button type="button" onClick={() => photoInputRef.current?.click()} disabled={uploadingPhoto}
               className="h-11 w-11 rounded-full border border-border flex items-center justify-center flex-shrink-0 text-muted-foreground hover:text-foreground disabled:opacity-50"
-              title="Envoyer une photo">
+              title={t('groupChat.sendPhoto')}>
               <ImageIcon className="h-4 w-4" />
             </button>
           )}
           <input
             value={content}
             onChange={e => handleContentChange(e.target.value)}
-            placeholder="Écrire au groupe..."
+            placeholder={t('groupChat.messagePlaceholder')}
             maxLength={2000}
             className="flex-1 px-4 py-3 rounded-full border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20"
             style={{ fontFamily: 'Jost, sans-serif' }}
@@ -331,7 +333,7 @@ export default function GroupChat() {
           ) : (
             <button type="button" onClick={isRecording ? handleStopRecording : handleStartRecording}
               className={`h-11 w-11 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${isRecording ? 'bg-destructive text-white animate-pulse' : 'bg-primary text-white'}`}
-              title={isRecording ? 'Arrêter et envoyer' : 'Message vocal'}>
+              title={isRecording ? t('groupChat.stopAndSend') : t('groupChat.voiceMessage')}>
               {isRecording ? <Square className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
             </button>
           )}
