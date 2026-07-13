@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { X, Image as ImageIcon, Type, Check } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import { MAX_PHOTO_SIZE_MB, uploadPhoto } from '@/lib/attachments';
@@ -19,6 +20,7 @@ interface CreateStoryModalProps {
 }
 
 export default function CreateStoryModal({ onClose, onCreated }: CreateStoryModalProps) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [mode, setMode] = useState<'photo' | 'text'>('photo');
   const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -32,8 +34,8 @@ export default function CreateStoryModal({ onClose, onCreated }: CreateStoryModa
   const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith('image/')) { toast.error('Merci de choisir une image.'); return; }
-    if (file.size > MAX_PHOTO_SIZE_MB * 1024 * 1024) { toast.error(`Image trop lourde (max ${MAX_PHOTO_SIZE_MB} Mo).`); return; }
+    if (!file.type.startsWith('image/')) { toast.error(t('createStoryModal.photoTypeError')); return; }
+    if (file.size > MAX_PHOTO_SIZE_MB * 1024 * 1024) { toast.error(t('createStoryModal.photoSizeError', { max: MAX_PHOTO_SIZE_MB })); return; }
     setPhotoFile(file);
     setPhotoPreview(URL.createObjectURL(file));
   };
@@ -61,10 +63,10 @@ export default function CreateStoryModal({ onClose, onCreated }: CreateStoryModa
         });
         if (error) throw error;
       }
-      toast.success('Story publiée ! Elle disparaîtra dans 24h.');
+      toast.success(t('createStoryModal.publishedSuccess'));
       onCreated();
     } catch {
-      toast.error("Impossible de publier la story.");
+      toast.error(t('createStoryModal.publishError'));
     } finally {
       setPosting(false);
     }
@@ -74,7 +76,7 @@ export default function CreateStoryModal({ onClose, onCreated }: CreateStoryModa
     <div className="fixed inset-0 z-[100] bg-black/70 flex items-end sm:items-center justify-center px-4 pb-4 sm:pb-0" onClick={onClose}>
       <div className="bg-card rounded-3xl p-5 w-full max-w-sm space-y-4" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-xl font-semibold">Nouvelle story</h2>
+          <h2 className="font-display text-xl font-semibold">{t('createStoryModal.title')}</h2>
           <button onClick={onClose} className="h-9 w-9 flex items-center justify-center text-muted-foreground hover:text-foreground">
             <X className="h-5 w-5" />
           </button>
@@ -84,12 +86,12 @@ export default function CreateStoryModal({ onClose, onCreated }: CreateStoryModa
           <button onClick={() => setMode('photo')}
             className={`flex-1 rounded-xl py-2.5 text-sm font-medium transition-all flex items-center justify-center gap-1.5 ${mode === 'photo' ? 'bg-white text-foreground shadow-sm' : 'text-muted-foreground'}`}
             style={{ fontFamily: 'Jost, sans-serif' }}>
-            <ImageIcon className="h-4 w-4" /> Photo
+            <ImageIcon className="h-4 w-4" /> {t('createStoryModal.photo')}
           </button>
           <button onClick={() => setMode('text')}
             className={`flex-1 rounded-xl py-2.5 text-sm font-medium transition-all flex items-center justify-center gap-1.5 ${mode === 'text' ? 'bg-white text-foreground shadow-sm' : 'text-muted-foreground'}`}
             style={{ fontFamily: 'Jost, sans-serif' }}>
-            <Type className="h-4 w-4" /> Texte
+            <Type className="h-4 w-4" /> {t('createStoryModal.text')}
           </button>
         </div>
 
@@ -98,11 +100,11 @@ export default function CreateStoryModal({ onClose, onCreated }: CreateStoryModa
             <label className="block cursor-pointer">
               <div className="relative aspect-[9/16] max-h-72 mx-auto rounded-2xl overflow-hidden bg-muted border-2 border-dashed border-border flex items-center justify-center">
                 {photoPreview ? (
-                  <img src={photoPreview} alt="Aperçu" className="h-full w-full object-cover" />
+                  <img src={photoPreview} alt={t('createStoryModal.preview')} className="h-full w-full object-cover" />
                 ) : (
                   <div className="text-center px-4">
                     <ImageIcon className="h-8 w-8 text-muted-foreground mx-auto mb-2" strokeWidth={1.5} />
-                    <p className="text-sm text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>Choisir une photo</p>
+                    <p className="text-sm text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>{t('createStoryModal.choosePhoto')}</p>
                   </div>
                 )}
               </div>
@@ -112,7 +114,7 @@ export default function CreateStoryModal({ onClose, onCreated }: CreateStoryModa
               value={caption}
               onChange={e => setCaption(e.target.value)}
               maxLength={200}
-              placeholder="Une légende (optionnel)..."
+              placeholder={t('createStoryModal.captionPlaceholder')}
               className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20"
               style={{ fontFamily: 'Jost, sans-serif' }}
             />
@@ -121,7 +123,7 @@ export default function CreateStoryModal({ onClose, onCreated }: CreateStoryModa
           <div className="space-y-3">
             <div className="relative aspect-[9/16] max-h-72 mx-auto rounded-2xl overflow-hidden flex items-center justify-center p-6" style={{ background }}>
               <p className="text-white text-center font-display text-xl font-semibold break-words" style={{ textShadow: '0 1px 8px rgba(0,0,0,0.3)' }}>
-                {text || 'Votre texte ici...'}
+                {text || t('createStoryModal.yourTextHere')}
               </p>
             </div>
             <textarea
@@ -129,7 +131,7 @@ export default function CreateStoryModal({ onClose, onCreated }: CreateStoryModa
               onChange={e => setText(e.target.value)}
               maxLength={200}
               rows={2}
-              placeholder="Quoi de neuf ?"
+              placeholder={t('createStoryModal.textPlaceholder')}
               className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20 resize-none"
               style={{ fontFamily: 'Jost, sans-serif' }}
             />
@@ -145,7 +147,7 @@ export default function CreateStoryModal({ onClose, onCreated }: CreateStoryModa
 
         <button onClick={handlePost} disabled={!canPost || posting}
           className="btn-ocean w-full py-3.5 flex items-center justify-center gap-2 disabled:opacity-50">
-          <Check className="h-4 w-4" /> {posting ? 'Publication...' : 'Publier ma story'}
+          <Check className="h-4 w-4" /> {posting ? t('createStoryModal.publishing') : t('createStoryModal.publish')}
         </button>
       </div>
     </div>

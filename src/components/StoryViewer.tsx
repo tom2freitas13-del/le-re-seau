@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { X, Eye, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import { avatarFallbackInitial } from '@/lib/constants';
@@ -23,11 +24,11 @@ export interface StoryAuthorGroup {
 
 const STORY_DURATION_MS = 5000;
 
-function timeAgo(iso: string): string {
+function timeAgo(iso: string, t: (key: string, options?: Record<string, unknown>) => string): string {
   const diffMin = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
-  if (diffMin < 1) return "à l'instant";
-  if (diffMin < 60) return `${diffMin} min`;
-  return `${Math.floor(diffMin / 60)} h`;
+  if (diffMin < 1) return t('storyViewer.justNow');
+  if (diffMin < 60) return t('storyViewer.minAgo', { count: diffMin });
+  return t('storyViewer.hoursAgo', { count: Math.floor(diffMin / 60) });
 }
 
 export default function StoryViewer({ groups, startGroupIndex, onClose }: {
@@ -35,6 +36,7 @@ export default function StoryViewer({ groups, startGroupIndex, onClose }: {
   startGroupIndex: number;
   onClose: () => void;
 }) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [localGroups, setLocalGroups] = useState(groups);
   const [groupIndex, setGroupIndex] = useState(startGroupIndex);
@@ -73,12 +75,12 @@ export default function StoryViewer({ groups, startGroupIndex, onClose }: {
 
   const handleDelete = async () => {
     if (!story || deleting) return;
-    if (!window.confirm('Supprimer cette story ?')) return;
+    if (!window.confirm(t('storyViewer.confirmDelete'))) return;
     setDeleting(true);
     const { error } = await supabase.from('stories').delete().eq('id', story.id);
     setDeleting(false);
-    if (error) { toast.error("Impossible de supprimer la story."); return; }
-    toast.success('Story supprimée.');
+    if (error) { toast.error(t('storyViewer.deleteError')); return; }
+    toast.success(t('storyViewer.deleted'));
 
     const remainingStories = group.stories.filter(s => s.id !== story.id);
     if (remainingStories.length > 0) {
@@ -154,8 +156,8 @@ export default function StoryViewer({ groups, startGroupIndex, onClose }: {
             <span className="font-display text-xs text-primary/60">{avatarFallbackInitial(group.name)}</span>
           )}
         </div>
-        <p className="text-white text-sm font-medium flex-1" style={{ fontFamily: 'Jost, sans-serif' }}>{group.name || 'Membre'}</p>
-        <p className="text-white/60 text-xs">{timeAgo(story.created_at)}</p>
+        <p className="text-white text-sm font-medium flex-1" style={{ fontFamily: 'Jost, sans-serif' }}>{group.name || t('storyViewer.defaultMember')}</p>
+        <p className="text-white/60 text-xs">{timeAgo(story.created_at, t)}</p>
         {isMine && (
           <button onClick={handleDelete} disabled={deleting} className="h-9 w-9 flex items-center justify-center text-white flex-shrink-0 disabled:opacity-50">
             <Trash2 className="h-4.5 w-4.5" />
@@ -167,8 +169,8 @@ export default function StoryViewer({ groups, startGroupIndex, onClose }: {
       </div>
 
       <div className="relative flex-1 flex items-center justify-center overflow-hidden">
-        <button className="absolute left-0 top-0 h-full w-1/2 z-10" onClick={goPrevStory} aria-label="Précédent" />
-        <button className="absolute right-0 top-0 h-full w-1/2 z-10" onClick={goNextStory} aria-label="Suivant" />
+        <button className="absolute left-0 top-0 h-full w-1/2 z-10" onClick={goPrevStory} aria-label={t('storyViewer.previous')} />
+        <button className="absolute right-0 top-0 h-full w-1/2 z-10" onClick={goNextStory} aria-label={t('storyViewer.next')} />
 
         {story.image_url ? (
           <img src={story.image_url} alt="" className="max-h-full max-w-full object-contain" />
@@ -191,15 +193,15 @@ export default function StoryViewer({ groups, startGroupIndex, onClose }: {
         <div className="px-4 pb-6 pt-2 safe-area-bottom">
           {viewers === null ? (
             <button onClick={loadViewers} className="flex items-center gap-1.5 text-white/80 text-xs mx-auto">
-              <Eye className="h-3.5 w-3.5" /> Voir qui a vu ma story
+              <Eye className="h-3.5 w-3.5" /> {t('storyViewer.seeViewers')}
             </button>
           ) : (
             <div className="max-h-32 overflow-y-auto space-y-1">
               {viewers.length === 0 ? (
-                <p className="text-white/60 text-xs text-center">Personne n'a encore vu cette story.</p>
+                <p className="text-white/60 text-xs text-center">{t('storyViewer.noViewers')}</p>
               ) : (
                 viewers.map((v, i) => (
-                  <p key={i} className="text-white text-xs text-center" style={{ fontFamily: 'Jost, sans-serif' }}>{v.name || 'Membre'}</p>
+                  <p key={i} className="text-white text-xs text-center" style={{ fontFamily: 'Jost, sans-serif' }}>{v.name || t('storyViewer.defaultMember')}</p>
                 ))
               )}
             </div>

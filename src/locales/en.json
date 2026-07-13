@@ -191,6 +191,39 @@
   "locationPicker": {
     "defaultPlaceholder": "Search for a place on the island..."
   },
+  "storiesBar": {
+    "myStory": "My story",
+    "defaultMember": "Member"
+  },
+  "storyViewer": {
+    "defaultMember": "Member",
+    "confirmDelete": "Delete this story?",
+    "deleteError": "Couldn't delete the story.",
+    "deleted": "Story deleted.",
+    "previous": "Previous",
+    "next": "Next",
+    "seeViewers": "See who viewed my story",
+    "noViewers": "No one has viewed this story yet.",
+    "justNow": "just now",
+    "minAgo": "{{count}} min",
+    "hoursAgo": "{{count}}h"
+  },
+  "createStoryModal": {
+    "title": "New story",
+    "photo": "Photo",
+    "text": "Text",
+    "choosePhoto": "Choose a photo",
+    "preview": "Preview",
+    "captionPlaceholder": "A caption (optional)...",
+    "yourTextHere": "Your text here...",
+    "textPlaceholder": "What's new?",
+    "publishing": "Publishing...",
+    "publish": "Post my story",
+    "photoTypeError": "Please choose an image.",
+    "photoSizeError": "Image too large (max {{max}} MB).",
+    "publishedSuccess": "Story posted! It will disappear in 24h.",
+    "publishError": "Couldn't post the story."
+  },
   "mapLocationPicker": {
     "title": "Tap the map to place the location",
     "mapErrorTitle": "The map couldn't be displayed.",

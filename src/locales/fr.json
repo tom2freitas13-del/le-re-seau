@@ -191,6 +191,39 @@
   "locationPicker": {
     "defaultPlaceholder": "Rechercher un lieu sur l'île..."
   },
+  "storiesBar": {
+    "myStory": "Ma story",
+    "defaultMember": "Membre"
+  },
+  "storyViewer": {
+    "defaultMember": "Membre",
+    "confirmDelete": "Supprimer cette story ?",
+    "deleteError": "Impossible de supprimer la story.",
+    "deleted": "Story supprimée.",
+    "previous": "Précédent",
+    "next": "Suivant",
+    "seeViewers": "Voir qui a vu ma story",
+    "noViewers": "Personne n'a encore vu cette story.",
+    "justNow": "à l'instant",
+    "minAgo": "{{count}} min",
+    "hoursAgo": "{{count}} h"
+  },
+  "createStoryModal": {
+    "title": "Nouvelle story",
+    "photo": "Photo",
+    "text": "Texte",
+    "choosePhoto": "Choisir une photo",
+    "preview": "Aperçu",
+    "captionPlaceholder": "Une légende (optionnel)...",
+    "yourTextHere": "Votre texte ici...",
+    "textPlaceholder": "Quoi de neuf ?",
+    "publishing": "Publication...",
+    "publish": "Publier ma story",
+    "photoTypeError": "Merci de choisir une image.",
+    "photoSizeError": "Image trop lourde (max {{max}} Mo).",
+    "publishedSuccess": "Story publiée ! Elle disparaîtra dans 24h.",
+    "publishError": "Impossible de publier la story."
+  },
   "mapLocationPicker": {
     "title": "Touchez la carte pour placer le lieu",
     "mapErrorTitle": "La carte n'a pas pu s'afficher.",

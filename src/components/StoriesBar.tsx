@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Plus } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import { useBlockedUsers } from '@/lib/useBlockedUsers';
@@ -8,6 +9,7 @@ import CreateStoryModal from '@/components/CreateStoryModal';
 import StoryViewer, { StoryAuthorGroup, StoryItem } from '@/components/StoryViewer';
 
 export default function StoriesBar() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { isBlocked } = useBlockedUsers();
   const [groups, setGroups] = useState<StoryAuthorGroup[]>([]);
@@ -93,7 +95,7 @@ export default function StoriesBar() {
             </button>
           </div>
           <span className="text-[10px] text-muted-foreground truncate w-full text-center" style={{ fontFamily: 'Jost, sans-serif' }}>
-            Ma story
+            {t('storiesBar.myStory')}
           </span>
         </div>
 
@@ -112,7 +114,7 @@ export default function StoriesBar() {
                 </div>
               </div>
               <span className="text-[10px] text-muted-foreground truncate w-full text-center" style={{ fontFamily: 'Jost, sans-serif' }}>
-                {g.name || 'Membre'}
+                {g.name || t('storiesBar.defaultMember')}
               </span>
             </button>
           );
