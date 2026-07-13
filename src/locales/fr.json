@@ -191,6 +191,78 @@
   "locationPicker": {
     "defaultPlaceholder": "Rechercher un lieu sur l'île..."
   },
+  "terms": {
+    "title": "Conditions d'utilisation",
+    "back": "Retour",
+    "lastUpdated": "Dernière mise à jour : 7 juillet 2026",
+    "intro": "En utilisant Le Ré-seau, vous acceptez les règles suivantes. Notre objectif est de garder cette communauté locale, bienveillante et sûre.",
+    "s1Title": "1. Objet du service",
+    "s1Body": "Le Ré-seau n'est pas une application de rencontre amoureuse ou pour adultes. C'est une application communautaire locale destinée aux habitants et amoureux de l'Île de Ré, pour faire de nouvelles rencontres amicales, se donner rendez-vous entre amis, discuter, s'organiser (activités, covoiturage, petits services entre voisins) et s'entraider. Toute utilisation du service à des fins de rencontre amoureuse, de drague ou à caractère sexuel est contraire à sa vocation et peut entraîner la suspension du compte.",
+    "s2Title": "2. Compte",
+    "s2Items": [
+      "Vous devez avoir au moins 15 ans pour créer un compte. En dessous de cet âge, la réglementation française impose l'accord d'un parent ou tuteur légal pour tout traitement de données personnelles ; nous ne proposons pas ce mécanisme et n'acceptons donc pas d'inscription en dessous de 15 ans.",
+      "Les informations renseignées doivent être exactes. Aucune usurpation d'identité.",
+      "Vous êtes responsable de la confidentialité de votre mot de passe."
+    ],
+    "s3Title": "3. Contenus interdits",
+    "s3Items": [
+      "Harcèlement, insultes, propos haineux ou discriminatoires.",
+      "Contenus illégaux, violents, sexuels, ou portant atteinte à un mineur.",
+      "Spam, escroqueries, contenus commerciaux non sollicités.",
+      "Diffusion d'informations personnelles d'autrui sans son accord."
+    ],
+    "s4Title": "4. Modération",
+    "s4Body": "L'équipe Le Ré-seau peut supprimer ou masquer tout contenu contraire à ces règles, et suspendre les comptes contrevenants. Vous pouvez signaler un post, un profil ou un message via le bouton « Signaler ».",
+    "s5Title": "5. Responsabilité sur les contenus publiés",
+    "s5Body1": "Le Ré-seau agit en tant qu'hébergeur technique des contenus publiés par ses membres (messages, posts, annonces, activités, profils) au sens de la loi n° 2004-575 du 21 juin 2004 pour la confiance dans l'économie numérique (LCEN). Nous ne contrôlons pas a priori les contenus publiés par les utilisateurs.",
+    "s5Body2": "Chaque utilisateur est seul responsable des propos, images et contenus qu'il publie sur la plateforme, ainsi que de leur conformité à la loi. Le Ré-seau décline toute responsabilité quant aux contenus publiés par ses membres et quant aux conséquences, directes ou indirectes, de leur utilisation ou de rencontres organisées via le service.",
+    "s5Body3": "Tout contenu illicite ou contraire à ces conditions peut être signalé via le bouton « Signaler » ; il sera examiné et retiré dans les meilleurs délais si nécessaire, conformément à l'article 6-I-2 de la LCEN.",
+    "s6Title": "6. Disponibilité du service",
+    "s6Body": "Le Ré-seau est un service en phase de lancement, fourni « en l'état ». Nous mettons tout en œuvre pour garantir la disponibilité et la sécurité, sans pouvoir le garantir absolument, et ne pourrons être tenus responsables d'une interruption temporaire du service.",
+    "s7Title": "7. Comptes officiels",
+    "s7Body": "Certains contenus de lancement peuvent être publiés par l'équipe Le Ré-seau. Aucun faux profil n'est créé pour donner une fausse impression d'activité.",
+    "s8Title": "8. Droit applicable",
+    "s8Body": "Les présentes conditions sont régies par le droit français. Tout litige relatif à leur interprétation ou leur exécution relève de la compétence des tribunaux français.",
+    "s9Title": "9. Évolution",
+    "s9Body": "Ces conditions peuvent évoluer. La version en vigueur est toujours celle affichée sur cette page."
+  },
+  "privacy": {
+    "title": "Politique de confidentialité",
+    "back": "Retour",
+    "lastUpdated": "Dernière mise à jour : 7 juillet 2026",
+    "intro": "Le Ré-seau (« nous ») respecte votre vie privée. Cette page explique de manière simple quelles données nous collectons, pourquoi, et comment vous pouvez les gérer.",
+    "dataTitle": "Données collectées",
+    "dataItems": [
+      "Email et mot de passe (ou compte Google) pour la création de votre compte.",
+      "Informations de profil que vous renseignez : prénom, âge, photo, bio, statut, intérêts, réseaux sociaux.",
+      "Contenus que vous publiez : messages, posts du forum, annonces, activités, signalements.",
+      "Données techniques minimales nécessaires à la sécurité du service (date de connexion).",
+      "Si vous activez les notifications, un identifiant d'abonnement technique (push subscription) permettant de vous envoyer des notifications sur cet appareil."
+    ],
+    "purposeTitle": "Finalités et base légale",
+    "purposeItems": [
+      "Vous permettre d'accéder à la communauté et d'y interagir (exécution du contrat qui nous lie lorsque vous créez un compte).",
+      "Vous proposer des suggestions de profils et d'activités correspondant à vos centres d'intérêt communs (loisirs, activités locales), y compris un score de compatibilité amicale calculé automatiquement (intérêt légitime : faciliter les rencontres amicales et l'entraide entre membres).",
+      "Vous envoyer des notifications si vous les avez activées (consentement, révocable à tout moment depuis votre appareil).",
+      "Garantir la sécurité du service et lutter contre les abus (signalements, blocage, modération) (intérêt légitime)."
+    ],
+    "retentionTitle": "Durée de conservation",
+    "retentionBody": "Vos données sont conservées tant que votre compte est actif. En cas de suppression de votre compte, vos données sont effacées définitivement, à l'exception des éléments que nous serions légalement tenus de conserver plus longtemps (par exemple en cas de signalement en cours de traitement).",
+    "hostingTitle": "Hébergement et sous-traitants",
+    "hostingBody": "L'application est hébergée sur Netlify et utilise Supabase pour l'authentification, la base de données et le stockage des photos. Aucune donnée n'est revendue à des tiers.",
+    "rightsTitle": "Vos droits (RGPD)",
+    "rightsIntro": "Conformément au Règlement Général sur la Protection des Données, vous pouvez à tout moment :",
+    "rightsItem1": "Consulter et modifier vos informations depuis la page Profil.",
+    "rightsItem2": "Supprimer définitivement votre compte et toutes vos données depuis la page Profil (bouton « Supprimer mon compte »).",
+    "rightsItem3": "Demander une copie de vos données par email.",
+    "rightsItem4": "Demander l'effacement complet de vos données par email.",
+    "rightsItem5": "Vous opposer au traitement fondé sur l'intérêt légitime, ou retirer votre consentement lorsque le traitement en dépend (notifications).",
+    "rightsItem6": "Introduire une réclamation auprès de la CNIL (<link>www.cnil.fr</link>) si vous estimez que vos droits ne sont pas respectés.",
+    "contactTitle": "Contact",
+    "contactBody": "Pour toute demande relative à vos données :",
+    "cookiesTitle": "Cookies",
+    "cookiesBody": "Nous utilisons uniquement les cookies techniques nécessaires à l'authentification et au fonctionnement du site. Aucun cookie publicitaire ni de suivi tiers."
+  },
   "about": {
     "title": "Qui sommes-nous",
     "heroTitle": "Une équipe passionnée, une île, une communauté",

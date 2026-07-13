@@ -191,6 +191,78 @@
   "locationPicker": {
     "defaultPlaceholder": "Search for a place on the island..."
   },
+  "terms": {
+    "title": "Terms of Use",
+    "back": "Back",
+    "lastUpdated": "Last updated: 7 July 2026",
+    "intro": "By using Le Ré-seau, you agree to the following rules. Our goal is to keep this community local, friendly and safe.",
+    "s1Title": "1. Purpose of the service",
+    "s1Body": "Le Ré-seau is not a romantic or adult dating app. It is a local community app for residents and lovers of Île de Ré, meant for making new friends, meeting up with friends, chatting, organising (activities, carpooling, small favours between neighbours) and helping each other out. Any use of the service for romantic, flirting, or sexual purposes goes against its purpose and may result in account suspension.",
+    "s2Title": "2. Account",
+    "s2Items": [
+      "You must be at least 15 years old to create an account. Below this age, French regulations require the consent of a parent or legal guardian for any processing of personal data; we do not offer this mechanism and therefore do not accept sign-ups under 15.",
+      "The information you provide must be accurate. No impersonation.",
+      "You are responsible for keeping your password confidential."
+    ],
+    "s3Title": "3. Prohibited content",
+    "s3Items": [
+      "Harassment, insults, hateful or discriminatory remarks.",
+      "Illegal, violent, sexual content, or content harmful to a minor.",
+      "Spam, scams, unsolicited commercial content.",
+      "Sharing someone else's personal information without their consent."
+    ],
+    "s4Title": "4. Moderation",
+    "s4Body": "The Le Ré-seau team may remove or hide any content that violates these rules, and suspend offending accounts. You can report a post, profile, or message using the \"Report\" button.",
+    "s5Title": "5. Liability for published content",
+    "s5Body1": "Le Ré-seau acts as a technical host for content published by its members (messages, posts, ads, activities, profiles) within the meaning of French law n° 2004-575 of 21 June 2004 for confidence in the digital economy (LCEN). We do not review user-published content in advance.",
+    "s5Body2": "Each user is solely responsible for the statements, images and content they publish on the platform, and for their compliance with the law. Le Ré-seau disclaims any liability for content published by its members and for the direct or indirect consequences of its use or of meetups organised through the service.",
+    "s5Body3": "Any unlawful content or content contrary to these terms can be reported using the \"Report\" button; it will be reviewed and removed promptly if necessary, in accordance with article 6-I-2 of the LCEN.",
+    "s6Title": "6. Service availability",
+    "s6Body": "Le Ré-seau is a service in its launch phase, provided \"as is\". We do our best to ensure availability and security, without being able to guarantee it absolutely, and cannot be held liable for a temporary service interruption.",
+    "s7Title": "7. Official accounts",
+    "s7Body": "Some launch content may be published by the Le Ré-seau team. No fake profiles are created to give a false impression of activity.",
+    "s8Title": "8. Governing law",
+    "s8Body": "These terms are governed by French law. Any dispute regarding their interpretation or execution falls under the jurisdiction of French courts.",
+    "s9Title": "9. Changes",
+    "s9Body": "These terms may change over time. The version in effect is always the one displayed on this page."
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "back": "Back",
+    "lastUpdated": "Last updated: 7 July 2026",
+    "intro": "Le Ré-seau (\"we\") respects your privacy. This page explains in simple terms what data we collect, why, and how you can manage it.",
+    "dataTitle": "Data collected",
+    "dataItems": [
+      "Email and password (or Google account) to create your account.",
+      "Profile information you provide: first name, age, photo, bio, status, interests, social networks.",
+      "Content you publish: messages, forum posts, ads, activities, reports.",
+      "Minimal technical data needed for the service's security (login date).",
+      "If you enable notifications, a technical subscription identifier (push subscription) allowing us to send you notifications on this device."
+    ],
+    "purposeTitle": "Purposes and legal basis",
+    "purposeItems": [
+      "Let you access the community and interact within it (performance of the contract that binds us when you create an account).",
+      "Suggest profiles and activities matching your shared interests (hobbies, local activities), including an automatically calculated friendship compatibility score (legitimate interest: facilitating friendly meetups and mutual help between members).",
+      "Send you notifications if you've enabled them (consent, revocable at any time from your device).",
+      "Ensure the security of the service and fight abuse (reports, blocking, moderation) (legitimate interest)."
+    ],
+    "retentionTitle": "Retention period",
+    "retentionBody": "Your data is kept as long as your account is active. If you delete your account, your data is permanently erased, except for items we would be legally required to keep longer (for example, a report being processed).",
+    "hostingTitle": "Hosting and subprocessors",
+    "hostingBody": "The application is hosted on Netlify and uses Supabase for authentication, the database, and photo storage. No data is resold to third parties.",
+    "rightsTitle": "Your rights (GDPR)",
+    "rightsIntro": "In accordance with the General Data Protection Regulation, you can at any time:",
+    "rightsItem1": "View and edit your information from the Profile page.",
+    "rightsItem2": "Permanently delete your account and all your data from the Profile page (\"Delete my account\" button).",
+    "rightsItem3": "Request a copy of your data by email.",
+    "rightsItem4": "Request complete erasure of your data by email.",
+    "rightsItem5": "Object to processing based on legitimate interest, or withdraw your consent when processing depends on it (notifications).",
+    "rightsItem6": "File a complaint with the CNIL (<link>www.cnil.fr</link>) if you believe your rights are not being respected.",
+    "contactTitle": "Contact",
+    "contactBody": "For any request regarding your data:",
+    "cookiesTitle": "Cookies",
+    "cookiesBody": "We only use technical cookies necessary for authentication and the site's operation. No advertising or third-party tracking cookies."
+  },
   "about": {
     "title": "About us",
     "heroTitle": "A passionate team, one island, one community",
