@@ -191,8 +191,8 @@ export default function Discussions() {
                   </span>
                 )}
                 <div className="text-2xl mb-1.5">{s.emoji}</div>
-                <h3 className="font-medium text-sm mb-0.5" style={{ fontFamily: 'Jost, sans-serif' }}>{s.label}</h3>
-                <p className="text-xs text-muted-foreground line-clamp-2" style={{ fontFamily: 'Jost, sans-serif' }}>{s.desc}</p>
+                <h3 className="font-medium text-sm mb-0.5" style={{ fontFamily: 'Jost, sans-serif' }}>{t(`salons.${s.id}.label`)}</h3>
+                <p className="text-xs text-muted-foreground line-clamp-2" style={{ fontFamily: 'Jost, sans-serif' }}>{t(`salons.${s.id}.desc`)}</p>
               </button>
             ))}
           </div>
