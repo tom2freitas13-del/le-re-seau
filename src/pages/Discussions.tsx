@@ -223,6 +223,7 @@ export default function Discussions() {
 // avec pastille de non-lus par conversation.
 // ─────────────────────────────────────────────────────────────
 function MessagesView({ onBack }: { onBack: () => void }) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [conversations, setConversations] = useState<PrivateConversation[]>([]);
@@ -294,7 +295,7 @@ function MessagesView({ onBack }: { onBack: () => void }) {
       const profile = profileMap.get(pid);
       return {
         partnerId: pid,
-        partnerName: profile?.name || 'Utilisateur',
+        partnerName: profile?.name || t('messagesView.defaultUser'),
         partnerPhoto: profile?.photo_url || null,
         lastMessage: m.content,
         lastDate: m.created_at,
@@ -314,10 +315,10 @@ function MessagesView({ onBack }: { onBack: () => void }) {
             <button onClick={onBack} className="text-muted-foreground hover:text-foreground transition-colors">
               <ArrowLeft className="h-5 w-5" />
             </button>
-            <h1 className="font-display text-lg font-semibold">Messages privés</h1>
+            <h1 className="font-display text-lg font-semibold">{t('messagesView.title')}</h1>
           </div>
           <button onClick={() => setShowCreateGroup(true)} className="btn-ocean flex items-center gap-1.5 py-2 px-3 text-sm">
-            <Plus className="h-4 w-4" /> Groupe
+            <Plus className="h-4 w-4" /> {t('messagesView.newGroup')}
           </button>
         </div>
       </div>
@@ -326,7 +327,7 @@ function MessagesView({ onBack }: { onBack: () => void }) {
         {groups.length > 0 && (
           <div>
             <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2" style={{ fontFamily: 'Jost, sans-serif' }}>
-              Mes groupes
+              {t('messagesView.myGroups')}
             </h2>
             <div className="space-y-2">
               {groups.map(g => (
@@ -354,7 +355,7 @@ function MessagesView({ onBack }: { onBack: () => void }) {
 
         <div className="space-y-2">
         <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2" style={{ fontFamily: 'Jost, sans-serif' }}>
-          Messages privés
+          {t('messagesView.title')}
         </h2>
         {loading ? (
           <div className="space-y-2">
@@ -364,7 +365,7 @@ function MessagesView({ onBack }: { onBack: () => void }) {
           <div className="text-center py-12">
             <div className="text-4xl mb-3">💬</div>
             <p className="text-sm text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>
-              Aucune conversation. Allez dans Communauté pour échanger avec quelqu'un !
+              {t('messagesView.noConversations')}
             </p>
           </div>
         ) : (
@@ -381,7 +382,7 @@ function MessagesView({ onBack }: { onBack: () => void }) {
                     )}
                   </div>
                   {isOnline(c.partnerId) && (
-                    <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-400 ring-2 ring-card" title="En ligne" />
+                    <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-400 ring-2 ring-card" title={t('common.online')} />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -415,6 +416,7 @@ function MessagesView({ onBack }: { onBack: () => void }) {
 }
 
 function CreateGroupModal({ onClose, onCreated }: { onClose: () => void; onCreated: (id: string) => void }) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -424,7 +426,7 @@ function CreateGroupModal({ onClose, onCreated }: { onClose: () => void; onCreat
 
   const handleCreate = async () => {
     if (!user) return;
-    if (!name.trim()) { toast.error('Le nom du groupe est obligatoire.'); return; }
+    if (!name.trim()) { toast.error(t('createGroupModal.nameRequiredError')); return; }
     setLoading(true);
     const { data, error } = await supabase
       .from('chat_groups')
@@ -432,8 +434,8 @@ function CreateGroupModal({ onClose, onCreated }: { onClose: () => void; onCreat
       .select()
       .single();
     setLoading(false);
-    if (error || !data) { toast.error('Impossible de créer le groupe.'); return; }
-    toast.success('Groupe créé ! 🎉');
+    if (error || !data) { toast.error(t('createGroupModal.createError')); return; }
+    toast.success(t('createGroupModal.createdSuccess'));
     onCreated(data.id);
   };
 
@@ -442,7 +444,7 @@ function CreateGroupModal({ onClose, onCreated }: { onClose: () => void; onCreat
       <div className="bg-card rounded-3xl p-6 w-full max-w-sm space-y-4" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between">
           <h2 className="font-display text-xl font-semibold flex items-center gap-2">
-            <Users className="h-5 w-5 text-primary" /> Nouveau groupe
+            <Users className="h-5 w-5 text-primary" /> {t('createGroupModal.title')}
           </h2>
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
             <X className="h-5 w-5" />
@@ -462,7 +464,7 @@ function CreateGroupModal({ onClose, onCreated }: { onClose: () => void; onCreat
           value={name}
           onChange={e => setName(e.target.value)}
           maxLength={60}
-          placeholder="Nom du groupe *"
+          placeholder={t('createGroupModal.namePlaceholder')}
           className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20"
           style={{ fontFamily: 'Jost, sans-serif' }}
         />
@@ -470,14 +472,14 @@ function CreateGroupModal({ onClose, onCreated }: { onClose: () => void; onCreat
           value={description}
           onChange={e => setDescription(e.target.value)}
           maxLength={200}
-          placeholder="Description (optionnel)"
+          placeholder={t('createGroupModal.descriptionPlaceholder')}
           className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20"
           style={{ fontFamily: 'Jost, sans-serif' }}
         />
 
         <button onClick={handleCreate} disabled={loading || !name.trim()}
           className="btn-ocean w-full py-3.5 flex items-center justify-center gap-2 disabled:opacity-50">
-          <Check className="h-4 w-4" /> {loading ? 'Création...' : 'Créer le groupe'}
+          <Check className="h-4 w-4" /> {loading ? t('createGroupModal.creating') : t('createGroupModal.create')}
         </button>
       </div>
     </div>
@@ -488,6 +490,7 @@ function CreateGroupModal({ onClose, onCreated }: { onClose: () => void; onCreat
 // SALON — inchangé
 // ─────────────────────────────────────────────────────────────
 function SalonView({ salonId, onBack }: { salonId: string; onBack: () => void }) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [messages, setMessages] = useState<SalonMessage[]>([]);
   const [senderNames, setSenderNames] = useState<Record<string, string>>({});
@@ -558,7 +561,7 @@ function SalonView({ salonId, onBack }: { salonId: string; onBack: () => void })
     setSenderNames(prev => {
       if (prev[uid]) return prev;
       supabase.from('profiles').select('name').eq('user_id', uid).single().then(({ data }) => {
-        if (data) setSenderNames(p => ({ ...p, [uid]: data.name || 'Membre' }));
+        if (data) setSenderNames(p => ({ ...p, [uid]: data.name || t('salonView.defaultMember') }));
       });
       return prev;
     });
@@ -590,7 +593,7 @@ function SalonView({ salonId, onBack }: { salonId: string; onBack: () => void })
 
   const handleStartRecording = async () => {
     if (!navigator.mediaDevices?.getUserMedia) {
-      toast.error("L'enregistrement audio n'est pas supporté sur cet appareil.");
+      toast.error(t('salonView.micUnsupported'));
       return;
     }
     try {
@@ -608,7 +611,7 @@ function SalonView({ salonId, onBack }: { salonId: string; onBack: () => void })
       recorder.start();
       setIsRecording(true);
     } catch {
-      toast.error("Impossible d'accéder au micro. Vérifiez les autorisations.");
+      toast.error(t('salonView.micPermissionError'));
     }
   };
 
@@ -620,9 +623,9 @@ function SalonView({ salonId, onBack }: { salonId: string; onBack: () => void })
   const handleUploadVoice = async (blob: Blob, mimeType: string) => {
     if (!user) return;
     const url = await uploadVoiceMessage('chat-audio', user.id, blob, mimeType);
-    if (!url) { toast.error("Échec de l'envoi du message vocal."); return; }
+    if (!url) { toast.error(t('salonView.voiceSendError')); return; }
     await supabase.from('salon_messages').insert({
-      salon: salonId, user_id: user.id, content: '🎤 Message vocal', attachment_url: url, attachment_type: 'audio',
+      salon: salonId, user_id: user.id, content: t('salonView.voiceMessageContent'), attachment_url: url, attachment_type: 'audio',
     });
   };
 
@@ -630,14 +633,14 @@ function SalonView({ salonId, onBack }: { salonId: string; onBack: () => void })
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file || !user) return;
-    if (!file.type.startsWith('image/')) { toast.error('Merci de choisir un fichier image.'); return; }
-    if (file.size > MAX_PHOTO_SIZE_MB * 1024 * 1024) { toast.error(`L'image doit faire moins de ${MAX_PHOTO_SIZE_MB} Mo.`); return; }
+    if (!file.type.startsWith('image/')) { toast.error(t('salonView.photoTypeError')); return; }
+    if (file.size > MAX_PHOTO_SIZE_MB * 1024 * 1024) { toast.error(t('salonView.photoSizeError', { max: MAX_PHOTO_SIZE_MB })); return; }
 
     setUploadingPhoto(true);
     const url = await uploadPhoto('chat-images', user.id, file);
-    if (!url) { toast.error("Échec de l'envoi de la photo."); setUploadingPhoto(false); return; }
+    if (!url) { toast.error(t('salonView.photoSendError')); setUploadingPhoto(false); return; }
     await supabase.from('salon_messages').insert({
-      salon: salonId, user_id: user.id, content: '📷 Photo', attachment_url: url, attachment_type: 'image',
+      salon: salonId, user_id: user.id, content: t('salonView.photoContent'), attachment_url: url, attachment_type: 'image',
     });
     setUploadingPhoto(false);
   };
@@ -650,14 +653,14 @@ function SalonView({ salonId, onBack }: { salonId: string; onBack: () => void })
             <ArrowLeft className="h-5 w-5" />
           </button>
           <span className="text-xl">{salon.emoji}</span>
-          <h1 className="font-display text-lg font-semibold">{salon.label}</h1>
+          <h1 className="font-display text-lg font-semibold">{t(`salons.${salon.id}.label`)}</h1>
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto max-w-lg mx-auto w-full px-4 py-4 space-y-2">
         {messages.length === 0 && (
           <p className="text-center text-sm text-muted-foreground py-8" style={{ fontFamily: 'Jost, sans-serif' }}>
-            Soyez le premier à écrire dans ce salon 👋
+            {t('salonView.beFirst')}
           </p>
         )}
         {messages.filter(m => !isBlocked(m.user_id)).map(m => {
@@ -671,7 +674,7 @@ function SalonView({ salonId, onBack }: { salonId: string; onBack: () => void })
                 </div>
               ) : m.attachment_type === 'image' && m.attachment_url ? (
                 <a href={m.attachment_url} target="_blank" rel="noopener noreferrer" className="block max-w-[75%] rounded-2xl overflow-hidden">
-                  <img src={m.attachment_url} alt="Photo envoyée" className="max-h-64 w-auto object-cover" />
+                  <img src={m.attachment_url} alt={t('salonView.sentPhoto')} className="max-h-64 w-auto object-cover" />
                 </a>
               ) : (
                 <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm ${mine ? 'bg-primary text-white' : 'bg-secondary text-foreground'}`}
@@ -686,7 +689,7 @@ function SalonView({ salonId, onBack }: { salonId: string; onBack: () => void })
         {typingUsers.size > 0 && (
           <div className="flex flex-col gap-0.5">
             <p className="text-[11px] text-muted-foreground pl-1" style={{ fontFamily: 'Jost, sans-serif' }}>
-              {Array.from(typingUsers).map(id => senderNames[id] || '...').join(', ')} {typingUsers.size > 1 ? 'écrivent' : 'écrit'}...
+              {t('salonView.typing', { count: typingUsers.size, names: Array.from(typingUsers).map(id => senderNames[id] || '...').join(', ') })}
             </p>
             <div className="flex justify-start">
               <div className="bg-secondary rounded-2xl px-4 py-2.5 flex items-center gap-1">
@@ -706,12 +709,12 @@ function SalonView({ salonId, onBack }: { salonId: string; onBack: () => void })
           {!isRecording && (
             <button type="button" onClick={() => photoInputRef.current?.click()} disabled={uploadingPhoto}
               className="h-11 w-11 rounded-full border border-border flex items-center justify-center flex-shrink-0 text-muted-foreground hover:text-foreground disabled:opacity-50"
-              title="Envoyer une photo">
+              title={t('salonView.sendPhoto')}>
               <ImageIcon className="h-4 w-4" />
             </button>
           )}
           <input value={content} onChange={e => handleContentChange(e.target.value)} maxLength={1000}
-            placeholder={`Écrire dans #${salon.label.toLowerCase()}...`}
+            placeholder={t('salonView.writeInChannel', { channel: t(`salons.${salon.id}.label`).toLowerCase() })}
             className="flex-1 px-4 py-3 rounded-full border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20"
             style={{ fontFamily: 'Jost, sans-serif' }} />
           {content.trim() ? (
@@ -722,7 +725,7 @@ function SalonView({ salonId, onBack }: { salonId: string; onBack: () => void })
           ) : (
             <button type="button" onClick={isRecording ? handleStopRecording : handleStartRecording}
               className={`h-11 w-11 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${isRecording ? 'bg-destructive text-white animate-pulse' : 'bg-primary text-white'}`}
-              title={isRecording ? 'Arrêter et envoyer' : 'Message vocal'}>
+              title={isRecording ? t('salonView.stopAndSend') : t('salonView.voiceMessage')}>
               {isRecording ? <Square className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
             </button>
           )}
@@ -736,6 +739,7 @@ function SalonView({ salonId, onBack }: { salonId: string; onBack: () => void })
 // FORUM — inchangé
 // ─────────────────────────────────────────────────────────────
 function ForumView({ onBack }: { onBack: () => void }) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [posts, setPosts] = useState<ForumPost[]>([]);
   const [authorNames, setAuthorNames] = useState<Record<string, string>>({});
@@ -771,7 +775,7 @@ function ForumView({ onBack }: { onBack: () => void }) {
     if (authorIds.length) {
       const { data: profiles } = await supabase.from('profiles').select('user_id, name').in('user_id', authorIds);
       const map: Record<string, string> = {};
-      (profiles || []).forEach(p => { map[p.user_id] = p.name || 'Membre'; });
+      (profiles || []).forEach(p => { map[p.user_id] = p.name || t('forumView.defaultMember'); });
       setAuthorNames(map);
     }
 
@@ -797,21 +801,21 @@ function ForumView({ onBack }: { onBack: () => void }) {
   const handlePost = async () => {
     if (!user || (!newPost.trim() && !pendingAttachment) || posting) return;
     setPosting(true);
-    const text = newPost.trim() || (pendingAttachment?.type === 'audio' ? '🎤 Message vocal' : '📷 Photo');
+    const text = newPost.trim() || (pendingAttachment?.type === 'audio' ? t('forumView.voiceMessageContent') : t('forumView.photoContent'));
     const { error } = await supabase.from('forum_posts').insert({
       author_id: user.id,
       content: text,
       attachment_url: pendingAttachment?.url,
       attachment_type: pendingAttachment?.type,
     });
-    if (error) toast.error("Impossible de publier.");
+    if (error) toast.error(t('forumView.publishError'));
     else { setNewPost(''); setPendingAttachment(null); loadPosts(); }
     setPosting(false);
   };
 
   const handleStartRecording = async () => {
     if (!navigator.mediaDevices?.getUserMedia) {
-      toast.error("L'enregistrement audio n'est pas supporté sur cet appareil.");
+      toast.error(t('forumView.micUnsupported'));
       return;
     }
     try {
@@ -827,14 +831,14 @@ function ForumView({ onBack }: { onBack: () => void }) {
         setAttaching(true);
         const url = await uploadVoiceMessage('chat-audio', user.id, new Blob(audioChunksRef.current, { type: mimeType }), mimeType);
         setAttaching(false);
-        if (!url) { toast.error("Échec de l'envoi du message vocal."); return; }
+        if (!url) { toast.error(t('forumView.voiceSendError')); return; }
         setPendingAttachment({ url, type: 'audio' });
       };
       mediaRecorderRef.current = recorder;
       recorder.start();
       setIsRecording(true);
     } catch {
-      toast.error("Impossible d'accéder au micro. Vérifiez les autorisations.");
+      toast.error(t('forumView.micPermissionError'));
     }
   };
 
@@ -847,13 +851,13 @@ function ForumView({ onBack }: { onBack: () => void }) {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file || !user) return;
-    if (!file.type.startsWith('image/')) { toast.error('Merci de choisir un fichier image.'); return; }
-    if (file.size > MAX_PHOTO_SIZE_MB * 1024 * 1024) { toast.error(`L'image doit faire moins de ${MAX_PHOTO_SIZE_MB} Mo.`); return; }
+    if (!file.type.startsWith('image/')) { toast.error(t('forumView.photoTypeError')); return; }
+    if (file.size > MAX_PHOTO_SIZE_MB * 1024 * 1024) { toast.error(t('forumView.photoSizeError', { max: MAX_PHOTO_SIZE_MB })); return; }
 
     setAttaching(true);
     const url = await uploadPhoto('chat-images', user.id, file);
     setAttaching(false);
-    if (!url) { toast.error("Échec de l'envoi de la photo."); return; }
+    if (!url) { toast.error(t('forumView.photoSendError')); return; }
     setPendingAttachment({ url, type: 'image' });
   };
 
@@ -878,21 +882,21 @@ function ForumView({ onBack }: { onBack: () => void }) {
           <button onClick={onBack} className="text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <h1 className="font-display text-lg font-semibold">📰 Forum</h1>
+          <h1 className="font-display text-lg font-semibold">{t('forumView.title')}</h1>
         </div>
       </div>
 
       <div className="max-w-lg mx-auto px-4 pt-4 space-y-4">
         <div className="card-premium p-4 space-y-2">
           <textarea value={newPost} onChange={e => setNewPost(e.target.value)} maxLength={1000} rows={2}
-            placeholder="Quoi de neuf sur l'île ?"
+            placeholder={t('forumView.whatsNew')}
             className="w-full px-3 py-2 rounded-xl border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20 resize-none"
             style={{ fontFamily: 'Jost, sans-serif' }} />
 
           {pendingAttachment && (
             <div className="relative inline-block">
               {pendingAttachment.type === 'image' ? (
-                <img src={pendingAttachment.url} alt="Photo à publier" className="max-h-32 rounded-xl" />
+                <img src={pendingAttachment.url} alt={t('forumView.photoToPublish')} className="max-h-32 rounded-xl" />
               ) : (
                 <audio controls src={pendingAttachment.url} className="h-9" />
               )}
@@ -907,25 +911,25 @@ function ForumView({ onBack }: { onBack: () => void }) {
             <input ref={photoInputRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoSelect} />
             <button type="button" onClick={() => photoInputRef.current?.click()} disabled={attaching || !!pendingAttachment}
               className="h-9 w-9 rounded-full border border-border flex items-center justify-center flex-shrink-0 text-muted-foreground hover:text-foreground disabled:opacity-50"
-              title="Joindre une photo">
+              title={t('forumView.attachPhoto')}>
               <ImageIcon className="h-4 w-4" />
             </button>
             <button type="button" onClick={isRecording ? handleStopRecording : handleStartRecording} disabled={attaching || !!pendingAttachment}
               className={cn('h-9 w-9 rounded-full border flex items-center justify-center flex-shrink-0 disabled:opacity-50 transition-colors',
                 isRecording ? 'bg-destructive text-white border-destructive animate-pulse' : 'border-border text-muted-foreground hover:text-foreground')}
-              title={isRecording ? 'Arrêter' : 'Joindre un vocal'}>
+              title={isRecording ? t('forumView.stop') : t('forumView.attachVoice')}>
               {isRecording ? <Square className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
             </button>
             <button onClick={handlePost} disabled={(!newPost.trim() && !pendingAttachment) || posting || attaching}
               className="btn-ocean flex-1 py-2.5 text-sm disabled:opacity-50">
-              {posting ? 'Publication...' : attaching ? 'Envoi...' : 'Publier'}
+              {posting ? t('forumView.publishing') : attaching ? t('forumView.sending') : t('forumView.publish')}
             </button>
           </div>
         </div>
 
         {posts.length === 0 && (
           <p className="text-center text-sm text-muted-foreground py-8" style={{ fontFamily: 'Jost, sans-serif' }}>
-            Aucun post pour l'instant. Lancez la discussion !
+            {t('forumView.noPosts')}
           </p>
         )}
 
@@ -936,7 +940,7 @@ function ForumView({ onBack }: { onBack: () => void }) {
                 <div className="h-8 w-8 rounded-full bg-ocean-light flex items-center justify-center text-xs font-semibold text-primary/70 flex-shrink-0">
                   {avatarFallbackInitial(authorNames[post.author_id])}
                 </div>
-                <span className="text-sm font-medium" style={{ fontFamily: 'Jost, sans-serif' }}>{authorNames[post.author_id] || 'Membre'}</span>
+                <span className="text-sm font-medium" style={{ fontFamily: 'Jost, sans-serif' }}>{authorNames[post.author_id] || t('forumView.defaultMember')}</span>
               </div>
               {post.author_id !== user?.id && (
                 <ReportButton targetType="forum_post" targetId={post.id} targetUserId={post.author_id} className="text-muted-foreground hover:text-destructive transition-colors p-1 rounded-lg hover:bg-destructive/10" />
@@ -945,7 +949,7 @@ function ForumView({ onBack }: { onBack: () => void }) {
             <p className="text-sm" style={{ fontFamily: 'Jost, sans-serif', lineHeight: 1.6 }}>{post.content}</p>
             {post.attachment_type === 'image' && post.attachment_url && (
               <a href={post.attachment_url} target="_blank" rel="noopener noreferrer" className="block rounded-xl overflow-hidden">
-                <img src={post.attachment_url} alt="Photo du post" className="max-h-72 w-full object-cover" />
+                <img src={post.attachment_url} alt={t('forumView.postPhoto')} className="max-h-72 w-full object-cover" />
               </a>
             )}
             {post.attachment_type === 'audio' && post.attachment_url && (
@@ -973,6 +977,7 @@ function ForumView({ onBack }: { onBack: () => void }) {
 }
 
 function CommentsPanel({ postId, onCommentAdded }: { postId: string; onCommentAdded: () => void }) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [comments, setComments] = useState<{ id: string; content: string; author_id: string }[]>([]);
   const [names, setNames] = useState<Record<string, string>>({});
@@ -988,7 +993,7 @@ function CommentsPanel({ postId, onCommentAdded }: { postId: string; onCommentAd
       if (ids.length) {
         const { data: profiles } = await supabase.from('profiles').select('user_id, name').in('user_id', ids);
         const map: Record<string, string> = {};
-        (profiles || []).forEach(p => { map[p.user_id] = p.name || 'Membre'; });
+        (profiles || []).forEach(p => { map[p.user_id] = p.name || t('commentsPanel.defaultMember'); });
         setNames(map);
       }
     }
@@ -1006,15 +1011,15 @@ function CommentsPanel({ postId, onCommentAdded }: { postId: string; onCommentAd
     <div className="pt-2 border-t border-border/50 space-y-2">
       {comments.map(c => (
         <div key={c.id} className="text-xs" style={{ fontFamily: 'Jost, sans-serif' }}>
-          <span className="font-semibold">{names[c.author_id] || 'Membre'} : </span>
+          <span className="font-semibold">{names[c.author_id] || t('commentsPanel.defaultMember')} : </span>
           <span className="text-muted-foreground">{c.content}</span>
         </div>
       ))}
       <div className="flex gap-2">
-        <input value={text} onChange={e => setText(e.target.value)} maxLength={500} placeholder="Ajouter un commentaire..."
+        <input value={text} onChange={e => setText(e.target.value)} maxLength={500} placeholder={t('commentsPanel.addComment')}
           className="flex-1 px-3 py-1.5 rounded-full border border-border bg-background text-xs outline-none focus:ring-2 focus:ring-primary/20"
           style={{ fontFamily: 'Jost, sans-serif' }} />
-        <button onClick={submit} disabled={!text.trim()} className="text-xs text-primary font-medium disabled:opacity-50">Envoyer</button>
+        <button onClick={submit} disabled={!text.trim()} className="text-xs text-primary font-medium disabled:opacity-50">{t('commentsPanel.send')}</button>
       </div>
     </div>
   );
