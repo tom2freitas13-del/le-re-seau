@@ -191,6 +191,42 @@
   "locationPicker": {
     "defaultPlaceholder": "Rechercher un lieu sur l'île..."
   },
+  "about": {
+    "title": "Qui sommes-nous",
+    "heroTitle": "Une équipe passionnée, une île, une communauté",
+    "heroSubtitle": "Le Ré-seau connecte les habitants et visiteurs de l'Île de Ré.",
+    "storyTitle": "Notre histoire",
+    "story1": "Le Ré-seau est né d'un constat simple : sur l'Île de Ré, on croise chaque été des dizaines de personnes formidables sans vraiment garder le contact.",
+    "story2": "Hector et Noé ont imaginé une solution locale pour créer du lien. Tom a ensuite conçu et développé la plateforme complète.",
+    "story3": "Pas de publicité, pas d'exploitation des données : uniquement une plateforme utile, locale et humaine.",
+    "story4": "Le Ré-seau n'est pas une application de rencontre amoureuse ou pour adultes. C'est un espace pour se faire de nouveaux amis sur l'île, se donner rendez-vous, discuter, s'organiser et s'entraider.",
+    "missionTitle": "Mission",
+    "missionDesc": "Créer du lien social sur l'île toute l'année.",
+    "communityTitle": "Communauté",
+    "communityDesc": "Une plateforme locale pour rencontrer et partager.",
+    "privacyTitle": "Confidentialité",
+    "privacyDesc": "Pas de pub, pas de revente de données.",
+    "teamTitle": "L'équipe",
+    "team": {
+      "hector": { "role": "Co-fondateur", "bio": "À l'origine de la vision sociale du projet." },
+      "noe": { "role": "Co-fondateur", "bio": "Ancrage local et développement de la communauté." },
+      "tom": { "role": "Lead Développeur Web", "bio": "Conception et développement de la plateforme officielle." }
+    },
+    "learnMore": "En savoir plus",
+    "communityRules": "Règles de la communauté",
+    "privacyPolicy": "Politique de confidentialité",
+    "terms": "Conditions d'utilisation",
+    "legalNotice": "Mentions légales",
+    "ctaTitle": "Rejoignez l'aventure",
+    "ctaSubtitle": "Le Ré-seau grandit avec vous.",
+    "ctaJoined": "Voir la communauté",
+    "ctaJoin": "Rejoindre"
+  },
+  "notFound": {
+    "message": "Cette page n'existe pas ou plus.",
+    "back": "Retour",
+    "home": "Accueil"
+  },
   "storiesBar": {
     "myStory": "Ma story",
     "defaultMember": "Membre"

@@ -1,7 +1,9 @@
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Home, Waves } from 'lucide-react';
 
 export default function NotFound() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const handleBack = () => {
@@ -19,14 +21,14 @@ export default function NotFound() {
       <Waves className="h-10 w-10 text-primary mb-4" />
       <h1 className="font-display text-5xl font-bold mb-3">404</h1>
       <p className="text-muted-foreground mb-8" style={{ fontFamily: 'Jost, sans-serif' }}>
-        Cette page n'existe pas ou plus.
+        {t('notFound.message')}
       </p>
       <div className="flex gap-3">
         <button onClick={handleBack} className="btn-ghost flex items-center gap-2">
-          <ArrowLeft className="h-4 w-4" /> Retour
+          <ArrowLeft className="h-4 w-4" /> {t('notFound.back')}
         </button>
         <button onClick={() => navigate('/')} className="btn-ocean flex items-center gap-2">
-          <Home className="h-4 w-4" /> Accueil
+          <Home className="h-4 w-4" /> {t('notFound.home')}
         </button>
       </div>
     </div>

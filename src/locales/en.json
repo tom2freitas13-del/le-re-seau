@@ -191,6 +191,42 @@
   "locationPicker": {
     "defaultPlaceholder": "Search for a place on the island..."
   },
+  "about": {
+    "title": "About us",
+    "heroTitle": "A passionate team, one island, one community",
+    "heroSubtitle": "Le Ré-seau connects residents and visitors of Île de Ré.",
+    "storyTitle": "Our story",
+    "story1": "Le Ré-seau was born from a simple observation: every summer on Île de Ré, you meet dozens of amazing people without really staying in touch.",
+    "story2": "Hector and Noé came up with a local solution to build connections. Tom then designed and built the full platform.",
+    "story3": "No ads, no data exploitation: just a useful, local, human platform.",
+    "story4": "Le Ré-seau is not a romantic or adult dating app. It's a space to make new friends on the island, meet up, chat, organise and help each other out.",
+    "missionTitle": "Mission",
+    "missionDesc": "Build social connections on the island all year round.",
+    "communityTitle": "Community",
+    "communityDesc": "A local platform to meet and share.",
+    "privacyTitle": "Privacy",
+    "privacyDesc": "No ads, no reselling of data.",
+    "teamTitle": "The team",
+    "team": {
+      "hector": { "role": "Co-founder", "bio": "Behind the project's social vision." },
+      "noe": { "role": "Co-founder", "bio": "Local roots and community growth." },
+      "tom": { "role": "Lead Web Developer", "bio": "Design and development of the official platform." }
+    },
+    "learnMore": "Learn more",
+    "communityRules": "Community rules",
+    "privacyPolicy": "Privacy policy",
+    "terms": "Terms of use",
+    "legalNotice": "Legal notice",
+    "ctaTitle": "Join the adventure",
+    "ctaSubtitle": "Le Ré-seau grows with you.",
+    "ctaJoined": "See the community",
+    "ctaJoin": "Join"
+  },
+  "notFound": {
+    "message": "This page doesn't exist anymore.",
+    "back": "Back",
+    "home": "Home"
+  },
   "storiesBar": {
     "myStory": "My story",
     "defaultMember": "Member"
