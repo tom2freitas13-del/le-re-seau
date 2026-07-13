@@ -191,6 +191,38 @@
   "locationPicker": {
     "defaultPlaceholder": "Rechercher un lieu sur l'île..."
   },
+  "legalNotice": {
+    "title": "Mentions légales",
+    "back": "Retour",
+    "lastUpdated": "Dernière mise à jour : 7 juillet 2026",
+    "publisherTitle": "Éditeur du site",
+    "publisherBody": "Le site « Le Ré-seau » est édité à titre non-commercial par Hector De Giorgio, Noé Derain et Tom De Freitas, personnes physiques, dans le cadre d'un projet personnel.",
+    "publicationDirector": "Directeur de la publication : Hector De Giorgio.",
+    "contact": "Contact :",
+    "hostingTitle": "Hébergement",
+    "hostingBody": "Le site est hébergé par Netlify, Inc. (2325 3rd Street, Suite 296, San Francisco, California 94107, États-Unis). La base de données, l'authentification et le stockage des fichiers sont assurés par Supabase Inc.",
+    "ipTitle": "Propriété intellectuelle",
+    "ipBody": "La structure générale, le design et le code du site sont la propriété de leurs auteurs. Toute reproduction non autorisée est interdite. Les contenus publiés par les membres (textes, photos) restent la propriété de leurs auteurs respectifs, qui accordent au Ré-seau le droit de les afficher dans le cadre du fonctionnement du service.",
+    "dataTitle": "Données personnelles",
+    "dataBody": "Le traitement de vos données personnelles est détaillé dans notre <link>politique de confidentialité</link>."
+  },
+  "communityRules": {
+    "title": "Règles de la communauté",
+    "back": "Retour",
+    "intro1": "Le Ré-seau est un espace de confiance entre habitants et amoureux de l'Île de Ré. Pour que ça reste vrai, quelques règles simples s'appliquent à tout le monde.",
+    "intro2": "Ce n'est pas une application de rencontre amoureuse ou pour adultes : c'est un espace pour se faire de nouveaux amis sur l'île, se donner rendez-vous, discuter, s'organiser et s'entraider.",
+    "forbiddenTitle": "🚫 Ce qui est interdit",
+    "forbiddenItems": [
+      "Le harcèlement, les insultes, les propos haineux ou discriminatoires.",
+      "Les contenus illégaux, violents, sexuels, ou impliquant des mineurs.",
+      "L'usurpation d'identité.",
+      "Le spam et les arnaques.",
+      "La diffusion d'informations privées de quelqu'un sans son accord."
+    ],
+    "moderationTitle": "🛡️ Modération",
+    "moderationBody": "Vous pouvez à tout moment signaler un post, un profil ou un message via l'icône drapeau 🚩. L'équipe de modération examinera le signalement et prendra les mesures nécessaires : avertissement, suppression du contenu, ou suspension du compte concerné.",
+    "fullRules": "Pour le détail complet des règles, consultez nos <link>Conditions d'utilisation</link>."
+  },
   "terms": {
     "title": "Conditions d'utilisation",
     "back": "Retour",

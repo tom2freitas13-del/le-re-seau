@@ -191,6 +191,38 @@
   "locationPicker": {
     "defaultPlaceholder": "Search for a place on the island..."
   },
+  "legalNotice": {
+    "title": "Legal Notice",
+    "back": "Back",
+    "lastUpdated": "Last updated: 7 July 2026",
+    "publisherTitle": "Site publisher",
+    "publisherBody": "The \"Le Ré-seau\" site is published on a non-commercial basis by Hector De Giorgio, Noé Derain and Tom De Freitas, private individuals, as part of a personal project.",
+    "publicationDirector": "Publication director: Hector De Giorgio.",
+    "contact": "Contact:",
+    "hostingTitle": "Hosting",
+    "hostingBody": "The site is hosted by Netlify, Inc. (2325 3rd Street, Suite 296, San Francisco, California 94107, USA). The database, authentication, and file storage are provided by Supabase Inc.",
+    "ipTitle": "Intellectual property",
+    "ipBody": "The overall structure, design, and code of the site are the property of their authors. Any unauthorised reproduction is prohibited. Content published by members (text, photos) remains the property of their respective authors, who grant Le Ré-seau the right to display it as part of the service's operation.",
+    "dataTitle": "Personal data",
+    "dataBody": "The processing of your personal data is detailed in our <link>privacy policy</link>."
+  },
+  "communityRules": {
+    "title": "Community Rules",
+    "back": "Back",
+    "intro1": "Le Ré-seau is a space of trust between residents and lovers of Île de Ré. For that to stay true, a few simple rules apply to everyone.",
+    "intro2": "This is not a romantic or adult dating app: it's a space to make new friends on the island, meet up, chat, organise and help each other out.",
+    "forbiddenTitle": "🚫 What's forbidden",
+    "forbiddenItems": [
+      "Harassment, insults, hateful or discriminatory remarks.",
+      "Illegal, violent, sexual content, or content involving minors.",
+      "Impersonation.",
+      "Spam and scams.",
+      "Sharing someone's private information without their consent."
+    ],
+    "moderationTitle": "🛡️ Moderation",
+    "moderationBody": "You can report a post, profile, or message at any time using the 🚩 flag icon. The moderation team will review the report and take the necessary action: warning, content removal, or suspension of the account involved.",
+    "fullRules": "For the full details of the rules, see our <link>Terms of Use</link>."
+  },
   "terms": {
     "title": "Terms of Use",
     "back": "Back",
