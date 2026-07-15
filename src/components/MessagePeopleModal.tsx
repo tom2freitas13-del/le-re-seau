@@ -8,7 +8,7 @@ interface Person {
   photo_url: string | null;
 }
 
-interface GroupMessagePeopleModalProps {
+interface MessagePeopleModalProps {
   title: string;
   people: Person[] | null;
   onClose: () => void;
@@ -16,9 +16,10 @@ interface GroupMessagePeopleModalProps {
 
 /**
  * Petite modale réutilisée pour afficher "qui a aimé" et "qui a vu" un
- * message de discussion de groupe — même style que ReportModal.
+ * message (discussion de groupe ou salon thématique) — même style que
+ * ReportModal.
  */
-export default function GroupMessagePeopleModal({ title, people, onClose }: GroupMessagePeopleModalProps) {
+export default function MessagePeopleModal({ title, people, onClose }: MessagePeopleModalProps) {
   const { t } = useTranslation();
 
   return (

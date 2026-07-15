@@ -14,6 +14,9 @@ import { useBlockedUsers } from '@/lib/useBlockedUsers';
 import { usePresence } from '@/lib/presence-context';
 import { useUnreadMessages } from '@/lib/unread-context';
 import { MAX_PHOTO_SIZE_MB, pickAudioMimeType, uploadVoiceMessage, uploadPhoto } from '@/lib/attachments';
+import { useMessageLikesAndReads } from '@/lib/useMessageLikesAndReads';
+import MessagePeopleModal from '@/components/MessagePeopleModal';
+import MessageLikeReadRow from '@/components/MessageLikeReadRow';
 
 interface SalonMessage {
   id: string;
@@ -415,6 +418,12 @@ function MessagesView({ onBack }: { onBack: () => void }) {
   );
 }
 
+interface PickableMember {
+  user_id: string;
+  name: string | null;
+  photo_url: string | null;
+}
+
 function CreateGroupModal({ onClose, onCreated }: { onClose: () => void; onCreated: (id: string) => void }) {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -423,6 +432,40 @@ function CreateGroupModal({ onClose, onCreated }: { onClose: () => void; onCreat
   const [emoji, setEmoji] = useState('💬');
   const [loading, setLoading] = useState(false);
   const emojiOptions = ['💬', '🏖️', '🚲', '🏄', '⛵', '🍷', '🥾', '🎾'];
+  const [memberSearch, setMemberSearch] = useState('');
+  const [memberResults, setMemberResults] = useState<PickableMember[] | null>(null);
+  const [searchingMembers, setSearchingMembers] = useState(false);
+  const [selectedMembers, setSelectedMembers] = useState<PickableMember[]>([]);
+
+  useEffect(() => {
+    if (!user) return;
+    const q = memberSearch.trim();
+    if (!q) { setMemberResults(null); return; }
+    setSearchingMembers(true);
+    const handle = setTimeout(async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('user_id, name, photo_url')
+        .ilike('name', `${q}%`)
+        .not('name', 'is', null)
+        .neq('user_id', user.id)
+        .limit(20);
+      setMemberResults(data || []);
+      setSearchingMembers(false);
+    }, 300);
+    return () => clearTimeout(handle);
+  }, [memberSearch, user]);
+
+  const addMember = (p: PickableMember) => {
+    if (selectedMembers.some(m => m.user_id === p.user_id)) return;
+    setSelectedMembers(prev => [...prev, p]);
+    setMemberSearch('');
+    setMemberResults(null);
+  };
+
+  const removeMember = (userId: string) => {
+    setSelectedMembers(prev => prev.filter(m => m.user_id !== userId));
+  };
 
   const handleCreate = async () => {
     if (!user) return;
@@ -433,15 +476,26 @@ function CreateGroupModal({ onClose, onCreated }: { onClose: () => void; onCreat
       .insert({ name: name.trim(), description: description.trim() || null, emoji, created_by: user.id })
       .select()
       .single();
+    if (error || !data) { setLoading(false); toast.error(t('createGroupModal.createError')); return; }
+
+    if (selectedMembers.length > 0) {
+      await supabase.from('chat_group_members').insert(
+        selectedMembers.map(m => ({ group_id: data.id, user_id: m.user_id }))
+      );
+      const names = selectedMembers.map(m => m.name || t('groupChat.defaultUser')).join(', ');
+      await supabase.from('chat_group_messages').insert({
+        group_id: data.id, sender_id: user.id, content: t('createGroupModal.membersAddedMessage', { names }), is_system: true,
+      });
+    }
+
     setLoading(false);
-    if (error || !data) { toast.error(t('createGroupModal.createError')); return; }
     toast.success(t('createGroupModal.createdSuccess'));
     onCreated(data.id);
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4" onClick={onClose}>
-      <div className="bg-card rounded-3xl p-6 w-full max-w-sm space-y-4" onClick={e => e.stopPropagation()}>
+      <div className="bg-card rounded-3xl p-6 w-full max-w-sm space-y-4 max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between">
           <h2 className="font-display text-xl font-semibold flex items-center gap-2">
             <Users className="h-5 w-5 text-primary" /> {t('createGroupModal.title')}
@@ -477,6 +531,57 @@ function CreateGroupModal({ onClose, onCreated }: { onClose: () => void; onCreat
           style={{ fontFamily: 'Jost, sans-serif' }}
         />
 
+        <div>
+          <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 block" style={{ fontFamily: 'Jost, sans-serif' }}>
+            {t('createGroupModal.membersLabel')}
+          </label>
+
+          {selectedMembers.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mb-2">
+              {selectedMembers.map(m => (
+                <span key={m.user_id} className="pill bg-ocean-light text-primary flex items-center gap-1.5 pr-1.5">
+                  {m.name || t('groupChat.defaultUser')}
+                  <button onClick={() => removeMember(m.user_id)} className="hover:text-destructive">
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+
+          <input
+            value={memberSearch}
+            onChange={e => setMemberSearch(e.target.value)}
+            placeholder={t('createGroupModal.membersSearchPlaceholder')}
+            className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20"
+            style={{ fontFamily: 'Jost, sans-serif' }}
+          />
+
+          {memberSearch.trim() && (
+            <div className="mt-1.5 max-h-40 overflow-y-auto rounded-xl border border-border/50 divide-y divide-border/50">
+              {searchingMembers ? (
+                <p className="text-xs text-muted-foreground text-center py-3" style={{ fontFamily: 'Jost, sans-serif' }}>{t('groupChat.loading')}</p>
+              ) : !memberResults || memberResults.length === 0 ? (
+                <p className="text-xs text-muted-foreground text-center py-3" style={{ fontFamily: 'Jost, sans-serif' }}>{t('createGroupModal.noResults')}</p>
+              ) : (
+                memberResults.filter(p => !selectedMembers.some(m => m.user_id === p.user_id)).map(p => (
+                  <button key={p.user_id} onClick={() => addMember(p)} type="button"
+                    className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-secondary text-left">
+                    <div className="h-7 w-7 rounded-full bg-ocean-light flex items-center justify-center flex-shrink-0 overflow-hidden">
+                      {p.photo_url ? (
+                        <img src={p.photo_url} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        <span className="text-xs font-semibold text-primary">{avatarFallbackInitial(p.name)}</span>
+                      )}
+                    </div>
+                    <span className="text-sm" style={{ fontFamily: 'Jost, sans-serif' }}>{p.name}</span>
+                  </button>
+                ))
+              )}
+            </div>
+          )}
+        </div>
+
         <button onClick={handleCreate} disabled={loading || !name.trim()}
           className="btn-ocean w-full py-3.5 flex items-center justify-center gap-2 disabled:opacity-50">
           <Check className="h-4 w-4" /> {loading ? t('createGroupModal.creating') : t('createGroupModal.create')}
@@ -508,6 +613,12 @@ function SalonView({ salonId, onBack }: { salonId: string; onBack: () => void })
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const stopTypingTimeout = useRef<ReturnType<typeof setTimeout>>();
   const typingClearTimeouts = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+  const {
+    likesByMessage, readsByMessage, loadForMessages, markMessagesRead, toggleLike,
+    applyLikeInsert, applyLikeDelete, applyReadInsert,
+  } = useMessageLikesAndReads('salon_message_likes', 'salon_message_reads');
+  const [peopleModal, setPeopleModal] = useState<{ title: string; userIds: string[] } | null>(null);
+  const [peopleModalData, setPeopleModalData] = useState<{ user_id: string; name: string | null; photo_url: string | null }[] | null>(null);
 
   useEffect(() => {
     loadMessages();
@@ -517,6 +628,19 @@ function SalonView({ salonId, onBack }: { salonId: string; onBack: () => void })
         const m = payload.new as SalonMessage;
         setMessages(prev => [...prev, m]);
         ensureSenderName(m.user_id);
+        if (m.user_id !== user?.id) markMessagesRead([m.id]);
+      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'salon_message_likes' }, (payload) => {
+        const { message_id, user_id } = payload.new as { message_id: string; user_id: string };
+        applyLikeInsert(message_id, user_id);
+      })
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'salon_message_likes' }, (payload) => {
+        const { message_id, user_id } = payload.old as { message_id: string; user_id: string };
+        applyLikeDelete(message_id, user_id);
+      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'salon_message_reads' }, (payload) => {
+        const { message_id, viewer_id } = payload.new as { message_id: string; viewer_id: string };
+        applyReadInsert(message_id, viewer_id);
       })
       .on('broadcast', { event: 'typing' }, ({ payload }) => {
         if (!payload?.userId || payload.userId === user?.id) return;
@@ -554,7 +678,17 @@ function SalonView({ salonId, onBack }: { salonId: string; onBack: () => void })
     if (data) {
       setMessages(data);
       Array.from(new Set(data.map(m => m.user_id))).forEach(ensureSenderName);
+      await loadForMessages(data.map(m => m.id));
+      if (user) markMessagesRead(data.filter(m => m.user_id !== user.id).map(m => m.id));
     }
+  };
+
+  const openPeopleModal = async (title: string, userIds: string[]) => {
+    setPeopleModal({ title, userIds });
+    setPeopleModalData(null);
+    if (userIds.length === 0) { setPeopleModalData([]); return; }
+    const { data } = await supabase.from('profiles').select('user_id, name, photo_url').in('user_id', userIds);
+    setPeopleModalData(data || []);
   };
 
   const ensureSenderName = async (uid: string) => {
@@ -665,24 +799,38 @@ function SalonView({ salonId, onBack }: { salonId: string; onBack: () => void })
         )}
         {messages.filter(m => !isBlocked(m.user_id)).map(m => {
           const mine = m.user_id === user?.id;
+          const likedByMe = user ? (likesByMessage[m.id] || []).includes(user.id) : false;
+          const likeCount = (likesByMessage[m.id] || []).length;
+          const readCount = (readsByMessage[m.id] || []).length;
           return (
-            <div key={m.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
-              {m.attachment_type === 'audio' && m.attachment_url ? (
-                <div className={`max-w-[75%] rounded-2xl px-3 py-2 ${mine ? 'bg-primary' : 'bg-secondary'}`}>
-                  {!mine && <p className={cn('text-xs font-semibold opacity-70 mb-0.5', mine ? '' : 'text-foreground')}>{senderNames[m.user_id] || '...'}</p>}
-                  <audio controls src={m.attachment_url} className="h-9 max-w-[220px]" />
-                </div>
-              ) : m.attachment_type === 'image' && m.attachment_url ? (
-                <a href={m.attachment_url} target="_blank" rel="noopener noreferrer" className="block max-w-[75%] rounded-2xl overflow-hidden">
-                  <img src={m.attachment_url} alt={t('salonView.sentPhoto')} className="max-h-64 w-auto object-cover" />
-                </a>
-              ) : (
-                <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm ${mine ? 'bg-primary text-white' : 'bg-secondary text-foreground'}`}
-                  style={{ fontFamily: 'Jost, sans-serif' }}>
-                  {!mine && <p className="text-xs font-semibold opacity-70 mb-0.5">{senderNames[m.user_id] || '...'}</p>}
-                  {m.content}
-                </div>
-              )}
+            <div key={m.id} className={`flex flex-col ${mine ? 'items-end' : 'items-start'}`}>
+              <div className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
+                {m.attachment_type === 'audio' && m.attachment_url ? (
+                  <div className={`max-w-[75%] rounded-2xl px-3 py-2 ${mine ? 'bg-primary' : 'bg-secondary'}`}>
+                    {!mine && <p className={cn('text-xs font-semibold opacity-70 mb-0.5', mine ? '' : 'text-foreground')}>{senderNames[m.user_id] || '...'}</p>}
+                    <audio controls src={m.attachment_url} className="h-9 max-w-[220px]" />
+                  </div>
+                ) : m.attachment_type === 'image' && m.attachment_url ? (
+                  <a href={m.attachment_url} target="_blank" rel="noopener noreferrer" className="block max-w-[75%] rounded-2xl overflow-hidden">
+                    <img src={m.attachment_url} alt={t('salonView.sentPhoto')} className="max-h-64 w-auto object-cover" />
+                  </a>
+                ) : (
+                  <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm ${mine ? 'bg-primary text-white' : 'bg-secondary text-foreground'}`}
+                    style={{ fontFamily: 'Jost, sans-serif' }}>
+                    {!mine && <p className="text-xs font-semibold opacity-70 mb-0.5">{senderNames[m.user_id] || '...'}</p>}
+                    {m.content}
+                  </div>
+                )}
+              </div>
+
+              <MessageLikeReadRow
+                likedByMe={likedByMe}
+                likeCount={likeCount}
+                readCount={readCount}
+                onToggleLike={() => toggleLike(m.id)}
+                onShowLikers={() => openPeopleModal(t('groupChat.likedBy'), likesByMessage[m.id] || [])}
+                onShowViewers={() => openPeopleModal(t('groupChat.seenBy'), readsByMessage[m.id] || [])}
+              />
             </div>
           );
         })}
@@ -731,6 +879,14 @@ function SalonView({ salonId, onBack }: { salonId: string; onBack: () => void })
           )}
         </div>
       </form>
+
+      {peopleModal && (
+        <MessagePeopleModal
+          title={peopleModal.title}
+          people={peopleModalData}
+          onClose={() => { setPeopleModal(null); setPeopleModalData(null); }}
+        />
+      )}
     </div>
   );
 }

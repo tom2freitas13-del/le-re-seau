@@ -417,7 +417,11 @@
     "create": "Create group",
     "nameRequiredError": "The group name is required.",
     "createError": "Couldn't create the group.",
-    "createdSuccess": "Group created! 🎉"
+    "createdSuccess": "Group created! 🎉",
+    "membersLabel": "Members",
+    "membersSearchPlaceholder": "Search for members to add...",
+    "noResults": "No member found.",
+    "membersAddedMessage": "🎉 Group created with {{names}}"
   },
   "salonView": {
     "beFirst": "Be the first to write in this room 👋",
