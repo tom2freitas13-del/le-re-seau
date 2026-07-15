@@ -171,6 +171,38 @@ export interface Database {
         Update: Partial<Database['public']['Tables']['story_views']['Insert']>;
         Relationships: [];
       };
+      chat_group_message_likes: {
+        Row: {
+          id: string;
+          message_id: string;
+          user_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          message_id: string;
+          user_id: string;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['chat_group_message_likes']['Insert']>;
+        Relationships: [];
+      };
+      chat_group_message_reads: {
+        Row: {
+          id: string;
+          message_id: string;
+          viewer_id: string;
+          viewed_at: string;
+        };
+        Insert: {
+          id?: string;
+          message_id: string;
+          viewer_id: string;
+          viewed_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['chat_group_message_reads']['Insert']>;
+        Relationships: [];
+      };
       group_reads: {
         Row: {
           id: string;

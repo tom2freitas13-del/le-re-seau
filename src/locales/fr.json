@@ -489,7 +489,11 @@
     "sendPhoto": "Envoyer une photo",
     "messagePlaceholder": "Écrire au groupe...",
     "stopAndSend": "Arrêter et envoyer",
-    "voiceMessage": "Message vocal"
+    "voiceMessage": "Message vocal",
+    "likedBy": "Aimé par",
+    "seenBy": "Vu par",
+    "loading": "Chargement...",
+    "noOne": "Personne pour l'instant"
   },
   "chat": {
     "conversation": "Conversation",

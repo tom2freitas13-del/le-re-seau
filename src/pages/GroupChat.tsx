@@ -3,10 +3,11 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
-import { ArrowLeft, Send, LogOut, Mic, Square, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Send, LogOut, Mic, Square, Image as ImageIcon, Heart, Eye } from 'lucide-react';
 import { toast } from 'sonner';
-import { avatarFallbackInitial } from '@/lib/constants';
+import { cn } from '@/lib/utils';
 import { MAX_PHOTO_SIZE_MB, pickAudioMimeType, uploadVoiceMessage, uploadPhoto } from '@/lib/attachments';
+import GroupMessagePeopleModal from '@/components/GroupMessagePeopleModal';
 
 interface GroupMessage {
   id: string;
@@ -42,6 +43,13 @@ export default function GroupChat() {
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const stopTypingTimeout = useRef<ReturnType<typeof setTimeout>>();
   const typingClearTimeouts = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+  const [likesByMessage, setLikesByMessage] = useState<Record<string, string[]>>({});
+  const [readsByMessage, setReadsByMessage] = useState<Record<string, string[]>>({});
+  const [peopleModal, setPeopleModal] = useState<{ title: string; userIds: string[] } | null>(null);
+  const [peopleModalData, setPeopleModalData] = useState<{ user_id: string; name: string | null; photo_url: string | null }[] | null>(null);
+  const readMarkedRef = useRef<Set<string>>(new Set());
+  const messagesRef = useRef<GroupMessage[]>([]);
+  useEffect(() => { messagesRef.current = messages; }, [messages]);
 
   useEffect(() => {
     if (authLoading) return;
@@ -54,6 +62,32 @@ export default function GroupChat() {
         const m = payload.new as GroupMessage;
         setMessages(prev => [...prev, m]);
         ensureSenderName(m.sender_id);
+        if (!m.is_system && m.sender_id !== user.id) markMessagesRead([m.id]);
+      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_group_message_likes' }, (payload) => {
+        const { message_id, user_id } = payload.new as { message_id: string; user_id: string };
+        setLikesByMessage(prev => {
+          if (!(message_id in prev) && !messagesRef.current.some(m => m.id === message_id)) return prev;
+          const existing = prev[message_id] || [];
+          if (existing.includes(user_id)) return prev;
+          return { ...prev, [message_id]: [...existing, user_id] };
+        });
+      })
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'chat_group_message_likes' }, (payload) => {
+        const { message_id, user_id } = payload.old as { message_id: string; user_id: string };
+        setLikesByMessage(prev => {
+          if (!(message_id in prev)) return prev;
+          return { ...prev, [message_id]: (prev[message_id] || []).filter(id => id !== user_id) };
+        });
+      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_group_message_reads' }, (payload) => {
+        const { message_id, viewer_id } = payload.new as { message_id: string; viewer_id: string };
+        setReadsByMessage(prev => {
+          if (!messagesRef.current.some(m => m.id === message_id)) return prev;
+          const existing = prev[message_id] || [];
+          if (existing.includes(viewer_id)) return prev;
+          return { ...prev, [message_id]: [...existing, viewer_id] };
+        });
       })
       .on('broadcast', { event: 'typing' }, ({ payload }) => {
         if (!payload?.userId || payload.userId === user.id) return;
@@ -113,7 +147,55 @@ export default function GroupChat() {
       setMessages(msgs);
       const uniqueSenders = Array.from(new Set(msgs.map(m => m.sender_id)));
       uniqueSenders.forEach(ensureSenderName);
+
+      const msgIds = msgs.map(m => m.id);
+      if (msgIds.length > 0) {
+        const [{ data: likes }, { data: reads }] = await Promise.all([
+          supabase.from('chat_group_message_likes').select('message_id, user_id').in('message_id', msgIds),
+          supabase.from('chat_group_message_reads').select('message_id, viewer_id').in('message_id', msgIds),
+        ]);
+        const likeMap: Record<string, string[]> = {};
+        (likes || []).forEach(l => { (likeMap[l.message_id] ||= []).push(l.user_id); });
+        setLikesByMessage(likeMap);
+        const readMap: Record<string, string[]> = {};
+        (reads || []).forEach(r => { (readMap[r.message_id] ||= []).push(r.viewer_id); });
+        setReadsByMessage(readMap);
+      }
+
+      markMessagesRead(msgs.filter(m => !m.is_system && m.sender_id !== user.id).map(m => m.id));
     }
+  };
+
+  // Enregistre "vu" pour les messages reçus (pas les nôtres), une seule fois
+  // par message — même principe que story_views pour les stories.
+  const markMessagesRead = (messageIds: string[]) => {
+    if (!user) return;
+    const toMark = messageIds.filter(id => !readMarkedRef.current.has(id));
+    if (toMark.length === 0) return;
+    toMark.forEach(id => readMarkedRef.current.add(id));
+    supabase.from('chat_group_message_reads')
+      .upsert(toMark.map(message_id => ({ message_id, viewer_id: user.id })), { onConflict: 'message_id,viewer_id', ignoreDuplicates: true })
+      .then();
+  };
+
+  const toggleLike = async (messageId: string) => {
+    if (!user) return;
+    const likedByMe = (likesByMessage[messageId] || []).includes(user.id);
+    if (likedByMe) {
+      setLikesByMessage(prev => ({ ...prev, [messageId]: (prev[messageId] || []).filter(id => id !== user.id) }));
+      await supabase.from('chat_group_message_likes').delete().eq('message_id', messageId).eq('user_id', user.id);
+    } else {
+      setLikesByMessage(prev => ({ ...prev, [messageId]: [...(prev[messageId] || []), user.id] }));
+      await supabase.from('chat_group_message_likes').insert({ message_id: messageId, user_id: user.id });
+    }
+  };
+
+  const openPeopleModal = async (title: string, userIds: string[]) => {
+    setPeopleModal({ title, userIds });
+    setPeopleModalData(null);
+    if (userIds.length === 0) { setPeopleModalData([]); return; }
+    const { data } = await supabase.from('profiles').select('user_id, name, photo_url').in('user_id', userIds);
+    setPeopleModalData(data || []);
   };
 
   const ensureSenderName = async (senderId: string) => {
@@ -267,26 +349,49 @@ export default function GroupChat() {
             );
           }
           const mine = m.sender_id === user?.id;
+          const likedByMe = user ? (likesByMessage[m.id] || []).includes(user.id) : false;
+          const likeCount = (likesByMessage[m.id] || []).length;
+          const readCount = (readsByMessage[m.id] || []).length;
           return (
-            <div key={m.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
-              {m.attachment_type === 'audio' && m.attachment_url ? (
-                <div className={`max-w-[75%] rounded-2xl px-3 py-2 ${mine ? 'bg-primary' : 'bg-secondary'}`}>
-                  {!mine && <p className="text-xs font-semibold opacity-70 mb-0.5">{senderNames[m.sender_id] || '...'}</p>}
-                  <audio controls src={m.attachment_url} className="h-9 max-w-[220px]" />
-                </div>
-              ) : m.attachment_type === 'image' && m.attachment_url ? (
-                <a href={m.attachment_url} target="_blank" rel="noopener noreferrer" className="block max-w-[75%] rounded-2xl overflow-hidden">
-                  <img src={m.attachment_url} alt={t('groupChat.sentPhoto')} className="max-h-64 w-auto object-cover" />
-                </a>
-              ) : (
-                <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm ${mine ? 'bg-primary text-white' : 'bg-secondary text-foreground'}`}
-                  style={{ fontFamily: 'Jost, sans-serif' }}>
-                  {!mine && (
-                    <p className="text-xs font-semibold opacity-70 mb-0.5">{senderNames[m.sender_id] || '...'}</p>
-                  )}
-                  {m.content}
-                </div>
-              )}
+            <div key={m.id} className={`flex flex-col ${mine ? 'items-end' : 'items-start'}`}>
+              <div className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
+                {m.attachment_type === 'audio' && m.attachment_url ? (
+                  <div className={`max-w-[75%] rounded-2xl px-3 py-2 ${mine ? 'bg-primary' : 'bg-secondary'}`}>
+                    {!mine && <p className="text-xs font-semibold opacity-70 mb-0.5">{senderNames[m.sender_id] || '...'}</p>}
+                    <audio controls src={m.attachment_url} className="h-9 max-w-[220px]" />
+                  </div>
+                ) : m.attachment_type === 'image' && m.attachment_url ? (
+                  <a href={m.attachment_url} target="_blank" rel="noopener noreferrer" className="block max-w-[75%] rounded-2xl overflow-hidden">
+                    <img src={m.attachment_url} alt={t('groupChat.sentPhoto')} className="max-h-64 w-auto object-cover" />
+                  </a>
+                ) : (
+                  <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm ${mine ? 'bg-primary text-white' : 'bg-secondary text-foreground'}`}
+                    style={{ fontFamily: 'Jost, sans-serif' }}>
+                    {!mine && (
+                      <p className="text-xs font-semibold opacity-70 mb-0.5">{senderNames[m.sender_id] || '...'}</p>
+                    )}
+                    {m.content}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2.5 mt-1 px-1">
+                <button onClick={() => toggleLike(m.id)} className="flex items-center gap-1 text-muted-foreground hover:text-destructive transition-colors">
+                  <Heart className={cn('h-3.5 w-3.5', likedByMe && 'fill-destructive text-destructive')} />
+                </button>
+                {likeCount > 0 && (
+                  <button onClick={() => openPeopleModal(t('groupChat.likedBy'), likesByMessage[m.id] || [])}
+                    className="text-xs text-muted-foreground hover:underline" style={{ fontFamily: 'Jost, sans-serif' }}>
+                    {likeCount}
+                  </button>
+                )}
+                {readCount > 0 && (
+                  <button onClick={() => openPeopleModal(t('groupChat.seenBy'), readsByMessage[m.id] || [])}
+                    className="flex items-center gap-1 text-xs text-muted-foreground hover:underline" style={{ fontFamily: 'Jost, sans-serif' }}>
+                    <Eye className="h-3.5 w-3.5" /> {readCount}
+                  </button>
+                )}
+              </div>
             </div>
           );
         })}
@@ -339,6 +444,14 @@ export default function GroupChat() {
           )}
         </div>
       </form>
+
+      {peopleModal && (
+        <GroupMessagePeopleModal
+          title={peopleModal.title}
+          people={peopleModalData}
+          onClose={() => { setPeopleModal(null); setPeopleModalData(null); }}
+        />
+      )}
     </div>
   );
 }
