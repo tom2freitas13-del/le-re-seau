@@ -245,6 +245,7 @@ export interface Database {
           latitude: number;
           longitude: number;
           image_url: string | null;
+          website_url: string | null;
           route_waypoints: number[][] | null;
           created_at: string;
         };
@@ -257,6 +258,7 @@ export interface Database {
           latitude: number;
           longitude: number;
           image_url?: string | null;
+          website_url?: string | null;
           route_waypoints?: number[][] | null;
           created_at?: string;
         };

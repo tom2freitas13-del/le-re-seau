@@ -580,6 +580,8 @@
   "poiDetail": {
     "reviewCount_one": "{{count}} avis",
     "reviewCount_other": "{{count}} avis",
+    "officialWebsite": "Site officiel",
+    "viewPhotosGoogle": "Voir des photos sur Google",
     "leaveReview": "Laisser un avis",
     "commentPlaceholder": "Votre avis (optionnel)...",
     "submitReview": "Publier mon avis",

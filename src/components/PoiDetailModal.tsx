@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { X, MapPin, Star } from 'lucide-react';
+import { X, MapPin, Star, Globe, ImageIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
@@ -14,6 +14,7 @@ interface Poi {
   description: string;
   address: string;
   image_url: string | null;
+  website_url: string | null;
 }
 
 interface Review {
@@ -30,6 +31,14 @@ interface PoiDetailModalProps {
   poi: Poi;
   onClose: () => void;
 }
+
+const CATEGORY_EMOJI: Record<string, string> = {
+  surf: '🏄',
+  apero: '🍹',
+  sport: '🎾',
+  plage: '🏖️',
+  velo: '🚴',
+};
 
 function StarPicker({ value, onChange }: { value: number; onChange: (v: number) => void }) {
   return (
@@ -95,88 +104,111 @@ export default function PoiDetailModal({ poi, onClose }: PoiDetailModalProps) {
   const avgRating = reviews && reviews.length > 0 ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : 0;
 
   return (
-    <div className="fixed inset-0 z-[100] bg-background overflow-y-auto">
-      <div className="relative aspect-[16/9] bg-ocean-light">
-        {poi.image_url && (
-          <img src={poi.image_url} alt={poi.name} className="h-full w-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-        <button onClick={onClose}
-          className="absolute top-4 left-4 h-9 w-9 rounded-full glass flex items-center justify-center text-foreground hover:bg-white/90 transition-colors">
-          <X className="h-4.5 w-4.5" />
-        </button>
-        <div className="absolute bottom-0 left-0 right-0 p-5">
-          <h2 className="font-display text-2xl font-semibold text-white" style={{ textShadow: '0 1px 8px rgba(0,0,0,0.4)' }}>
-            {poi.name}
-          </h2>
-        </div>
-      </div>
-
-      <div className="max-w-lg mx-auto p-5 pb-10 space-y-5">
-        {reviews && reviews.length > 0 && (
-          <div className="flex items-center gap-2">
-            <StarRow rating={avgRating} size="h-4 w-4" />
-            <span className="text-sm font-medium">{avgRating.toFixed(1)}</span>
-            <span className="text-xs text-muted-foreground">{t('poiDetail.reviewCount', { count: reviews.length })}</span>
+    <div className="fixed inset-0 z-[100] bg-black/50 flex items-end justify-center" onClick={onClose}>
+      <div className="bg-background rounded-t-3xl w-full max-w-lg max-h-[80vh] overflow-y-auto safe-area-bottom" onClick={e => e.stopPropagation()}>
+        {poi.image_url ? (
+          <div className="relative h-36 sm:h-44 rounded-t-3xl overflow-hidden">
+            <img src={poi.image_url} alt={poi.name} className="h-full w-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+            <button onClick={onClose}
+              className="absolute top-3 right-3 h-8 w-8 rounded-full glass flex items-center justify-center text-foreground hover:bg-white/90 transition-colors">
+              <X className="h-4 w-4" />
+            </button>
+            <h2 className="absolute bottom-3 left-4 right-4 font-display text-xl font-semibold text-white" style={{ textShadow: '0 1px 8px rgba(0,0,0,0.4)' }}>
+              {poi.name}
+            </h2>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between px-5 pt-5">
+            <div className="flex items-center gap-2.5">
+              <span className="text-2xl">{CATEGORY_EMOJI[poi.category] || '📍'}</span>
+              <h2 className="font-display text-xl font-semibold">{poi.name}</h2>
+            </div>
+            <button onClick={onClose} className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center text-foreground hover:text-destructive transition-colors flex-shrink-0">
+              <X className="h-4 w-4" />
+            </button>
           </div>
         )}
 
-        <p className="text-sm text-foreground" style={{ fontFamily: 'Jost, sans-serif', lineHeight: 1.7 }}>
-          {poi.description}
-        </p>
-
-        <div className="flex items-start gap-2 text-sm text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>
-          <MapPin className="h-4 w-4 flex-shrink-0 mt-0.5" />
-          <span>{poi.address}</span>
-        </div>
-
-        <div className="card-premium p-4 space-y-3">
-          <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider" style={{ fontFamily: 'Jost, sans-serif' }}>
-            {t('poiDetail.leaveReview')}
-          </h3>
-          <StarPicker value={myRating} onChange={setMyRating} />
-          <textarea
-            value={myComment}
-            onChange={e => setMyComment(e.target.value)}
-            maxLength={500}
-            rows={3}
-            placeholder={t('poiDetail.commentPlaceholder')}
-            className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20 resize-none"
-            style={{ fontFamily: 'Jost, sans-serif' }}
-          />
-          <button onClick={handleSubmitReview} disabled={myRating === 0 || submitting}
-            className="btn-ocean w-full py-2.5 text-sm disabled:opacity-50">
-            {submitting ? t('poiDetail.sending') : t('poiDetail.submitReview')}
-          </button>
-        </div>
-
-        <div className="space-y-3">
-          {reviews === null ? (
-            <p className="text-sm text-muted-foreground text-center py-4" style={{ fontFamily: 'Jost, sans-serif' }}>{t('groupChat.loading')}</p>
-          ) : reviews.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4" style={{ fontFamily: 'Jost, sans-serif' }}>{t('poiDetail.noReviews')}</p>
-          ) : (
-            reviews.map(r => (
-              <div key={r.id} className="flex gap-3 py-2 border-b border-border/50 last:border-0">
-                <div className="h-9 w-9 rounded-full bg-ocean-light flex items-center justify-center flex-shrink-0 overflow-hidden">
-                  {r.photo_url ? (
-                    <img src={r.photo_url} alt="" className="h-full w-full object-cover" />
-                  ) : (
-                    <span className="text-xs font-semibold text-primary">{avatarFallbackInitial(r.name)}</span>
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium" style={{ fontFamily: 'Jost, sans-serif' }}>{r.name || t('groupChat.defaultUser')}</span>
-                    <StarRow rating={r.rating} />
-                  </div>
-                  {r.comment && (
-                    <p className="text-sm text-muted-foreground mt-0.5" style={{ fontFamily: 'Jost, sans-serif' }}>{r.comment}</p>
-                  )}
-                </div>
-              </div>
-            ))
+        <div className="px-5 pb-6 pt-4 space-y-4">
+          {reviews && reviews.length > 0 && (
+            <div className="flex items-center gap-2">
+              <StarRow rating={avgRating} size="h-4 w-4" />
+              <span className="text-sm font-medium">{avgRating.toFixed(1)}</span>
+              <span className="text-xs text-muted-foreground">{t('poiDetail.reviewCount', { count: reviews.length })}</span>
+            </div>
           )}
+
+          <p className="text-sm text-foreground" style={{ fontFamily: 'Jost, sans-serif', lineHeight: 1.6 }}>
+            {poi.description}
+          </p>
+
+          <div className="flex items-start gap-2 text-sm text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>
+            <MapPin className="h-4 w-4 flex-shrink-0 mt-0.5" />
+            <span>{poi.address}</span>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {poi.website_url && (
+              <a href={poi.website_url} target="_blank" rel="noopener noreferrer"
+                className="pill bg-ocean-light text-primary flex items-center gap-1.5" style={{ fontFamily: 'Jost, sans-serif' }}>
+                <Globe className="h-3.5 w-3.5" /> {t('poiDetail.officialWebsite')}
+              </a>
+            )}
+            <a href={`https://www.google.com/search?q=${encodeURIComponent(poi.name + ' ' + poi.address)}&udm=2`} target="_blank" rel="noopener noreferrer"
+              className="pill bg-secondary text-foreground flex items-center gap-1.5" style={{ fontFamily: 'Jost, sans-serif' }}>
+              <ImageIcon className="h-3.5 w-3.5" /> {t('poiDetail.viewPhotosGoogle')}
+            </a>
+          </div>
+
+          <div className="card-premium p-4 space-y-3">
+            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider" style={{ fontFamily: 'Jost, sans-serif' }}>
+              {t('poiDetail.leaveReview')}
+            </h3>
+            <StarPicker value={myRating} onChange={setMyRating} />
+            <textarea
+              value={myComment}
+              onChange={e => setMyComment(e.target.value)}
+              maxLength={500}
+              rows={2}
+              placeholder={t('poiDetail.commentPlaceholder')}
+              className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+              style={{ fontFamily: 'Jost, sans-serif' }}
+            />
+            <button onClick={handleSubmitReview} disabled={myRating === 0 || submitting}
+              className="btn-ocean w-full py-2.5 text-sm disabled:opacity-50">
+              {submitting ? t('poiDetail.sending') : t('poiDetail.submitReview')}
+            </button>
+          </div>
+
+          <div className="space-y-3">
+            {reviews === null ? (
+              <p className="text-sm text-muted-foreground text-center py-4" style={{ fontFamily: 'Jost, sans-serif' }}>{t('groupChat.loading')}</p>
+            ) : reviews.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4" style={{ fontFamily: 'Jost, sans-serif' }}>{t('poiDetail.noReviews')}</p>
+            ) : (
+              reviews.map(r => (
+                <div key={r.id} className="flex gap-3 py-2 border-b border-border/50 last:border-0">
+                  <div className="h-9 w-9 rounded-full bg-ocean-light flex items-center justify-center flex-shrink-0 overflow-hidden">
+                    {r.photo_url ? (
+                      <img src={r.photo_url} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <span className="text-xs font-semibold text-primary">{avatarFallbackInitial(r.name)}</span>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium" style={{ fontFamily: 'Jost, sans-serif' }}>{r.name || t('groupChat.defaultUser')}</span>
+                      <StarRow rating={r.rating} />
+                    </div>
+                    {r.comment && (
+                      <p className="text-sm text-muted-foreground mt-0.5" style={{ fontFamily: 'Jost, sans-serif' }}>{r.comment}</p>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       </div>
     </div>

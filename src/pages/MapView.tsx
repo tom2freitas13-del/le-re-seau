@@ -37,6 +37,7 @@ interface Poi {
   latitude: number;
   longitude: number;
   image_url: string | null;
+  website_url: string | null;
   route_waypoints: number[][] | null;
 }
 

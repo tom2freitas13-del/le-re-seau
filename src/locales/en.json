@@ -580,6 +580,8 @@
   "poiDetail": {
     "reviewCount_one": "{{count}} review",
     "reviewCount_other": "{{count}} reviews",
+    "officialWebsite": "Official website",
+    "viewPhotosGoogle": "View photos on Google",
     "leaveReview": "Leave a review",
     "commentPlaceholder": "Your review (optional)...",
     "submitReview": "Post my review",
