@@ -588,7 +588,10 @@
     "sending": "Sending...",
     "reviewSent": "Review posted!",
     "reviewError": "Couldn't send the review.",
-    "noReviews": "No reviews yet. Be the first!"
+    "noReviews": "No reviews yet. Be the first!",
+    "deleteModeration": "Delete this review (moderation)",
+    "deleteSuccess": "Review deleted.",
+    "deleteError": "Couldn't delete the review."
   },
   "newActivity": {
     "title": "Create an activity",

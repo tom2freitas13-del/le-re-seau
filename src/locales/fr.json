@@ -588,7 +588,10 @@
     "sending": "Envoi...",
     "reviewSent": "Avis publié !",
     "reviewError": "Impossible d'envoyer l'avis.",
-    "noReviews": "Aucun avis pour l'instant. Soyez le premier !"
+    "noReviews": "Aucun avis pour l'instant. Soyez le premier !",
+    "deleteModeration": "Supprimer cet avis (modération)",
+    "deleteSuccess": "Avis supprimé.",
+    "deleteError": "Impossible de supprimer l'avis."
   },
   "newActivity": {
     "title": "Créer une activité",

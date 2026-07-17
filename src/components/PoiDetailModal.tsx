@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { X, MapPin, Star, Globe, ImageIcon } from 'lucide-react';
+import { X, MapPin, Star, Globe, ImageIcon, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
@@ -64,8 +64,9 @@ function StarRow({ rating, size = 'h-3.5 w-3.5' }: { rating: number; size?: stri
 
 export default function PoiDetailModal({ poi, onClose }: PoiDetailModalProps) {
   const { t } = useTranslation();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [reviews, setReviews] = useState<Review[] | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [myRating, setMyRating] = useState(0);
   const [myComment, setMyComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -98,6 +99,15 @@ export default function PoiDetailModal({ poi, onClose }: PoiDetailModalProps) {
     setSubmitting(false);
     if (error) { toast.error(t('poiDetail.reviewError')); return; }
     toast.success(t('poiDetail.reviewSent'));
+    loadReviews();
+  };
+
+  const handleDeleteReview = async (reviewId: string) => {
+    setDeletingId(reviewId);
+    const { error } = await supabase.from('poi_reviews').delete().eq('id', reviewId);
+    setDeletingId(null);
+    if (error) { toast.error(t('poiDetail.deleteError')); return; }
+    toast.success(t('poiDetail.deleteSuccess'));
     loadReviews();
   };
 
@@ -205,6 +215,13 @@ export default function PoiDetailModal({ poi, onClose }: PoiDetailModalProps) {
                       <p className="text-sm text-muted-foreground mt-0.5" style={{ fontFamily: 'Jost, sans-serif' }}>{r.comment}</p>
                     )}
                   </div>
+                  {isAdmin && (
+                    <button onClick={() => handleDeleteReview(r.id)} disabled={deletingId === r.id}
+                      title={t('poiDetail.deleteModeration')}
+                      className="text-muted-foreground hover:text-destructive transition-colors flex-shrink-0 disabled:opacity-50">
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  )}
                 </div>
               ))
             )}
