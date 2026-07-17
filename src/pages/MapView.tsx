@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { supabase } from '@/integrations/supabase/client';
@@ -8,7 +8,8 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import BottomNav from '@/components/BottomNav';
 import ErrorBoundary from '@/components/ErrorBoundary';
-import { Map as MapIcon, Calendar, MapPin, Users, X, List, Plus } from 'lucide-react';
+import PoiDetailModal from '@/components/PoiDetailModal';
+import { Map as MapIcon, Calendar, MapPin, Users, X, List, Plus, Compass } from 'lucide-react';
 import { ACTIVITY_CATEGORIES } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 
@@ -27,6 +28,18 @@ interface MapActivity {
   participant_count: number;
 }
 
+interface Poi {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  image_url: string | null;
+  route_waypoints: number[][] | null;
+}
+
 // Couleur de marqueur par catégorie, cohérente avec le reste de l'appli.
 const CATEGORY_COLOR: Record<string, string> = {
   plage: '#2b8fb3',
@@ -37,6 +50,14 @@ const CATEGORY_COLOR: Record<string, string> = {
   randonnee: '#3f7a5c',
   sport: '#b3863f',
   autre: '#6b7280',
+};
+
+const POI_EMOJI: Record<string, string> = {
+  surf: '🏄',
+  apero: '🍹',
+  sport: '🎾',
+  plage: '🏖️',
+  velo: '🚴',
 };
 
 function createMarkerIcon(category: string | null) {
@@ -53,6 +74,21 @@ function createMarkerIcon(category: string | null) {
   });
 }
 
+// Marqueur rond (pas en goutte) pour distinguer visuellement les spots connus
+// des activités créées par les membres.
+function createPoiIcon(category: string) {
+  const emoji = POI_EMOJI[category] || '📍';
+  return L.divIcon({
+    className: 'custom-poi-marker',
+    html: `<div style="background:#fffdf8;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,0.35);border:2.5px solid #da9b2f;">
+             <span style="font-size:14px;">${emoji}</span>
+           </div>`,
+    iconSize: [30, 30],
+    iconAnchor: [15, 15],
+    popupAnchor: [0, -15],
+  });
+}
+
 /** Force la carte à se redimensionner correctement après le premier rendu (bug fréquent avec Leaflet dans des conteneurs flex/grid). */
 function MapResizeFix() {
   const map = useMap();
@@ -64,7 +100,13 @@ function MapResizeFix() {
 }
 
 // BUG FIX : clé stable via useRef pour éviter "Map container is already initialized"
-function LeafletMap({ activities, onSelect }: { activities: MapActivity[]; onSelect: (a: MapActivity) => void }) {
+function LeafletMap({ activities, pois, activeRoute, onSelectActivity, onSelectPoi }: {
+  activities: MapActivity[];
+  pois: Poi[];
+  activeRoute: number[][] | null;
+  onSelectActivity: (a: MapActivity) => void;
+  onSelectPoi: (p: Poi) => void;
+}) {
   const mapKey = useRef(`map-${Date.now()}`).current;
   return (
     <MapContainer key={mapKey} center={ILE_DE_RE_CENTER} zoom={12}
@@ -74,10 +116,18 @@ function LeafletMap({ activities, onSelect }: { activities: MapActivity[]; onSel
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
+      {activeRoute && (
+        <Polyline positions={activeRoute as [number, number][]} pathOptions={{ color: '#da9b2f', weight: 4, opacity: 0.85, dashArray: '1 8', lineCap: 'round' }} />
+      )}
+      {pois.map(p => (
+        <Marker key={p.id} position={[p.latitude, p.longitude]}
+          icon={createPoiIcon(p.category)}
+          eventHandlers={{ click: () => onSelectPoi(p) }} />
+      ))}
       {activities.map(a => (
         <Marker key={a.id} position={[a.latitude, a.longitude]}
           icon={createMarkerIcon(a.category)}
-          eventHandlers={{ click: () => onSelect(a) }} />
+          eventHandlers={{ click: () => onSelectActivity(a) }} />
       ))}
     </MapContainer>
   );
@@ -88,15 +138,30 @@ export default function MapView() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [activities, setActivities] = useState<MapActivity[]>([]);
+  const [pois, setPois] = useState<Poi[]>([]);
+  const [showPois, setShowPois] = useState(true);
   const [loading, setLoading] = useState(true);
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [selected, setSelected] = useState<MapActivity | null>(null);
+  const [selectedPoi, setSelectedPoi] = useState<Poi | null>(null);
+  const [activeRoute, setActiveRoute] = useState<number[][] | null>(null);
 
   useEffect(() => {
     if (authLoading) return;
     if (!user) { navigate('/auth'); return; }
     loadActivities();
+    loadPois();
   }, [user, authLoading]);
+
+  const loadPois = async () => {
+    const { data } = await supabase.from('points_of_interest').select('*');
+    if (data) setPois(data as Poi[]);
+  };
+
+  const handleSelectPoi = (p: Poi) => {
+    setSelectedPoi(p);
+    setActiveRoute(p.category === 'velo' && p.route_waypoints ? p.route_waypoints : null);
+  };
 
   const loadActivities = async () => {
     setLoading(true);
@@ -150,6 +215,11 @@ export default function MapView() {
                 {t('mapView.activityCount', { count: filtered.length })}
               </p>
             </div>
+            <button onClick={() => setShowPois(v => !v)} title={t('mapView.togglePois')}
+              className={cn('h-10 w-10 rounded-full flex items-center justify-center transition-colors',
+                showPois ? 'bg-ocean-light text-primary' : 'bg-secondary text-foreground hover:bg-ocean-light hover:text-primary')}>
+              <Compass className="h-4 w-4" />
+            </button>
             <button onClick={() => navigate('/activities')} title={t('mapView.viewList')}
               className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center text-foreground hover:bg-ocean-light hover:text-primary transition-colors">
               <List className="h-4 w-4" />
@@ -184,11 +254,17 @@ export default function MapView() {
           </div>
         ) : (
           <ErrorBoundary fallbackTitle={t('mapView.mapErrorTitle')} fallbackMessage={t('mapView.mapErrorMessage')}>
-            <LeafletMap activities={filtered} onSelect={setSelected} />
+            <LeafletMap
+              activities={filtered}
+              pois={showPois ? pois : []}
+              activeRoute={activeRoute}
+              onSelectActivity={setSelected}
+              onSelectPoi={handleSelectPoi}
+            />
           </ErrorBoundary>
         )}
 
-        {!loading && filtered.length === 0 && (
+        {!loading && filtered.length === 0 && (!showPois || pois.length === 0) && (
           <div className="absolute inset-0 flex items-center justify-center bg-background/80 pointer-events-none">
             <div className="text-center px-6">
               <p className="text-4xl mb-3">🗺️</p>
@@ -238,6 +314,13 @@ export default function MapView() {
             </button>
           </div>
         </div>
+      )}
+
+      {selectedPoi && (
+        <PoiDetailModal
+          poi={selectedPoi}
+          onClose={() => { setSelectedPoi(null); setActiveRoute(null); }}
+        />
       )}
 
       <BottomNav />

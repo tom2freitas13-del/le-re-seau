@@ -574,7 +574,19 @@
     "noneLocated": "No located activity yet.",
     "createAria": "Create an activity",
     "activity": "Activity",
-    "viewActivity": "View activity"
+    "viewActivity": "View activity",
+    "togglePois": "Show/hide the island's known spots"
+  },
+  "poiDetail": {
+    "reviewCount_one": "{{count}} review",
+    "reviewCount_other": "{{count}} reviews",
+    "leaveReview": "Leave a review",
+    "commentPlaceholder": "Your review (optional)...",
+    "submitReview": "Post my review",
+    "sending": "Sending...",
+    "reviewSent": "Review posted!",
+    "reviewError": "Couldn't send the review.",
+    "noReviews": "No reviews yet. Be the first!"
   },
   "newActivity": {
     "title": "Create an activity",

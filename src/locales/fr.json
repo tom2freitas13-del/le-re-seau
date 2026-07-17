@@ -574,7 +574,19 @@
     "noneLocated": "Aucune activité localisée pour le moment.",
     "createAria": "Créer une activité",
     "activity": "Activité",
-    "viewActivity": "Voir l'activité"
+    "viewActivity": "Voir l'activité",
+    "togglePois": "Afficher/masquer les spots connus de l'île"
+  },
+  "poiDetail": {
+    "reviewCount_one": "{{count}} avis",
+    "reviewCount_other": "{{count}} avis",
+    "leaveReview": "Laisser un avis",
+    "commentPlaceholder": "Votre avis (optionnel)...",
+    "submitReview": "Publier mon avis",
+    "sending": "Envoi...",
+    "reviewSent": "Avis publié !",
+    "reviewError": "Impossible d'envoyer l'avis.",
+    "noReviews": "Aucun avis pour l'instant. Soyez le premier !"
   },
   "newActivity": {
     "title": "Créer une activité",

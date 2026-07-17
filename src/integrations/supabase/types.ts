@@ -235,6 +235,54 @@ export interface Database {
         Update: Partial<Database['public']['Tables']['salon_message_reads']['Insert']>;
         Relationships: [];
       };
+      points_of_interest: {
+        Row: {
+          id: string;
+          name: string;
+          category: string;
+          description: string;
+          address: string;
+          latitude: number;
+          longitude: number;
+          image_url: string | null;
+          route_waypoints: number[][] | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          category: string;
+          description: string;
+          address: string;
+          latitude: number;
+          longitude: number;
+          image_url?: string | null;
+          route_waypoints?: number[][] | null;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['points_of_interest']['Insert']>;
+        Relationships: [];
+      };
+      poi_reviews: {
+        Row: {
+          id: string;
+          poi_id: string;
+          user_id: string;
+          rating: number;
+          comment: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          poi_id: string;
+          user_id: string;
+          rating: number;
+          comment?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['poi_reviews']['Insert']>;
+        Relationships: [];
+      };
       group_reads: {
         Row: {
           id: string;
