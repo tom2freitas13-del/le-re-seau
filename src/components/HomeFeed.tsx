@@ -135,11 +135,12 @@ export default function HomeFeed() {
         />
       )}
 
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 gap-3">
         <h2 className="section-title">{t('feed.title')}</h2>
         <button onClick={() => setCreateOpen(true)}
-          className="h-10 w-10 rounded-full btn-ocean flex items-center justify-center flex-shrink-0">
-          <Plus className="h-5 w-5" />
+          className="btn-ocean flex items-center gap-1.5 py-2.5 flex-shrink-0"
+          style={{ boxShadow: '0 4px 14px rgba(28,94,120,0.25)' }}>
+          <Plus className="h-4 w-4" /> {t('feed.publish')}
         </button>
       </div>
 
