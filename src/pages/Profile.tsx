@@ -4,13 +4,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
-import { LogOut, Camera, Instagram, Linkedin, Check, Info, ShieldCheck, Bell, BellOff, Share, Languages } from 'lucide-react';
+import { LogOut, Camera, Instagram, Linkedin, Check, Info, ShieldCheck, Bell, BellOff, Share, Languages, UserPlus, Copy } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import { cn } from '@/lib/utils';
 import { STATUS_OPTIONS, AVAILABILITY_OPTIONS, INTEREST_OPTIONS, MIN_AGE, MAX_AGE } from '@/lib/constants';
 import DeleteAccountButton from '@/components/DeleteAccountButton';
 import { isPushSupported, getPushPermissionState, subscribeToPush, unsubscribeFromPush, isIosSafari, isStandalonePwa } from '@/lib/push-notifications';
 import { setLanguage } from '@/lib/i18n';
+import { buildReferralLink } from '@/lib/referral';
 
 const BIO_MAX = 300;
 const MAX_PHOTO_SIZE_MB = 5;
@@ -39,13 +40,42 @@ export default function Profile() {
   const [pushPermission, setPushPermission] = useState<NotificationPermission | 'unsupported'>('default');
   const [pushSubscribed, setPushSubscribed] = useState(false);
   const [pushLoading, setPushLoading] = useState(false);
+  const [referralCount, setReferralCount] = useState(0);
 
   useEffect(() => {
     if (!user) { navigate('/auth'); return; }
     loadProfile();
+    loadReferralCount();
   }, [user]);
 
   useEffect(() => { refreshPushState(); }, []);
+
+  const loadReferralCount = async () => {
+    if (!user) return;
+    const { count } = await supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('referred_by', user.id);
+    setReferralCount(count || 0);
+  };
+
+  const handleShareReferral = async () => {
+    if (!user) return;
+    const url = buildReferralLink(user.id);
+    const shareData = { title: 'Le Ré-seau', text: t('profile.referralShareText'), url };
+    if (navigator.share && navigator.canShare?.(shareData)) {
+      try { await navigator.share(shareData); } catch { /* l'utilisateur a annulé le partage, rien à faire */ }
+      return;
+    }
+    await handleCopyReferral();
+  };
+
+  const handleCopyReferral = async () => {
+    if (!user) return;
+    try {
+      await navigator.clipboard.writeText(buildReferralLink(user.id));
+      toast.success(t('profile.referralLinkCopied'));
+    } catch {
+      toast.error(t('profile.referralCopyError'));
+    }
+  };
 
   const refreshPushState = async () => {
     const perm = await getPushPermissionState();
@@ -403,6 +433,29 @@ export default function Profile() {
                 {lang === 'fr' ? t('profile.french') : t('profile.english')}
               </button>
             ))}
+          </div>
+        </div>
+
+        {/* Parrainage */}
+        <div className="card-premium p-5">
+          <SectionTitle>{t('profile.referralTitle')}</SectionTitle>
+          <p className="text-xs text-muted-foreground mb-4" style={{ fontFamily: 'Jost, sans-serif' }}>
+            {t('profile.referralDesc')}
+          </p>
+          {referralCount > 0 && (
+            <p className="text-sm mb-3 flex items-center gap-2" style={{ fontFamily: 'Jost, sans-serif' }}>
+              <UserPlus className="h-4 w-4 text-primary" />
+              {t('profile.referralCount', { count: referralCount })}
+            </p>
+          )}
+          <div className="flex gap-2">
+            <button onClick={handleShareReferral} className="btn-ocean flex-1 py-2.5 text-sm flex items-center justify-center gap-1.5">
+              <Share className="h-4 w-4" /> {t('profile.referralShareButton')}
+            </button>
+            <button onClick={handleCopyReferral} title={t('profile.referralCopyButton')}
+              className="h-11 w-11 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-foreground flex-shrink-0">
+              <Copy className="h-4 w-4" />
+            </button>
           </div>
         </div>
 

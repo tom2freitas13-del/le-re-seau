@@ -1,4 +1,4 @@
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,6 +10,7 @@ import { UnreadProvider } from "@/lib/unread-context";
 import BannedScreen from "@/components/BannedScreen";
 import InstallBanner from "@/components/InstallBanner";
 import { useGlobalMessageNotifications } from "@/lib/useGlobalMessageNotifications";
+import { captureReferralFromUrl } from "@/lib/referral";
 
 // Chargées à la demande par route plutôt que toutes d'un bloc au premier
 // chargement — la carte (Leaflet) notamment pèse lourd et n'est utile
@@ -52,6 +53,7 @@ function AppRoutes() {
   const { isBanned, loading } = useAuth();
   const location = useLocation();
   useGlobalMessageNotifications();
+  useEffect(() => { captureReferralFromUrl(location.search); }, [location.search]);
 
   // BUG FIX / sécurité : un compte banni voit un écran de blocage à la place
   // du reste de l'application, sur toutes les pages sauf celles toujours accessibles.

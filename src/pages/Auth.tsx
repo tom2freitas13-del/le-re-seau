@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { useTranslation, Trans } from 'react-i18next';
 import { useAuth } from '@/lib/auth-context';
 import { Eye, EyeOff, Waves } from 'lucide-react';
+import { getStoredReferralCode, clearStoredReferralCode } from '@/lib/referral';
 
 // Fond en dégradé CSS plutôt qu'une photo stock — fiable à 100%, pas de risque
 // d'afficher une image qui ne correspond pas à son contexte.
@@ -58,8 +59,13 @@ export default function Auth() {
         toast.success(t('auth.loginSuccess'));
         navigate('/social');
       } else {
-        const { error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin } });
+        const referredBy = getStoredReferralCode();
+        const { error } = await supabase.auth.signUp({
+          email, password,
+          options: { emailRedirectTo: window.location.origin, data: referredBy ? { referred_by: referredBy } : undefined },
+        });
         if (error) throw error;
+        clearStoredReferralCode();
         toast.success(t('auth.signupSuccess'));
         navigate('/profile');
       }

@@ -26,6 +26,7 @@ export interface Database {
           is_banned: boolean;
           last_seen: string | null;
           language: 'fr' | 'en';
+          referred_by: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -45,6 +46,7 @@ export interface Database {
           is_banned?: boolean;
           last_seen?: string | null;
           language?: 'fr' | 'en';
+          referred_by?: string | null;
           created_at?: string;
           updated_at?: string;
         };
