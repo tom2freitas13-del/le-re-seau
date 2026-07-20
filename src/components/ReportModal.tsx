@@ -7,7 +7,7 @@ import { Flag, X } from 'lucide-react';
 import { REPORT_REASONS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 
-type TargetType = 'profile' | 'message' | 'group_message' | 'salon_message' | 'forum_post' | 'forum_comment' | 'job_offer' | 'job_request' | 'activity';
+type TargetType = 'profile' | 'message' | 'group_message' | 'salon_message' | 'forum_post' | 'forum_comment' | 'job_offer' | 'job_request' | 'activity' | 'feed_post' | 'feed_comment';
 
 interface ReportModalProps {
   targetType: TargetType;

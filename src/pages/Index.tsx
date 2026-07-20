@@ -7,6 +7,7 @@ import { Users, Briefcase, MessageCircle, Calendar, ArrowRight, Waves, TreePine,
 import LocalImage from '@/components/LocalImage';
 import { usePresence } from '@/lib/presence-context';
 import BottomNav from '@/components/BottomNav';
+import HomeFeed from '@/components/HomeFeed';
 
 // Photos locales : mets tes fichiers dans public/images/ et ils seront
 // accessibles ici avec le chemin /images/nom-du-fichier.jpg
@@ -145,6 +146,9 @@ export default function Index() {
           </div>
         </div>
       </div>
+
+      {/* ── FIL DE LA COMMUNAUTÉ (photos partagées par les membres) ── */}
+      <HomeFeed />
 
       {/* ── POUR TOUS LES ÂGES ── */}
       <div className="px-4 py-14 max-w-lg mx-auto">

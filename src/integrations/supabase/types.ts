@@ -409,6 +409,58 @@ export interface Database {
         Update: Partial<Database['public']['Tables']['forum_comments']['Insert']>;
         Relationships: [];
       };
+      feed_posts: {
+        Row: {
+          id: string;
+          author_id: string;
+          photo_url: string;
+          caption: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          author_id: string;
+          photo_url: string;
+          caption?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['feed_posts']['Insert']>;
+        Relationships: [];
+      };
+      feed_likes: {
+        Row: {
+          id: string;
+          post_id: string;
+          user_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          post_id: string;
+          user_id: string;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['feed_likes']['Insert']>;
+        Relationships: [];
+      };
+      feed_comments: {
+        Row: {
+          id: string;
+          post_id: string;
+          author_id: string;
+          content: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          post_id: string;
+          author_id: string;
+          content: string;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['feed_comments']['Insert']>;
+        Relationships: [];
+      };
       job_offers: {
         Row: {
           id: string;
