@@ -1,4 +1,5 @@
 import { Component, ReactNode } from 'react';
+import * as Sentry from '@sentry/react';
 import { AlertTriangle } from 'lucide-react';
 
 interface Props {
@@ -27,6 +28,7 @@ export default class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error) {
     console.error('ErrorBoundary caught:', error);
+    Sentry.captureException(error);
   }
 
   render() {
