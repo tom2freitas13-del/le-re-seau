@@ -11,9 +11,12 @@ import { consumePostAuthRedirect } from '@/lib/postAuthRedirect';
 // Fond en dégradé CSS plutôt qu'une photo stock — fiable à 100%, pas de risque
 // d'afficher une image qui ne correspond pas à son contexte.
 
+type AuthMode = 'login' | 'signup' | 'forgot';
+
 export default function Auth() {
   const { t } = useTranslation();
-  const [isLogin, setIsLogin] = useState(true);
+  const [mode, setMode] = useState<AuthMode>('login');
+  const isLogin = mode === 'login';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -55,27 +58,54 @@ export default function Auth() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isLogin && !acceptedTerms) {
+    if (mode === 'signup' && !acceptedTerms) {
       toast.error(t('auth.acceptTermsError'));
       return;
     }
     setLoading(true);
     try {
-      if (isLogin) {
+      if (mode === 'forgot') {
+        // Supabase répond succès même si l'email n'existe pas (anti-énumération),
+        // le message reste donc volontairement neutre.
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+        if (error) throw error;
+        toast.success(t('auth.resetEmailSent'));
+        setMode('login');
+      } else if (mode === 'login') {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast.success(t('auth.loginSuccess'));
         navigate(consumePostAuthRedirect('/social'));
       } else {
         const referredBy = getStoredReferralCode();
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email, password,
           options: { emailRedirectTo: window.location.origin, data: referredBy ? { referred_by: referredBy } : undefined },
         });
         if (error) throw error;
+        // BUG FIX : avec la confirmation d'email activée, Supabase ne renvoie
+        // pas d'erreur pour un email déjà inscrit (anti-énumération) — il
+        // renvoie un faux utilisateur SANS identities. Avant ce check, l'appli
+        // affichait "inscription réussie" et personne ne recevait jamais de mail.
+        if (data.user && data.user.identities?.length === 0) {
+          toast.error(t('auth.accountExists'));
+          setMode('login');
+          return;
+        }
         clearStoredReferralCode();
-        toast.success(t('auth.signupSuccess'));
-        navigate(consumePostAuthRedirect('/welcome'));
+        if (data.session) {
+          // Confirmation d'email désactivée : session immédiate, on entre.
+          toast.success(t('auth.signupSuccess'));
+          navigate(consumePostAuthRedirect('/welcome'));
+        } else {
+          // Confirmation d'email activée : pas de session tant que le lien
+          // reçu par mail n'est pas cliqué — on l'explique au lieu de
+          // rediriger vers une page qui renverrait ici.
+          toast.success(t('auth.confirmEmailSent'));
+          setMode('login');
+        }
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t('auth.genericError'));
@@ -127,13 +157,15 @@ export default function Auth() {
             Le Ré-seau
           </h1>
           <p className="text-white/70 text-sm" style={{ fontFamily: 'Jost, sans-serif' }}>
-            {isLogin ? t('auth.welcomeBack') : t('auth.joinCommunity')}
+            {mode === 'forgot' ? t('auth.forgotSubtitle') : isLogin ? t('auth.welcomeBack') : t('auth.joinCommunity')}
           </p>
         </div>
 
         {/* Card */}
         <div className="w-full max-w-sm glass rounded-3xl p-6 shadow-2xl animate-fade-up anim-d1">
-          {/* Google */}
+          {/* Google — sans objet pour la réinitialisation de mot de passe */}
+          {mode !== 'forgot' && (
+          <>
           <button onClick={handleGoogle} disabled={googleLoading}
             className="w-full flex items-center justify-center gap-3 rounded-full border border-border/60 bg-white py-3.5 text-sm font-medium text-foreground hover:shadow-md transition-all mb-5 disabled:opacity-60"
             style={{ fontFamily: 'Jost, sans-serif' }}>
@@ -151,12 +183,21 @@ export default function Auth() {
             <span className="text-xs text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>{t('common.or')}</span>
             <div className="flex-1 h-px bg-border/60" />
           </div>
+          </>
+          )}
+
+          {mode === 'forgot' && (
+            <p className="text-sm text-muted-foreground mb-4" style={{ fontFamily: 'Jost, sans-serif', lineHeight: 1.6 }}>
+              {t('auth.forgotDesc')}
+            </p>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-3">
             <input type="email" placeholder={t('auth.email')} value={email}
               onChange={e => setEmail(e.target.value)} required
               className="w-full px-4 py-3.5 rounded-xl border border-border/60 bg-white/80 text-sm outline-none focus:ring-2 focus:ring-primary/30"
               style={{ fontFamily: 'Jost, sans-serif' }} />
+            {mode !== 'forgot' && (
             <div className="relative">
               <input type={showPwd ? 'text' : 'password'} placeholder={t('auth.password')} value={password}
                 onChange={e => setPassword(e.target.value)} required minLength={8}
@@ -167,12 +208,22 @@ export default function Auth() {
                 {showPwd ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
-            {!isLogin && (
+            )}
+            {isLogin && (
+              <div className="text-right">
+                <button type="button" onClick={() => setMode('forgot')}
+                  className="text-xs text-primary hover:underline"
+                  style={{ fontFamily: 'Jost, sans-serif' }}>
+                  {t('auth.forgotPassword')}
+                </button>
+              </div>
+            )}
+            {mode === 'signup' && (
               <p className="text-xs text-muted-foreground -mt-1 px-1" style={{ fontFamily: 'Jost, sans-serif' }}>
                 {t('auth.minPassword')}
               </p>
             )}
-            {!isLogin && (
+            {mode === 'signup' && (
               <label className="flex items-start gap-2 text-xs text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>
                 <input
                   type="checkbox"
@@ -191,16 +242,24 @@ export default function Auth() {
               </label>
             )}
             <button type="submit" disabled={loading} className="btn-ocean w-full py-4 text-base font-semibold disabled:opacity-60">
-              {loading ? '...' : isLogin ? t('auth.login') : t('auth.signup')}
+              {loading ? '...' : mode === 'forgot' ? t('auth.sendResetLink') : isLogin ? t('auth.login') : t('auth.signup')}
             </button>
           </form>
 
-          <button onClick={() => setIsLogin(!isLogin)}
-            className="mt-4 w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors"
-            style={{ fontFamily: 'Jost, sans-serif' }}>
-            {isLogin ? t('auth.noAccount') : t('auth.hasAccount')}
-            <span className="text-primary font-medium">{isLogin ? t('auth.signup') : t('auth.login')}</span>
-          </button>
+          {mode === 'forgot' ? (
+            <button onClick={() => setMode('login')}
+              className="mt-4 w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors"
+              style={{ fontFamily: 'Jost, sans-serif' }}>
+              {t('auth.backToLogin')}
+            </button>
+          ) : (
+            <button onClick={() => setMode(isLogin ? 'signup' : 'login')}
+              className="mt-4 w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors"
+              style={{ fontFamily: 'Jost, sans-serif' }}>
+              {isLogin ? t('auth.noAccount') : t('auth.hasAccount')}
+              <span className="text-primary font-medium">{isLogin ? t('auth.signup') : t('auth.login')}</span>
+            </button>
+          )}
         </div>
       </div>
     </div>

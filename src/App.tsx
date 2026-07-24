@@ -18,6 +18,8 @@ import { captureReferralFromUrl } from "@/lib/referral";
 const Index = lazy(() => import("./pages/Index"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Welcome = lazy(() => import("./pages/Welcome"));
+const Settings = lazy(() => import("./pages/Settings"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Social = lazy(() => import("./pages/Social"));
 const Jobs = lazy(() => import("./pages/Jobs"));
@@ -48,7 +50,7 @@ const queryClient = new QueryClient();
 
 // Pages toujours accessibles même à un compte banni (pour pouvoir
 // se déconnecter, consulter les infos, ou comprendre la situation).
-const ALWAYS_ACCESSIBLE = ['/', '/about', '/auth', '/community-rules', '/privacy', '/terms', '/legal-notice'];
+const ALWAYS_ACCESSIBLE = ['/', '/about', '/auth', '/reset-password', '/community-rules', '/privacy', '/terms', '/legal-notice'];
 
 function AppRoutes() {
   const { isBanned, loading } = useAuth();
@@ -74,7 +76,9 @@ function AppRoutes() {
           <Route path="/terms" element={<TermsOfService />} />
           <Route path="/legal-notice" element={<LegalNotice />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/welcome" element={<Welcome />} />
+          <Route path="/settings" element={<Settings />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/social" element={<Social />} />
           <Route path="/jobs" element={<Jobs />} />
