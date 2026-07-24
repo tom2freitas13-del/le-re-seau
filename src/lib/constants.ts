@@ -66,6 +66,9 @@ export const ACTIVITY_CATEGORIES = [
 export const MIN_AGE = 15;
 export const MAX_AGE = 120;
 
+// Nombre d'amis invités (referral_count) pour débloquer le badge Ambassadeur
+export const AMBASSADOR_REFERRAL_THRESHOLD = 3;
+
 // Raisons de signalement disponibles dans le système de modération
 export const REPORT_REASONS = [
   { value: 'spam' },

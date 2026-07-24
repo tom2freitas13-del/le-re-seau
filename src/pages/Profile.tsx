@@ -7,8 +7,9 @@ import { useTranslation } from 'react-i18next';
 import { LogOut, Camera, Instagram, Linkedin, Check, Info, ShieldCheck, Bell, BellOff, Share, Languages, UserPlus, Copy } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import { cn } from '@/lib/utils';
-import { STATUS_OPTIONS, AVAILABILITY_OPTIONS, INTEREST_OPTIONS, MIN_AGE, MAX_AGE } from '@/lib/constants';
+import { STATUS_OPTIONS, AVAILABILITY_OPTIONS, INTEREST_OPTIONS, MIN_AGE, MAX_AGE, AMBASSADOR_REFERRAL_THRESHOLD } from '@/lib/constants';
 import DeleteAccountButton from '@/components/DeleteAccountButton';
+import { AmbassadorBadge } from '@/components/ProfileCard';
 import { isPushSupported, getPushPermissionState, subscribeToPush, unsubscribeFromPush, isIosSafari, isStandalonePwa } from '@/lib/push-notifications';
 import { setLanguage } from '@/lib/i18n';
 import { buildReferralLink } from '@/lib/referral';
@@ -446,6 +447,15 @@ export default function Profile() {
             <p className="text-sm mb-3 flex items-center gap-2" style={{ fontFamily: 'Jost, sans-serif' }}>
               <UserPlus className="h-4 w-4 text-primary" />
               {t('profile.referralCount', { count: referralCount })}
+            </p>
+          )}
+          {referralCount >= AMBASSADOR_REFERRAL_THRESHOLD ? (
+            <div className="mb-3">
+              <AmbassadorBadge />
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground mb-3" style={{ fontFamily: 'Jost, sans-serif' }}>
+              {t('profile.ambassadorProgress', { count: AMBASSADOR_REFERRAL_THRESHOLD - referralCount })}
             </p>
           )}
           <div className="flex gap-2">

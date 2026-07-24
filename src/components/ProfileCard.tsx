@@ -1,8 +1,8 @@
-import { MessageCircle, Instagram, Linkedin, Star, MoreVertical, ShieldCheck } from 'lucide-react';
+import { MessageCircle, Instagram, Linkedin, Star, MoreVertical, ShieldCheck, UserPlus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { avatarFallbackInitial } from '@/lib/constants';
+import { avatarFallbackInitial, AMBASSADOR_REFERRAL_THRESHOLD } from '@/lib/constants';
 import { ReportModal } from '@/components/ReportModal';
 import BlockButton from '@/components/BlockButton';
 import { useBlockedUsers } from '@/lib/useBlockedUsers';
@@ -22,6 +22,7 @@ export interface ProfileCardProfile {
   instagram?: string | null;
   linkedin?: string | null;
   is_admin?: boolean | null;
+  referral_count?: number | null;
 }
 
 export function AdminBadge({ compact = false }: { compact?: boolean }) {
@@ -36,6 +37,22 @@ export function AdminBadge({ compact = false }: { compact?: boolean }) {
   return (
     <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-400 to-amber-600 px-2 py-0.5 text-[10px] font-semibold text-white flex-shrink-0">
       <ShieldCheck className="h-3 w-3" /> {t('profileCard.admin')}
+    </span>
+  );
+}
+
+export function AmbassadorBadge({ compact = false }: { compact?: boolean }) {
+  const { t } = useTranslation();
+  if (compact) {
+    return (
+      <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-gradient-to-r from-primary to-pine flex-shrink-0" title={t('profileCard.ambassador')}>
+        <UserPlus className="h-2.5 w-2.5 text-white" />
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-primary to-pine px-2 py-0.5 text-[10px] font-semibold text-white flex-shrink-0">
+      <UserPlus className="h-3 w-3" /> {t('profileCard.ambassador')}
     </span>
   );
 }
@@ -165,6 +182,7 @@ export default function ProfileCard({ profile, matchScore }: ProfileCardProps) {
               <span className="inline-flex h-2.5 w-2.5 rounded-full bg-green-400 ring-2 ring-white/80 flex-shrink-0" title={t('profileCard.online')} />
             )}
             {profile.is_admin && <AdminBadge compact />}
+            {(profile.referral_count ?? 0) >= AMBASSADOR_REFERRAL_THRESHOLD && <AmbassadorBadge compact />}
           </h3>
         </div>
       </div>

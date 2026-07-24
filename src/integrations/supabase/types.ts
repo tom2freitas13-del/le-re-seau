@@ -27,6 +27,7 @@ export interface Database {
           last_seen: string | null;
           language: 'fr' | 'en';
           referred_by: string | null;
+          referral_count: number;
           created_at: string;
           updated_at: string;
         };
@@ -47,6 +48,7 @@ export interface Database {
           last_seen?: string | null;
           language?: 'fr' | 'en';
           referred_by?: string | null;
+          referral_count?: number;
           created_at?: string;
           updated_at?: string;
         };

@@ -726,6 +726,7 @@
   },
   "profileCard": {
     "admin": "Admin",
+    "ambassador": "Ambassadeur",
     "online": "En ligne",
     "anonymous": "Anonyme",
     "message": "Message",
@@ -762,6 +763,8 @@
     "referralDesc": "Partage ton lien personnel par SMS, Instagram, Snapchat ou avec tes contacts pour faire connaître Le Ré-seau autour de toi.",
     "referralCount_one": "{{count}} ami invité a rejoint la communauté",
     "referralCount_other": "{{count}} amis invités ont rejoint la communauté",
+    "ambassadorProgress_one": "Encore {{count}} ami à inviter pour débloquer le badge Ambassadeur 🎉",
+    "ambassadorProgress_other": "Encore {{count}} amis à inviter pour débloquer le badge Ambassadeur 🎉",
     "referralShareButton": "Partager mon lien",
     "referralCopyButton": "Copier le lien",
     "referralShareText": "Rejoins-moi sur Le Ré-seau, la communauté de l'Île de Ré !",

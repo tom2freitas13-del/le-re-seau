@@ -726,6 +726,7 @@
   },
   "profileCard": {
     "admin": "Admin",
+    "ambassador": "Ambassador",
     "online": "Online",
     "anonymous": "Anonymous",
     "message": "Message",
@@ -762,6 +763,8 @@
     "referralDesc": "Share your personal link by text, Instagram, Snapchat or with your contacts to spread the word about Le Ré-seau.",
     "referralCount_one": "{{count}} invited friend has joined the community",
     "referralCount_other": "{{count}} invited friends have joined the community",
+    "ambassadorProgress_one": "Invite {{count}} more friend to unlock the Ambassador badge 🎉",
+    "ambassadorProgress_other": "Invite {{count}} more friends to unlock the Ambassador badge 🎉",
     "referralShareButton": "Share my link",
     "referralCopyButton": "Copy link",
     "referralShareText": "Join me on Le Ré-seau, the Île de Ré community!",
