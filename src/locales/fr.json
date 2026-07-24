@@ -673,6 +673,7 @@
     "joinConfirmed": "Inscription confirmée ! 🎉",
     "deleteError": "Impossible de supprimer cette activité.",
     "deleted": "Activité supprimée.",
+    "sharedNotFound": "Cette activité n'existe plus.",
     "someone": "Quelqu'un",
     "andOthers_one": "et {{count}} autre",
     "andOthers_other": "et {{count}} autres",

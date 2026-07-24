@@ -673,6 +673,7 @@
     "joinConfirmed": "Registration confirmed! 🎉",
     "deleteError": "Couldn't delete this activity.",
     "deleted": "Activity deleted.",
+    "sharedNotFound": "This activity no longer exists.",
     "someone": "Someone",
     "andOthers_one": "and {{count}} other",
     "andOthers_other": "and {{count}} others",

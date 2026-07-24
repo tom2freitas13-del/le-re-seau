@@ -2,13 +2,15 @@ import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import BottomNav from '@/components/BottomNav';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Plus, Calendar, MapPin, Users, Trash2, Map as MapIcon, MessageCircle, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ACTIVITY_CATEGORIES, avatarFallbackInitial } from '@/lib/constants';
+import { cn } from '@/lib/utils';
 import LocalImage from '@/components/LocalImage';
 import { shareToWhatsApp } from '@/lib/share';
+import { setPostAuthRedirect } from '@/lib/postAuthRedirect';
 
 interface Participant {
   user_id: string;
@@ -51,6 +53,7 @@ export default function Activities() {
   const { t, i18n } = useTranslation();
   const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
+  const { id: sharedActivityId } = useParams<{ id?: string }>();
   const [activities, setActivities] = useState<Activity[]>([]);
   const [participantCounts, setParticipantCounts] = useState<Record<string, number>>({});
   const [participantsByActivity, setParticipantsByActivity] = useState<Record<string, Participant[]>>({});
@@ -58,6 +61,7 @@ export default function Activities() {
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [groupUnread, setGroupUnread] = useState<Record<string, number>>({});
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
 
   const loadActivities = useCallback(async () => {
     setLoading(true);
@@ -92,9 +96,30 @@ export default function Activities() {
   }, [user]);
 
   useEffect(() => {
-    if (!user) { navigate('/auth'); return; }
+    if (!user) {
+      if (sharedActivityId) setPostAuthRedirect(`/activities/${sharedActivityId}`);
+      navigate('/auth');
+      return;
+    }
     loadActivities();
-  }, [user, navigate, loadActivities]);
+  }, [user, navigate, loadActivities, sharedActivityId]);
+
+  // Lien partagé (WhatsApp, etc.) vers une activité précise : une fois la
+  // liste chargée, on la fait défiler jusqu'à cette carte et on la surligne
+  // brièvement pour que la personne repère tout de suite laquelle c'est.
+  useEffect(() => {
+    if (loading || !sharedActivityId) return;
+    if (!activities.some(a => a.id === sharedActivityId)) {
+      toast.error(t('activities.sharedNotFound'));
+      navigate('/activities', { replace: true });
+      return;
+    }
+    const el = document.getElementById(`activity-${sharedActivityId}`);
+    el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setHighlightedId(sharedActivityId);
+    const timeout = setTimeout(() => setHighlightedId(null), 3000);
+    return () => clearTimeout(timeout);
+  }, [loading, sharedActivityId, activities, navigate, t]);
 
   const loadGroupUnread = useCallback(async () => {
     if (!user) return;
@@ -183,7 +208,7 @@ export default function Activities() {
     const message = t('activities.shareMessage', {
       title: activity.title,
       when: when || t('activities.shareMessageNoDate'),
-      link: `${window.location.origin}/activities`,
+      link: `${window.location.origin}/activities/${activity.id}`,
     });
     shareToWhatsApp(message);
   };
@@ -236,7 +261,13 @@ export default function Activities() {
               const joined = myParticipations.has(activity.id);
               const style = CATEGORY_STYLE[activity.category || 'autre'];
               return (
-                <div key={activity.id} className="card-premium overflow-hidden">
+                <div
+                  key={activity.id}
+                  id={`activity-${activity.id}`}
+                  className={cn(
+                    'card-premium overflow-hidden transition-shadow duration-500',
+                    highlightedId === activity.id && 'ring-2 ring-primary ring-offset-2 ring-offset-background'
+                  )}>
                   <div className={`relative aspect-[16/9] overflow-hidden ${style.bg} flex items-center justify-center`}>
                     {activity.photo_url ? (
                       <img src={activity.photo_url} alt={activity.title} className="h-full w-full object-cover" />

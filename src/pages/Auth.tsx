@@ -6,6 +6,7 @@ import { useTranslation, Trans } from 'react-i18next';
 import { useAuth } from '@/lib/auth-context';
 import { Eye, EyeOff, Waves } from 'lucide-react';
 import { getStoredReferralCode, clearStoredReferralCode } from '@/lib/referral';
+import { consumePostAuthRedirect } from '@/lib/postAuthRedirect';
 
 // Fond en dégradé CSS plutôt qu'une photo stock — fiable à 100%, pas de risque
 // d'afficher une image qui ne correspond pas à son contexte.
@@ -22,7 +23,7 @@ export default function Auth() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  useEffect(() => { if (user) navigate('/profile'); }, [user, navigate]);
+  useEffect(() => { if (user) navigate(consumePostAuthRedirect('/profile')); }, [user, navigate]);
 
   // BUG FIX (#1) : Quand l'utilisateur clique "Deny" sur le consentement Google,
   // Supabase redirige vers cette page avec un paramètre d'erreur dans l'URL
@@ -57,7 +58,7 @@ export default function Auth() {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast.success(t('auth.loginSuccess'));
-        navigate('/social');
+        navigate(consumePostAuthRedirect('/social'));
       } else {
         const referredBy = getStoredReferralCode();
         const { error } = await supabase.auth.signUp({
@@ -67,7 +68,7 @@ export default function Auth() {
         if (error) throw error;
         clearStoredReferralCode();
         toast.success(t('auth.signupSuccess'));
-        navigate('/profile');
+        navigate(consumePostAuthRedirect('/profile'));
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t('auth.genericError'));

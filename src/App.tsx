@@ -79,6 +79,7 @@ function AppRoutes() {
           <Route path="/jobs/new" element={<NewJob />} />
           <Route path="/activities" element={<Activities />} />
           <Route path="/activities/new" element={<NewActivity />} />
+          <Route path="/activities/:id" element={<Activities />} />
           <Route path="/map" element={<MapView />} />
           <Route path="/chat" element={<Discussions />} />
           <Route path="/chat/:partnerId" element={<Chat />} />
