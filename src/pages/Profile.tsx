@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
@@ -221,6 +221,19 @@ export default function Profile() {
     setLoading(false);
   };
 
+  // Un profil incomplet se matche moins bien (computeMatchScore retourne 0
+  // sans centres d'intérêt) et donne une moins bonne première impression sur
+  // les cartes des autres membres — cette checklist motive à le compléter.
+  const profileSteps = useMemo(() => [
+    { key: 'name', done: name.trim().length > 0, label: t('profile.completionName') },
+    { key: 'photo', done: !!photoUrl, label: t('profile.completionPhoto') },
+    { key: 'bio', done: bio.trim().length > 0, label: t('profile.completionBio') },
+    { key: 'interests', done: interests.length > 0, label: t('profile.completionInterests') },
+    { key: 'status', done: status.length > 0, label: t('profile.completionStatus') },
+    { key: 'availability', done: availability.length > 0, label: t('profile.completionAvailability') },
+  ], [name, photoUrl, bio, interests, status, availability, t]);
+  const completionPercent = Math.round((profileSteps.filter(s => s.done).length / profileSteps.length) * 100);
+
   return (
     <div className="min-h-screen pb-28 bg-background">
       {/* Header */}
@@ -253,6 +266,35 @@ export default function Profile() {
       </div>
 
       <div className="max-w-lg mx-auto px-4 pt-6 space-y-6">
+
+        {/* Progression du profil */}
+        {completionPercent < 100 && (
+          <div className="card-premium p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <SectionTitle>{t('profile.completionTitle')}</SectionTitle>
+              <span className="text-sm font-semibold text-primary">{completionPercent}%</span>
+            </div>
+            <div className="h-2 rounded-full bg-secondary overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-primary to-pine rounded-full transition-all duration-500"
+                style={{ width: `${completionPercent}%` }}
+              />
+            </div>
+            <div className="flex flex-wrap gap-2 pt-1">
+              {profileSteps.map(step => (
+                <span
+                  key={step.key}
+                  className={cn(
+                    'pill flex items-center gap-1 text-[11px]',
+                    step.done ? 'bg-pine-light text-pine' : 'bg-muted text-muted-foreground'
+                  )}>
+                  {step.done ? <Check className="h-3 w-3" /> : <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/50" />}
+                  {step.label}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Photo */}
         <div className="flex justify-center">
