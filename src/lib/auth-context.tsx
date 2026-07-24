@@ -58,11 +58,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const localChoice = localStorage.getItem(LANGUAGE_STORAGE_KEY);
         if (!localChoice) {
           // Pas de préférence locale explicite sur cet appareil : on applique celle du compte.
-          setLanguage(data.language);
+          setLanguage(data.language as 'fr' | 'en');
         } else if (localChoice !== data.language) {
           // Un choix explicite existe déjà sur cet appareil (ex: visiteur qui a
           // changé la langue avant de se connecter) : il gagne, on le remonte sur le compte.
-          supabase.from('profiles').update({ language: localChoice }).eq('user_id', user.id).then();
+          supabase.from('profiles').update({ language: localChoice as 'fr' | 'en' }).eq('user_id', user.id).then();
         }
       }
     });

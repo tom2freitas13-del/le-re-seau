@@ -569,7 +569,7 @@ export interface Database {
         Row: {
           id: string;
           reporter_id: string;
-          target_type: 'profile' | 'message' | 'group_message' | 'salon_message' | 'forum_post' | 'forum_comment' | 'job_offer' | 'job_request' | 'activity';
+          target_type: 'profile' | 'message' | 'group_message' | 'salon_message' | 'forum_post' | 'forum_comment' | 'job_offer' | 'job_request' | 'activity' | 'feed_post' | 'feed_comment';
           target_id: string;
           target_user_id: string | null;
           reason: 'spam' | 'harcelement' | 'contenu_inapproprie' | 'arnaque' | 'faux_profil' | 'autre';
@@ -582,7 +582,7 @@ export interface Database {
         Insert: {
           id?: string;
           reporter_id: string;
-          target_type: 'profile' | 'message' | 'group_message' | 'salon_message' | 'forum_post' | 'forum_comment' | 'job_offer' | 'job_request' | 'activity';
+          target_type: 'profile' | 'message' | 'group_message' | 'salon_message' | 'forum_post' | 'forum_comment' | 'job_offer' | 'job_request' | 'activity' | 'feed_post' | 'feed_comment';
           target_id: string;
           target_user_id?: string | null;
           reason: 'spam' | 'harcelement' | 'contenu_inapproprie' | 'arnaque' | 'faux_profil' | 'autre';

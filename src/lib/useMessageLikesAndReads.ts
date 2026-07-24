@@ -11,7 +11,10 @@ import { useAuth } from '@/lib/auth-context';
  * messages et le "typing" dessus) et relaie juste les events likes/reads
  * vers `applyLikeInsert` / `applyLikeDelete` / `applyReadInsert`.
  */
-export function useMessageLikesAndReads(likesTable: string, readsTable: string) {
+type LikesTable = 'salon_message_likes' | 'chat_group_message_likes';
+type ReadsTable = 'salon_message_reads' | 'chat_group_message_reads';
+
+export function useMessageLikesAndReads(likesTable: LikesTable, readsTable: ReadsTable) {
   const { user } = useAuth();
   const [likesByMessage, setLikesByMessage] = useState<Record<string, string[]>>({});
   const [readsByMessage, setReadsByMessage] = useState<Record<string, string[]>>({});
