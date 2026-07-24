@@ -4,10 +4,11 @@ import { useAuth } from '@/lib/auth-context';
 import BottomNav from '@/components/BottomNav';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Plus, Calendar, MapPin, Users, Trash2, Map as MapIcon, MessageCircle } from 'lucide-react';
+import { Plus, Calendar, MapPin, Users, Trash2, Map as MapIcon, MessageCircle, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ACTIVITY_CATEGORIES, avatarFallbackInitial } from '@/lib/constants';
 import LocalImage from '@/components/LocalImage';
+import { shareToWhatsApp } from '@/lib/share';
 
 interface Participant {
   user_id: string;
@@ -176,6 +177,17 @@ export default function Activities() {
     return new Date(d).toLocaleDateString(i18n.language === 'en' ? 'en-US' : 'fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
   };
 
+  const handleShareActivity = (activity: Activity) => {
+    const when = [formatDate(activity.activity_date), activity.activity_time, activity.location ? `📍 ${activity.location}` : null]
+      .filter(Boolean).join(' · ');
+    const message = t('activities.shareMessage', {
+      title: activity.title,
+      when: when || t('activities.shareMessageNoDate'),
+      link: `${window.location.origin}/activities`,
+    });
+    shareToWhatsApp(message);
+  };
+
   return (
     <div className="min-h-screen pb-28 bg-background">
       <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-md border-b border-border/50">
@@ -240,15 +252,23 @@ export default function Activities() {
                     {cat && (
                       <span className="absolute top-3 left-3 pill glass">{cat.emoji} {t(`activityCategories.${cat.value}`)}</span>
                     )}
-                    {canDelete && (
+                    <div className="absolute top-3 right-3 flex items-center gap-2">
                       <button
-                        onClick={() => handleDelete(activity.id)}
-                        disabled={deletingId === activity.id}
-                        title={isMine ? t('activities.deleteMine') : t('activities.deleteModeration')}
-                        className="absolute top-3 right-3 h-9 w-9 rounded-full glass flex items-center justify-center text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-50">
-                        <Trash2 className="h-4 w-4" />
+                        onClick={() => handleShareActivity(activity)}
+                        title={t('activities.shareWhatsApp')}
+                        className="h-9 w-9 rounded-full glass flex items-center justify-center text-[#25D366] hover:bg-[#25D366]/10 transition-colors">
+                        <Share2 className="h-4 w-4" />
                       </button>
-                    )}
+                      {canDelete && (
+                        <button
+                          onClick={() => handleDelete(activity.id)}
+                          disabled={deletingId === activity.id}
+                          title={isMine ? t('activities.deleteMine') : t('activities.deleteModeration')}
+                          className="h-9 w-9 rounded-full glass flex items-center justify-center text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-50">
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
                   </div>
                   <div className="p-5 space-y-3">
                     <h3 className="font-display text-xl font-semibold">{activity.title}</h3>

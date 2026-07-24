@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
-import { LogOut, Camera, Instagram, Linkedin, Check, Info, ShieldCheck, Bell, BellOff, Share, Languages, UserPlus, Copy } from 'lucide-react';
+import { LogOut, Camera, Instagram, Linkedin, Check, Info, ShieldCheck, Bell, BellOff, Share, Share2, Languages, UserPlus, Copy } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import { cn } from '@/lib/utils';
 import { STATUS_OPTIONS, AVAILABILITY_OPTIONS, INTEREST_OPTIONS, MIN_AGE, MAX_AGE, AMBASSADOR_REFERRAL_THRESHOLD } from '@/lib/constants';
@@ -13,6 +13,7 @@ import { AmbassadorBadge } from '@/components/ProfileCard';
 import { isPushSupported, getPushPermissionState, subscribeToPush, unsubscribeFromPush, isIosSafari, isStandalonePwa } from '@/lib/push-notifications';
 import { setLanguage } from '@/lib/i18n';
 import { buildReferralLink } from '@/lib/referral';
+import { shareToWhatsApp } from '@/lib/share';
 
 const BIO_MAX = 300;
 const MAX_PHOTO_SIZE_MB = 5;
@@ -60,6 +61,11 @@ export default function Profile() {
       return;
     }
     await handleCopyReferral();
+  };
+
+  const handleShareReferralWhatsApp = () => {
+    if (!user) return;
+    shareToWhatsApp(`${t('profile.referralShareText')} ${buildReferralLink(user.id)}`);
   };
 
   const handleCopyReferral = async () => {
@@ -461,6 +467,10 @@ export default function Profile() {
           <div className="flex gap-2">
             <button onClick={handleShareReferral} className="btn-ocean flex-1 py-2.5 text-sm flex items-center justify-center gap-1.5">
               <Share className="h-4 w-4" /> {t('profile.referralShareButton')}
+            </button>
+            <button onClick={handleShareReferralWhatsApp} title={t('profile.referralShareWhatsApp')}
+              className="h-11 w-11 rounded-full border border-border flex items-center justify-center text-[#25D366] hover:bg-[#25D366]/10 flex-shrink-0">
+              <Share2 className="h-4 w-4" />
             </button>
             <button onClick={handleCopyReferral} title={t('profile.referralCopyButton')}
               className="h-11 w-11 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-foreground flex-shrink-0">
