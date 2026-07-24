@@ -109,13 +109,12 @@ export default function StoryViewer({ groups, startGroupIndex, onClose }: {
       { onConflict: 'story_id,viewer_id', ignoreDuplicates: true }
     ).then();
     setViewers(null);
-  }, [story?.id, user]);
+  }, [story, user]);
 
   // Remet la progression à zéro à chaque changement de story (pas au pause/reprise).
   useEffect(() => {
     setProgress(0);
     progressRef.current = 0;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupIndex, storyIndex]);
 
   // Barre de progression + avance automatique. En pause (réponse en cours de

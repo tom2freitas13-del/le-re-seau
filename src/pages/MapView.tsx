@@ -152,7 +152,7 @@ export default function MapView() {
     if (!user) { navigate('/auth'); return; }
     loadActivities();
     loadPois();
-  }, [user, authLoading]);
+  }, [user, authLoading, navigate]);
 
   const loadPois = async () => {
     const { data } = await supabase.from('points_of_interest').select('*');

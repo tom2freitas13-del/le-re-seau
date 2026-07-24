@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { X, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
@@ -28,9 +28,7 @@ export default function FeedCommentsSheet({ postId, onClose, onCommentAdded }: F
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
 
-  useEffect(() => { load(); }, [postId]);
-
-  const load = async () => {
+  const load = useCallback(async () => {
     const { data } = await supabase
       .from('feed_comments')
       .select('id, author_id, content, created_at')
@@ -43,7 +41,9 @@ export default function FeedCommentsSheet({ postId, onClose, onCommentAdded }: F
       : { data: [] };
     const map = new Map((profiles || []).map(p => [p.user_id, p]));
     setComments(data.map(c => ({ ...c, name: map.get(c.author_id)?.name || null, photo_url: map.get(c.author_id)?.photo_url || null })));
-  };
+  }, [postId]);
+
+  useEffect(() => { load(); }, [load]);
 
   const submit = async () => {
     if (!user || !text.trim() || sending) return;

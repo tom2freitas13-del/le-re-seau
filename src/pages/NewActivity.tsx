@@ -99,8 +99,8 @@ export default function NewActivity() {
 
       toast.success(t('newActivity.createdSuccess'));
       navigate('/activities');
-    } catch (error: any) {
-      toast.error(error.message || t('newActivity.genericError'));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t('newActivity.genericError'));
     } finally {
       setLoading(false);
     }

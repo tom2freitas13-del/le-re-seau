@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import BottomNav from '@/components/BottomNav';
@@ -65,38 +65,18 @@ export default function Discussions() {
   const [salonUnread, setSalonUnread] = useState<Record<string, number>>({});
   const [forumUnread, setForumUnread] = useState(0);
 
-  useEffect(() => { if (!user) navigate('/auth'); }, [user]);
+  useEffect(() => { if (!user) navigate('/auth'); }, [user, navigate]);
 
-  useEffect(() => {
-    if (!user) return;
-    loadSalonUnread();
-    const channel = supabase
-      .channel(`salon-unread-${user.id}`)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'salon_messages' }, () => loadSalonUnread())
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [user]);
-
-  useEffect(() => {
-    if (!user) return;
-    loadForumUnread();
-    const channel = supabase
-      .channel(`forum-unread-${user.id}`)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'forum_posts' }, () => loadForumUnread())
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [user]);
-
-  const loadForumUnread = async () => {
+  const loadForumUnread = useCallback(async () => {
     if (!user) return;
     const { data: read } = await supabase.from('forum_reads').select('last_read_at').eq('user_id', user.id).maybeSingle();
     let query = supabase.from('forum_posts').select('*', { count: 'exact', head: true }).neq('author_id', user.id);
     if (read) query = query.gt('created_at', read.last_read_at);
     const { count } = await query;
     setForumUnread(count || 0);
-  };
+  }, [user]);
 
-  const loadSalonUnread = async () => {
+  const loadSalonUnread = useCallback(async () => {
     if (!user) return;
     const { data: reads } = await supabase.from('salon_reads').select('salon, last_read_at').eq('user_id', user.id);
     const lastRead: Record<string, string> = {};
@@ -117,7 +97,27 @@ export default function Discussions() {
       }
     });
     setSalonUnread(counts);
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    loadSalonUnread();
+    const channel = supabase
+      .channel(`salon-unread-${user.id}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'salon_messages' }, () => loadSalonUnread())
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user, loadSalonUnread]);
+
+  useEffect(() => {
+    if (!user) return;
+    loadForumUnread();
+    const channel = supabase
+      .channel(`forum-unread-${user.id}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'forum_posts' }, () => loadForumUnread())
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user, loadForumUnread]);
 
   if (view === 'salon' && activeSalon) {
     return <SalonView salonId={activeSalon} onBack={() => { setView('list'); loadSalonUnread(); }} />;
@@ -237,9 +237,7 @@ function MessagesView({ onBack }: { onBack: () => void }) {
   const [groupUnread, setGroupUnread] = useState<Record<string, number>>({});
   const [showCreateGroup, setShowCreateGroup] = useState(false);
 
-  useEffect(() => { loadConversations(); loadGroups(); }, []);
-
-  const loadGroups = async () => {
+  const loadGroups = useCallback(async () => {
     if (!user) return;
     const { data: memberships } = await supabase.from('chat_group_members').select('group_id').eq('user_id', user.id);
     if (!memberships?.length) return;
@@ -265,9 +263,9 @@ function MessagesView({ onBack }: { onBack: () => void }) {
       }
     });
     setGroupUnread(counts);
-  };
+  }, [user]);
 
-  const loadConversations = async () => {
+  const loadConversations = useCallback(async () => {
     if (!user) return;
     const { data: messages } = await supabase
       .from('messages')
@@ -308,7 +306,9 @@ function MessagesView({ onBack }: { onBack: () => void }) {
 
     setConversations(convos);
     setLoading(false);
-  };
+  }, [user, t]);
+
+  useEffect(() => { loadConversations(); loadGroups(); }, [loadConversations, loadGroups]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -620,6 +620,26 @@ function SalonView({ salonId, onBack }: { salonId: string; onBack: () => void })
   const [peopleModal, setPeopleModal] = useState<{ title: string; userIds: string[] } | null>(null);
   const [peopleModalData, setPeopleModalData] = useState<{ user_id: string; name: string | null; photo_url: string | null }[] | null>(null);
 
+  const ensureSenderName = useCallback(async (uid: string) => {
+    setSenderNames(prev => {
+      if (prev[uid]) return prev;
+      supabase.from('profiles').select('name').eq('user_id', uid).single().then(({ data }) => {
+        if (data) setSenderNames(p => ({ ...p, [uid]: data.name || t('salonView.defaultMember') }));
+      });
+      return prev;
+    });
+  }, [t]);
+
+  const loadMessages = useCallback(async () => {
+    const { data } = await supabase.from('salon_messages').select('*').eq('salon', salonId).order('created_at', { ascending: true }).limit(100);
+    if (data) {
+      setMessages(data);
+      Array.from(new Set(data.map(m => m.user_id))).forEach(ensureSenderName);
+      await loadForMessages(data.map(m => m.id));
+      if (user) markMessagesRead(data.filter(m => m.user_id !== user.id).map(m => m.id));
+    }
+  }, [salonId, ensureSenderName, loadForMessages, user, markMessagesRead]);
+
   useEffect(() => {
     loadMessages();
     const channel = supabase
@@ -658,7 +678,7 @@ function SalonView({ salonId, onBack }: { salonId: string; onBack: () => void })
       .subscribe();
     channelRef.current = channel;
     return () => { supabase.removeChannel(channel); };
-  }, [salonId, user]);
+  }, [salonId, user, loadMessages, ensureSenderName, markMessagesRead, applyLikeInsert, applyLikeDelete, applyReadInsert]);
 
   // Marque le salon comme lu à l'entrée et à la sortie, pour que le badge
   // de non-lus sur la liste des salons se remette bien à zéro.
@@ -673,32 +693,12 @@ function SalonView({ salonId, onBack }: { salonId: string; onBack: () => void })
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
-  const loadMessages = async () => {
-    const { data } = await supabase.from('salon_messages').select('*').eq('salon', salonId).order('created_at', { ascending: true }).limit(100);
-    if (data) {
-      setMessages(data);
-      Array.from(new Set(data.map(m => m.user_id))).forEach(ensureSenderName);
-      await loadForMessages(data.map(m => m.id));
-      if (user) markMessagesRead(data.filter(m => m.user_id !== user.id).map(m => m.id));
-    }
-  };
-
   const openPeopleModal = async (title: string, userIds: string[]) => {
     setPeopleModal({ title, userIds });
     setPeopleModalData(null);
     if (userIds.length === 0) { setPeopleModalData([]); return; }
     const { data } = await supabase.from('profiles').select('user_id, name, photo_url').in('user_id', userIds);
     setPeopleModalData(data || []);
-  };
-
-  const ensureSenderName = async (uid: string) => {
-    setSenderNames(prev => {
-      if (prev[uid]) return prev;
-      supabase.from('profiles').select('name').eq('user_id', uid).single().then(({ data }) => {
-        if (data) setSenderNames(p => ({ ...p, [uid]: data.name || t('salonView.defaultMember') }));
-      });
-      return prev;
-    });
   };
 
   const sendTyping = (typing: boolean) => {
@@ -913,8 +913,6 @@ function ForumView({ onBack }: { onBack: () => void }) {
   const audioChunksRef = useRef<Blob[]>([]);
   const photoInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => { loadPosts(); }, []);
-
   // Marque le forum comme lu à l'entrée, pour que le badge de la liste
   // des discussions se remette bien à zéro.
   useEffect(() => {
@@ -922,7 +920,7 @@ function ForumView({ onBack }: { onBack: () => void }) {
     supabase.from('forum_reads').upsert({ user_id: user.id, last_read_at: new Date().toISOString() }, { onConflict: 'user_id' }).then();
   }, [user]);
 
-  const loadPosts = async () => {
+  const loadPosts = useCallback(async () => {
     const { data } = await supabase.from('forum_posts').select('*').order('created_at', { ascending: false }).limit(50);
     if (!data) return;
     setPosts(data);
@@ -952,7 +950,9 @@ function ForumView({ onBack }: { onBack: () => void }) {
       (comments || []).forEach(c => { cCounts[c.post_id] = (cCounts[c.post_id] || 0) + 1; });
       setCommentCounts(cCounts);
     }
-  };
+  }, [t, user]);
+
+  useEffect(() => { loadPosts(); }, [loadPosts]);
 
   const handlePost = async () => {
     if (!user || (!newPost.trim() && !pendingAttachment) || posting) return;
@@ -1139,9 +1139,7 @@ function CommentsPanel({ postId, onCommentAdded }: { postId: string; onCommentAd
   const [names, setNames] = useState<Record<string, string>>({});
   const [text, setText] = useState('');
 
-  useEffect(() => { load(); }, [postId]);
-
-  const load = async () => {
+  const load = useCallback(async () => {
     const { data } = await supabase.from('forum_comments').select('id, content, author_id').eq('post_id', postId).order('created_at', { ascending: true });
     if (data) {
       setComments(data);
@@ -1153,7 +1151,9 @@ function CommentsPanel({ postId, onCommentAdded }: { postId: string; onCommentAd
         setNames(map);
       }
     }
-  };
+  }, [postId, t]);
+
+  useEffect(() => { load(); }, [load]);
 
   const submit = async () => {
     if (!user || !text.trim()) return;

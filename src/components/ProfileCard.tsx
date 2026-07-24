@@ -147,7 +147,7 @@ export default function ProfileCard({ profile, matchScore }: ProfileCardProps) {
                   {t('profileCard.report')}
                 </button>
                 <button
-                  onClick={() => { blocked ? unblockUser(profile.user_id) : blockUser(profile.user_id); setMenuOpen(false); }}
+                  onClick={() => { if (blocked) { unblockUser(profile.user_id); } else { blockUser(profile.user_id); } setMenuOpen(false); }}
                   className="w-full text-left px-3 py-2 text-sm hover:bg-secondary flex items-center gap-2 text-destructive"
                   style={{ fontFamily: 'Jost, sans-serif' }}>
                   {blocked ? t('profileCard.unblock') : t('profileCard.block')}

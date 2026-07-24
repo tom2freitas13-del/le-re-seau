@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import ProfileCard from '@/components/ProfileCard';
@@ -52,11 +52,35 @@ export default function Social() {
   const [searchResults, setSearchResults] = useState<Profile[] | null>(null);
   const [searching, setSearching] = useState(false);
 
+  const loadMyProfile = useCallback(async () => {
+    if (!user) return;
+    const { data } = await supabase.from('profiles').select('*').eq('user_id', user.id).single();
+    if (data) setMyProfile(data);
+  }, [user]);
+
+  const loadProfilesPage = useCallback(async (pageNum: number, reset: boolean) => {
+    if (!user) return;
+    setLoading(reset);
+    const from = pageNum * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
+    const { data } = await supabase
+      .from('profiles')
+      .select('*')
+      .not('name', 'is', null)
+      .neq('user_id', user.id)
+      .range(from, to);
+    if (data) {
+      setProfiles(prev => reset ? data : [...prev, ...data]);
+      setHasMore(data.length === PAGE_SIZE);
+    }
+    setLoading(false);
+  }, [user]);
+
   useEffect(() => {
     if (!user) { navigate('/auth'); return; }
     loadMyProfile();
     loadProfilesPage(0, true);
-  }, [user]);
+  }, [user, navigate, loadMyProfile, loadProfilesPage]);
 
   // Recherche par nom sur l'ensemble des membres (pas seulement la page
   // déjà chargée), pour retrouver tout le monde même au-delà de la pagination.
@@ -78,30 +102,6 @@ export default function Social() {
     }, 300);
     return () => clearTimeout(handle);
   }, [search, user]);
-
-  const loadMyProfile = async () => {
-    if (!user) return;
-    const { data } = await supabase.from('profiles').select('*').eq('user_id', user.id).single();
-    if (data) setMyProfile(data);
-  };
-
-  const loadProfilesPage = async (pageNum: number, reset: boolean) => {
-    if (!user) return;
-    setLoading(reset);
-    const from = pageNum * PAGE_SIZE;
-    const to = from + PAGE_SIZE - 1;
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .not('name', 'is', null)
-      .neq('user_id', user.id)
-      .range(from, to);
-    if (data) {
-      setProfiles(prev => reset ? data : [...prev, ...data]);
-      setHasMore(data.length === PAGE_SIZE);
-    }
-    setLoading(false);
-  };
 
   const loadMore = () => {
     const next = page + 1;

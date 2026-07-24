@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Heart, MessageCircle, Share2, Plus, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -39,9 +39,7 @@ export default function HomeFeed() {
   const [commentsPostId, setCommentsPostId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  useEffect(() => { loadPosts(); }, []);
-
-  const loadPosts = async () => {
+  const loadPosts = useCallback(async () => {
     const { data } = await supabase.from('feed_posts').select('*').order('created_at', { ascending: false }).limit(30);
     if (!data) return;
     setPosts(data);
@@ -71,7 +69,9 @@ export default function HomeFeed() {
       (comments || []).forEach(c => { cCounts[c.post_id] = (cCounts[c.post_id] || 0) + 1; });
       setCommentCounts(cCounts);
     }
-  };
+  }, [user?.id]);
+
+  useEffect(() => { loadPosts(); }, [loadPosts]);
 
   const toggleLike = async (postId: string) => {
     if (!user) return;

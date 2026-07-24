@@ -40,8 +40,8 @@ export default function DeleteAccountButton() {
       toast.success(t('deleteAccount.success'));
       await signOut();
       navigate('/');
-    } catch (err: any) {
-      toast.error(err.message || t('deleteAccount.genericError'));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t('deleteAccount.genericError'));
       setDeleting(false);
     }
   };

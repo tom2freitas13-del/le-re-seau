@@ -30,7 +30,11 @@ export async function searchAddress(query: string): Promise<GeocodingResult[]> {
     const data = await res.json();
     if (!data?.features) return [];
 
-    return data.features.map((f: any) => ({
+    interface IgnFeature {
+      properties?: { label?: string; city?: string };
+      geometry?: { coordinates?: [number, number] };
+    }
+    return data.features.map((f: IgnFeature) => ({
       label: f.properties?.label || query,
       latitude: f.geometry?.coordinates?.[1],
       longitude: f.geometry?.coordinates?.[0],

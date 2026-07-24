@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
@@ -42,19 +42,13 @@ export default function Profile() {
   const [pushLoading, setPushLoading] = useState(false);
   const [referralCount, setReferralCount] = useState(0);
 
-  useEffect(() => {
-    if (!user) { navigate('/auth'); return; }
-    loadProfile();
-    loadReferralCount();
-  }, [user]);
-
   useEffect(() => { refreshPushState(); }, []);
 
-  const loadReferralCount = async () => {
+  const loadReferralCount = useCallback(async () => {
     if (!user) return;
     const { count } = await supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('referred_by', user.id);
     setReferralCount(count || 0);
-  };
+  }, [user]);
 
   const handleShareReferral = async () => {
     if (!user) return;
@@ -130,7 +124,7 @@ export default function Profile() {
     return () => { supabase.removeChannel(channel); };
   }, [isAdmin]);
 
-  const loadProfile = async () => {
+  const loadProfile = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase.from('profiles').select('*').eq('user_id', user.id).single();
     if (data) {
@@ -144,7 +138,13 @@ export default function Profile() {
       setInstagram(data.instagram || '');
       setLinkedin(data.linkedin || '');
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) { navigate('/auth'); return; }
+    loadProfile();
+    loadReferralCount();
+  }, [user, navigate, loadProfile, loadReferralCount]);
 
   // BUG FIX (#3) : validation stricte de l'âge — entiers uniquement, bornes raisonnables.
   // On bloque aussi la saisie de "-" et "e" qui passent parfois un <input type="number">.
@@ -203,8 +203,8 @@ export default function Profile() {
       age: age ? parseInt(age, 10) : null,
       bio: bio.trim() || null,
       photo_url: photoUrl,
-      status: (status || null) as any,
-      availability: (availability || null) as any,
+      status: (status || null) as 'resident' | 'frequent' | 'vacation' | null,
+      availability: (availability || null) as 'weekend' | 'week' | 'summer' | 'year' | null,
       interests,
       instagram: instagram.trim() || null,
       linkedin: linkedin.trim() || null,

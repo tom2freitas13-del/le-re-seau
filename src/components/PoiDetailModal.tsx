@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { X, MapPin, Star, Globe, ImageIcon, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
@@ -71,9 +71,7 @@ export default function PoiDetailModal({ poi, onClose }: PoiDetailModalProps) {
   const [myComment, setMyComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => { loadReviews(); }, [poi.id]);
-
-  const loadReviews = async () => {
+  const loadReviews = useCallback(async () => {
     const { data } = await supabase.from('poi_reviews').select('id, user_id, rating, comment, created_at').eq('poi_id', poi.id).order('created_at', { ascending: false });
     if (!data) { setReviews([]); return; }
     const userIds = Array.from(new Set(data.map(r => r.user_id)));
@@ -87,7 +85,9 @@ export default function PoiDetailModal({ poi, onClose }: PoiDetailModalProps) {
       const mine = data.find(r => r.user_id === user.id);
       if (mine) { setMyRating(mine.rating); setMyComment(mine.comment || ''); }
     }
-  };
+  }, [poi.id, user]);
+
+  useEffect(() => { loadReviews(); }, [loadReviews]);
 
   const handleSubmitReview = async () => {
     if (!user || myRating === 0) return;

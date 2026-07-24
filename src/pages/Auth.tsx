@@ -43,7 +43,7 @@ export default function Auth() {
       // On nettoie l'URL pour ne pas re-déclencher le message au refresh
       window.history.replaceState({}, document.title, '/auth');
     }
-  }, []);
+  }, [t]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,8 +69,8 @@ export default function Auth() {
         toast.success(t('auth.signupSuccess'));
         navigate('/profile');
       }
-    } catch (error: any) {
-      toast.error(error.message || t('auth.genericError'));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t('auth.genericError'));
     } finally {
       setLoading(false);
     }

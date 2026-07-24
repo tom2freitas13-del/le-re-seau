@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import BottomNav from '@/components/BottomNav';
@@ -58,12 +58,7 @@ export default function Activities() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [groupUnread, setGroupUnread] = useState<Record<string, number>>({});
 
-  useEffect(() => {
-    if (!user) { navigate('/auth'); return; }
-    loadActivities();
-  }, [user]);
-
-  const loadActivities = async () => {
+  const loadActivities = useCallback(async () => {
     setLoading(true);
     const { data } = await supabase.from('activities').select('*').order('activity_date', { ascending: true });
     if (data) {
@@ -93,23 +88,14 @@ export default function Activities() {
       }
     }
     setLoading(false);
-  };
+  }, [user]);
 
   useEffect(() => {
-    if (!user || activities.length === 0) return;
-    loadGroupUnread();
-  }, [user, activities, myParticipations]);
+    if (!user) { navigate('/auth'); return; }
+    loadActivities();
+  }, [user, navigate, loadActivities]);
 
-  useEffect(() => {
-    if (!user) return;
-    const channel = supabase
-      .channel(`activity-group-unread-${user.id}`)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_group_messages' }, () => loadGroupUnread())
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [user, activities, myParticipations]);
-
-  const loadGroupUnread = async () => {
+  const loadGroupUnread = useCallback(async () => {
     if (!user) return;
     const relevantGroupIds = activities
       .filter(a => a.group_id && (a.author_id === user.id || myParticipations.has(a.id)))
@@ -136,7 +122,21 @@ export default function Activities() {
       }
     });
     setGroupUnread(counts);
-  };
+  }, [user, activities, myParticipations]);
+
+  useEffect(() => {
+    if (!user || activities.length === 0) return;
+    loadGroupUnread();
+  }, [user, activities, loadGroupUnread]);
+
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel(`activity-group-unread-${user.id}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_group_messages' }, () => loadGroupUnread())
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user, loadGroupUnread]);
 
   const toggleParticipation = async (activityId: string) => {
     if (!user) return;

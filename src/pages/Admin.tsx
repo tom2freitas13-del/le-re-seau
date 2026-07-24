@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import { useNavigate } from 'react-router-dom';
@@ -36,14 +36,7 @@ export default function Admin() {
   const [filter, setFilter] = useState<'pending' | 'reviewed' | 'dismissed' | 'all'>('pending');
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (authLoading) return;
-    if (!user) { navigate('/auth'); return; }
-    if (!isAdmin) { navigate('/'); return; }
-    loadReports();
-  }, [user, isAdmin, authLoading, filter]);
-
-  const loadReports = async () => {
+  const loadReports = useCallback(async () => {
     setLoading(true);
     let query = supabase.from('reports').select('*').order('created_at', { ascending: false });
     if (filter !== 'all') query = query.eq('status', filter);
@@ -65,7 +58,14 @@ export default function Admin() {
       }
     }
     setLoading(false);
-  };
+  }, [filter, t]);
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user) { navigate('/auth'); return; }
+    if (!isAdmin) { navigate('/'); return; }
+    loadReports();
+  }, [user, isAdmin, authLoading, navigate, loadReports]);
 
   const updateStatus = async (reportId: string, status: 'reviewed' | 'dismissed') => {
     if (!user) return;

@@ -47,8 +47,8 @@ export default function NewJob() {
       }
       toast.success(t('newJob.publishedSuccess'));
       navigate('/jobs');
-    } catch (error: any) {
-      toast.error(error.message || t('newJob.genericError'));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t('newJob.genericError'));
     } finally {
       setLoading(false);
     }

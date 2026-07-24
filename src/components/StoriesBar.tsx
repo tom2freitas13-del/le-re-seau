@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
@@ -17,17 +17,7 @@ export default function StoriesBar() {
   const [showCreate, setShowCreate] = useState(false);
   const [viewingIndex, setViewingIndex] = useState<number | null>(null);
 
-  useEffect(() => {
-    if (!user) return;
-    load();
-    const channel = supabase
-      .channel('stories-bar')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'stories' }, () => load())
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [user]);
-
-  const load = async () => {
+  const load = useCallback(async () => {
     if (!user) return;
     const { data: stories } = await supabase.from('stories').select('*').order('created_at', { ascending: true });
     if (!stories) return;
@@ -63,7 +53,17 @@ export default function StoriesBar() {
     });
 
     setGroups([...mine, ...others]);
-  };
+  }, [user, isBlocked]);
+
+  useEffect(() => {
+    if (!user) return;
+    load();
+    const channel = supabase
+      .channel('stories-bar')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'stories' }, () => load())
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user, load]);
 
   if (!user) return null;
 
@@ -77,7 +77,7 @@ export default function StoriesBar() {
           role="button"
           tabIndex={0}
           onClick={() => myGroup ? setViewingIndex(groups.indexOf(myGroup)) : setShowCreate(true)}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { myGroup ? setViewingIndex(groups.indexOf(myGroup)) : setShowCreate(true); } }}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { if (myGroup) { setViewingIndex(groups.indexOf(myGroup)); } else { setShowCreate(true); } } }}
           className="flex flex-col items-center gap-1 flex-shrink-0 w-16 cursor-pointer">
           <div className="relative">
             <div className={`h-14 w-14 rounded-full p-0.5 ${myGroup ? 'bg-gradient-to-br from-primary to-pine' : 'border-2 border-dashed border-border'}`}>

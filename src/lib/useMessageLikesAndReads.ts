@@ -24,10 +24,10 @@ export function useMessageLikesAndReads(likesTable: string, readsTable: string) 
       supabase.from(readsTable).select('message_id, viewer_id').in('message_id', messageIds),
     ]);
     const likeMap: Record<string, string[]> = {};
-    (likes || []).forEach((l: any) => { (likeMap[l.message_id] ||= []).push(l.user_id); });
+    (likes || []).forEach((l: { message_id: string; user_id: string }) => { (likeMap[l.message_id] ||= []).push(l.user_id); });
     setLikesByMessage(likeMap);
     const readMap: Record<string, string[]> = {};
-    (reads || []).forEach((r: any) => { (readMap[r.message_id] ||= []).push(r.viewer_id); });
+    (reads || []).forEach((r: { message_id: string; viewer_id: string }) => { (readMap[r.message_id] ||= []).push(r.viewer_id); });
     setReadsByMessage(readMap);
   }, [likesTable, readsTable]);
 

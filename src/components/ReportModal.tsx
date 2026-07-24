@@ -37,7 +37,7 @@ export function ReportModal({ targetType, targetId, targetUserId, onClose }: Rep
       target_type: targetType,
       target_id: targetId,
       target_user_id: targetUserId || null,
-      reason: reason as any,
+      reason: reason as 'spam' | 'harcelement' | 'contenu_inapproprie' | 'arnaque' | 'faux_profil' | 'autre',
       details: details.trim() || null,
     });
     setSubmitting(false);

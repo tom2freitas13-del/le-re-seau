@@ -16,7 +16,7 @@ describe('searchAddress', () => {
   });
 
   it('retourne les résultats avec des coordonnées valides', async () => {
-    (fetch as any).mockResolvedValue({
+    vi.mocked(fetch).mockResolvedValue({
       ok: true,
       json: async () => ({
         features: [
@@ -31,7 +31,7 @@ describe('searchAddress', () => {
   });
 
   it('filtre les résultats sans coordonnées', async () => {
-    (fetch as any).mockResolvedValue({
+    vi.mocked(fetch).mockResolvedValue({
       ok: true,
       json: async () => ({
         features: [
@@ -44,13 +44,13 @@ describe('searchAddress', () => {
   });
 
   it('retourne un tableau vide si l\'API répond en erreur', async () => {
-    (fetch as any).mockResolvedValue({ ok: false });
+    vi.mocked(fetch).mockResolvedValue({ ok: false });
     const result = await searchAddress('quelque chose');
     expect(result).toEqual([]);
   });
 
   it('retourne un tableau vide si le réseau échoue', async () => {
-    (fetch as any).mockRejectedValue(new Error('network down'));
+    vi.mocked(fetch).mockRejectedValue(new Error('network down'));
     const result = await searchAddress('quelque chose');
     expect(result).toEqual([]);
   });
@@ -65,7 +65,7 @@ describe('reverseGeocode', () => {
   });
 
   it('retourne le label du premier résultat', async () => {
-    (fetch as any).mockResolvedValue({
+    vi.mocked(fetch).mockResolvedValue({
       ok: true,
       json: async () => ({ features: [{ properties: { label: 'Le Bois-Plage-en-Ré' } }] }),
     });
@@ -74,13 +74,13 @@ describe('reverseGeocode', () => {
   });
 
   it('retourne null si aucun résultat (ex: en pleine mer)', async () => {
-    (fetch as any).mockResolvedValue({ ok: true, json: async () => ({ features: [] }) });
+    vi.mocked(fetch).mockResolvedValue({ ok: true, json: async () => ({ features: [] }) });
     const result = await reverseGeocode(46.5, -2.0);
     expect(result).toBeNull();
   });
 
   it('retourne null si le réseau échoue', async () => {
-    (fetch as any).mockRejectedValue(new Error('network down'));
+    vi.mocked(fetch).mockRejectedValue(new Error('network down'));
     const result = await reverseGeocode(46.18, -1.39);
     expect(result).toBeNull();
   });

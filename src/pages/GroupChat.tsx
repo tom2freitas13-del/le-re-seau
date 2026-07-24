@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
@@ -51,6 +51,47 @@ export default function GroupChat() {
   const [peopleModal, setPeopleModal] = useState<{ title: string; userIds: string[] } | null>(null);
   const [peopleModalData, setPeopleModalData] = useState<{ user_id: string; name: string | null; photo_url: string | null }[] | null>(null);
 
+  const ensureSenderName = useCallback(async (senderId: string) => {
+    setSenderNames(prev => {
+      if (prev[senderId]) return prev;
+      supabase.from('profiles').select('name').eq('user_id', senderId).single().then(({ data }) => {
+        if (data) setSenderNames(p => ({ ...p, [senderId]: data.name || t('groupChat.defaultUser') }));
+      });
+      return prev;
+    });
+  }, [t]);
+
+  const init = useCallback(async () => {
+    if (!user || !groupId) return;
+    const { data: g } = await supabase.from('chat_groups').select('name, emoji').eq('id', groupId).single();
+    if (g) setGroup(g);
+
+    const { data: linkedActivity } = await supabase.from('activities').select('id').eq('group_id', groupId).maybeSingle();
+    if (linkedActivity) setLinkedActivityId(linkedActivity.id);
+
+    const { data: membership } = await supabase.from('chat_group_members').select('id').eq('group_id', groupId).eq('user_id', user.id).maybeSingle();
+    if (!membership) {
+      // Un groupe lié à une activité n'est accessible qu'en rejoignant
+      // l'activité — pas d'auto-join comme pour un groupe créé à la main.
+      if (linkedActivity) {
+        setAccessDenied(true);
+        return;
+      }
+      // Groupe classique -> on le rejoint automatiquement en arrivant via un lien
+      await supabase.from('chat_group_members').insert({ group_id: groupId, user_id: user.id });
+    }
+    setIsMember(true);
+
+    const { data: msgs } = await supabase.from('chat_group_messages').select('*').eq('group_id', groupId).order('created_at', { ascending: true });
+    if (msgs) {
+      setMessages(msgs);
+      const uniqueSenders = Array.from(new Set(msgs.map(m => m.sender_id)));
+      uniqueSenders.forEach(ensureSenderName);
+      await loadForMessages(msgs.map(m => m.id));
+      markMessagesRead(msgs.filter(m => !m.is_system && m.sender_id !== user.id).map(m => m.id));
+    }
+  }, [user, groupId, ensureSenderName, loadForMessages, markMessagesRead]);
+
   useEffect(() => {
     if (authLoading) return;
     if (!user || !groupId) { navigate('/auth'); return; }
@@ -93,7 +134,7 @@ export default function GroupChat() {
 
     channelRef.current = channel;
     return () => { supabase.removeChannel(channel); };
-  }, [user, groupId, authLoading]);
+  }, [user, groupId, authLoading, navigate, init, ensureSenderName, markMessagesRead, applyLikeInsert, applyLikeDelete, applyReadInsert]);
 
   // Marque le groupe comme lu à l'entrée et à la sortie, pour que le badge
   // de non-lus se remette bien à zéro.
@@ -108,53 +149,12 @@ export default function GroupChat() {
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
-  const init = async () => {
-    if (!user || !groupId) return;
-    const { data: g } = await supabase.from('chat_groups').select('name, emoji').eq('id', groupId).single();
-    if (g) setGroup(g);
-
-    const { data: linkedActivity } = await supabase.from('activities').select('id').eq('group_id', groupId).maybeSingle();
-    if (linkedActivity) setLinkedActivityId(linkedActivity.id);
-
-    const { data: membership } = await supabase.from('chat_group_members').select('id').eq('group_id', groupId).eq('user_id', user.id).maybeSingle();
-    if (!membership) {
-      // Un groupe lié à une activité n'est accessible qu'en rejoignant
-      // l'activité — pas d'auto-join comme pour un groupe créé à la main.
-      if (linkedActivity) {
-        setAccessDenied(true);
-        return;
-      }
-      // Groupe classique -> on le rejoint automatiquement en arrivant via un lien
-      await supabase.from('chat_group_members').insert({ group_id: groupId, user_id: user.id });
-    }
-    setIsMember(true);
-
-    const { data: msgs } = await supabase.from('chat_group_messages').select('*').eq('group_id', groupId).order('created_at', { ascending: true });
-    if (msgs) {
-      setMessages(msgs);
-      const uniqueSenders = Array.from(new Set(msgs.map(m => m.sender_id)));
-      uniqueSenders.forEach(ensureSenderName);
-      await loadForMessages(msgs.map(m => m.id));
-      markMessagesRead(msgs.filter(m => !m.is_system && m.sender_id !== user.id).map(m => m.id));
-    }
-  };
-
   const openPeopleModal = async (title: string, userIds: string[]) => {
     setPeopleModal({ title, userIds });
     setPeopleModalData(null);
     if (userIds.length === 0) { setPeopleModalData([]); return; }
     const { data } = await supabase.from('profiles').select('user_id, name, photo_url').in('user_id', userIds);
     setPeopleModalData(data || []);
-  };
-
-  const ensureSenderName = async (senderId: string) => {
-    setSenderNames(prev => {
-      if (prev[senderId]) return prev;
-      supabase.from('profiles').select('name').eq('user_id', senderId).single().then(({ data }) => {
-        if (data) setSenderNames(p => ({ ...p, [senderId]: data.name || t('groupChat.defaultUser') }));
-      });
-      return prev;
-    });
   };
 
   const sendTyping = (typing: boolean) => {

@@ -8,12 +8,23 @@ import { Plus, MapPin, Clock, Euro, MessageCircle, Briefcase, Search, Trash2 } f
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
+interface JobItem {
+  id: string;
+  author_id: string;
+  title: string;
+  description: string | null;
+  location?: string | null;
+  date?: string | null;
+  availability?: string | null;
+  pay?: string | null;
+}
+
 export default function Jobs() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [offers, setOffers] = useState<any[]>([]);
-  const [requests, setRequests] = useState<any[]>([]);
+  const [offers, setOffers] = useState<JobItem[]>([]);
+  const [requests, setRequests] = useState<JobItem[]>([]);
   const [activeTab, setActiveTab] = useState<'offers' | 'requests'>('offers');
   const [search, setSearch] = useState('');
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -21,7 +32,7 @@ export default function Jobs() {
   useEffect(() => {
     if (!user) { navigate('/auth'); return; }
     loadData();
-  }, [user]);
+  }, [user, navigate]);
 
   const loadData = async () => {
     const [o, r] = await Promise.all([

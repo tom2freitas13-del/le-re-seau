@@ -71,10 +71,10 @@ export async function unsubscribeFromPush(userId: string): Promise<void> {
 // il faut détecter la plateforme et le mode d'affichage.
 export function isIosSafari(): boolean {
   const ua = window.navigator.userAgent;
-  const isIos = /iPad|iPhone|iPod/.test(ua) && !(window as any).MSStream;
+  const isIos = /iPad|iPhone|iPod/.test(ua) && !(window as Window & { MSStream?: unknown }).MSStream;
   return isIos;
 }
 
 export function isStandalonePwa(): boolean {
-  return window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true;
+  return window.matchMedia('(display-mode: standalone)').matches || (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
 }

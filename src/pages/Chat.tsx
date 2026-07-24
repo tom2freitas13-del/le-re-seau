@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useCallback, useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
@@ -58,6 +58,38 @@ export default function Chat() {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const photoInputRef = useRef<HTMLInputElement>(null);
 
+  const loadPartner = useCallback(async () => {
+    if (!partnerId) return;
+    const { data } = await supabase.from('profiles').select('name, photo_url, last_seen, is_admin').eq('user_id', partnerId).single();
+    if (data) setPartner(data);
+  }, [partnerId]);
+
+  const loadMessages = useCallback(async () => {
+    if (!user || !partnerId) return;
+    const { data } = await supabase
+      .from('messages')
+      .select('*')
+      .or(`and(sender_id.eq.${user.id},receiver_id.eq.${partnerId}),and(sender_id.eq.${partnerId},receiver_id.eq.${user.id})`)
+      .order('created_at', { ascending: true });
+    if (data) setMessages(data);
+
+    if (data?.length) {
+      const { data: reactionRows } = await supabase
+        .from('message_reactions')
+        .select('message_id, user_id, emoji')
+        .in('message_id', data.map(m => m.id));
+      if (reactionRows) setReactions(reactionRows);
+    }
+
+    // Marque comme lus tous les messages reçus de ce contact
+    await supabase
+      .from('messages')
+      .update({ read: true })
+      .eq('sender_id', partnerId)
+      .eq('receiver_id', user.id)
+      .eq('read', false);
+  }, [user, partnerId]);
+
   useEffect(() => {
     if (authLoading) return;
     if (!user || !partnerId) { navigate('/auth'); return; }
@@ -102,43 +134,11 @@ export default function Chat() {
 
     channelRef.current = channel;
     return () => { supabase.removeChannel(channel); };
-  }, [user, partnerId, authLoading]);
+  }, [user, partnerId, authLoading, navigate, loadPartner, loadMessages]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
-
-  const loadPartner = async () => {
-    if (!partnerId) return;
-    const { data } = await supabase.from('profiles').select('name, photo_url, last_seen, is_admin').eq('user_id', partnerId).single();
-    if (data) setPartner(data);
-  };
-
-  const loadMessages = async () => {
-    if (!user || !partnerId) return;
-    const { data } = await supabase
-      .from('messages')
-      .select('*')
-      .or(`and(sender_id.eq.${user.id},receiver_id.eq.${partnerId}),and(sender_id.eq.${partnerId},receiver_id.eq.${user.id})`)
-      .order('created_at', { ascending: true });
-    if (data) setMessages(data);
-
-    if (data?.length) {
-      const { data: reactionRows } = await supabase
-        .from('message_reactions')
-        .select('message_id, user_id, emoji')
-        .in('message_id', data.map(m => m.id));
-      if (reactionRows) setReactions(reactionRows);
-    }
-
-    // Marque comme lus tous les messages reçus de ce contact
-    await supabase
-      .from('messages')
-      .update({ read: true })
-      .eq('sender_id', partnerId)
-      .eq('receiver_id', user.id)
-      .eq('read', false);
-  };
 
   const sendTyping = (typing: boolean) => {
     channelRef.current?.send({ type: 'broadcast', event: 'typing', payload: { userId: user?.id, typing } });
@@ -298,7 +298,7 @@ export default function Chat() {
                   {t('chat.reportUser', { name: partner?.name || t('chat.thisUser') })}
                 </button>
                 <button
-                  onClick={() => { if (partnerId) { blocked ? unblockUser(partnerId) : blockUser(partnerId); } setMenuOpen(false); if (!blocked) navigate('/discussions'); }}
+                  onClick={() => { if (partnerId) { if (blocked) { unblockUser(partnerId); } else { blockUser(partnerId); } } setMenuOpen(false); if (!blocked) navigate('/discussions'); }}
                   className="w-full text-left px-3 py-2 text-sm hover:bg-secondary flex items-center gap-2 text-destructive"
                   style={{ fontFamily: 'Jost, sans-serif' }}>
                   {blocked ? t('chat.unblock') : t('chat.block')}
