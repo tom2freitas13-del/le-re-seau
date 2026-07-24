@@ -113,6 +113,27 @@
     "googleError": "Google sign-in isn't available right now.",
     "oauthGenericError": "Something went wrong while signing in."
   },
+  "welcome": {
+    "eyebrow": "It's official, you're one of us",
+    "title": "Welcome to",
+    "subtitle": "The network of people who live on and love Île de Ré. Everything here starts from one simple idea: meeting up for real.",
+    "statMembers": "members",
+    "statActivities": "upcoming outings",
+    "statActivitiesTotal": "outings organized",
+    "statOnline": "online",
+    "statMessages": "messages exchanged",
+    "howBadge": "2 minutes, tops",
+    "howTitle": "How does it work?",
+    "step1Title": "Create your profile",
+    "step1Desc": "A photo, your interests (surf, drinks, cycling…), and we introduce you to members like you — with a compatibility % computed just for you.",
+    "step2Title": "Join an outing, or start your own",
+    "step2Desc": "Every activity comes with its own group chat: you sign up, you talk, you meet up. It's that simple.",
+    "step3Title": "Explore the island",
+    "step3Desc": "The map gathers members' outings and the island's real spots: beaches, surf, bars, bike routes. Plus discussion rooms and classified ads.",
+    "notADatingApp": "Le Ré-seau is not a dating app: it's a neighbourly network for outings and mutual help, ad-free, island-only.",
+    "ctaProfile": "Create my profile",
+    "ctaExplore": "I'd rather browse the outings first"
+  },
   "home": {
     "badgeIsland": "🌊 Île de Ré",
     "badgeCommunity": "Local community",

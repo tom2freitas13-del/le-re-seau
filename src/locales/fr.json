@@ -113,6 +113,27 @@
     "googleError": "Connexion Google impossible pour le moment.",
     "oauthGenericError": "Une erreur est survenue lors de la connexion."
   },
+  "welcome": {
+    "eyebrow": "C'est officiel, tu es des nôtres",
+    "title": "Bienvenue sur",
+    "subtitle": "Le réseau de ceux qui vivent et aiment l'Île de Ré. Ici, tout part d'une envie simple : se retrouver en vrai.",
+    "statMembers": "membres",
+    "statActivities": "sorties à venir",
+    "statActivitiesTotal": "sorties organisées",
+    "statOnline": "en ligne",
+    "statMessages": "messages échangés",
+    "howBadge": "En 2 minutes",
+    "howTitle": "Comment ça marche ?",
+    "step1Title": "Crée ton profil",
+    "step1Desc": "Une photo, tes centres d'intérêt (surf, apéro, vélo…), et on te présente les membres qui te ressemblent — avec un % d'affinité calculé pour toi.",
+    "step2Title": "Rejoins une sortie, ou lance la tienne",
+    "step2Desc": "Chaque activité a son groupe de discussion intégré : tu t'inscris, tu discutes, vous vous retrouvez. C'est aussi simple que ça.",
+    "step3Title": "Explore l'île",
+    "step3Desc": "La carte regroupe les sorties des membres et les vrais spots de l'île : plages, surf, bars, itinéraires vélo. Plus les salons de discussion et les petites annonces.",
+    "notADatingApp": "Le Ré-seau n'est pas une appli de rencontre : c'est un réseau d'entraide et de sorties entre voisins, sans publicité, réservé à l'île.",
+    "ctaProfile": "Créer mon profil",
+    "ctaExplore": "Je préfère d'abord jeter un œil aux sorties"
+  },
   "home": {
     "badgeIsland": "🌊 Île de Ré",
     "badgeCommunity": "Communauté locale",

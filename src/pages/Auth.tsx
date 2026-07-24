@@ -23,7 +23,14 @@ export default function Auth() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  useEffect(() => { if (user) navigate(consumePostAuthRedirect('/profile')); }, [user, navigate]);
+  // Un compte créé il y a moins de 10 minutes = nouvel inscrit (couvre aussi
+  // les arrivées Google OAuth et les retours de confirmation d'email, qui
+  // passent par cet effet et non par handleSubmit) → écran de bienvenue.
+  useEffect(() => {
+    if (!user) return;
+    const isNewAccount = Date.now() - new Date(user.created_at).getTime() < 10 * 60 * 1000;
+    navigate(consumePostAuthRedirect(isNewAccount ? '/welcome' : '/profile'));
+  }, [user, navigate]);
 
   // BUG FIX (#1) : Quand l'utilisateur clique "Deny" sur le consentement Google,
   // Supabase redirige vers cette page avec un paramètre d'erreur dans l'URL
@@ -68,7 +75,7 @@ export default function Auth() {
         if (error) throw error;
         clearStoredReferralCode();
         toast.success(t('auth.signupSuccess'));
-        navigate(consumePostAuthRedirect('/profile'));
+        navigate(consumePostAuthRedirect('/welcome'));
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t('auth.genericError'));

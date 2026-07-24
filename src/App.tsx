@@ -17,6 +17,7 @@ import { captureReferralFromUrl } from "@/lib/referral";
 // qu'à ceux qui visitent /map.
 const Index = lazy(() => import("./pages/Index"));
 const Auth = lazy(() => import("./pages/Auth"));
+const Welcome = lazy(() => import("./pages/Welcome"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Social = lazy(() => import("./pages/Social"));
 const Jobs = lazy(() => import("./pages/Jobs"));
@@ -73,6 +74,7 @@ function AppRoutes() {
           <Route path="/terms" element={<TermsOfService />} />
           <Route path="/legal-notice" element={<LegalNotice />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/welcome" element={<Welcome />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/social" element={<Social />} />
           <Route path="/jobs" element={<Jobs />} />
