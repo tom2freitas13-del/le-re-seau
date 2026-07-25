@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import BottomNav from '@/components/BottomNav';
@@ -62,6 +62,23 @@ export default function Activities() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [groupUnread, setGroupUnread] = useState<Record<string, number>>({});
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  // BUG FIX : la page chargeait TOUTES les activités jamais créées, triées
+  // par date croissante — au bout de quelques mois, les activités passées
+  // s'accumulaient en haut de la liste, avant celles à venir. On sépare
+  // maintenant à venir / passées avec un bascule, comme Jobs et Social ont
+  // déjà une recherche/filtre.
+  const [showPast, setShowPast] = useState(false);
+  const isPast = useCallback((a: Activity) => {
+    if (!a.activity_date) return false;
+    const today = new Date().toISOString().slice(0, 10);
+    return a.activity_date < today;
+  }, []);
+  const visibleActivities = useMemo(() => {
+    const filtered = activities.filter(a => showPast ? isPast(a) : !isPast(a));
+    // Les activités passées sont chargées triées par date croissante (le
+    // tri de la requête) ; on inverse pour voir la plus récente d'abord.
+    return showPast ? [...filtered].reverse() : filtered;
+  }, [activities, showPast, isPast]);
 
   const loadActivities = useCallback(async () => {
     setLoading(true);
@@ -109,17 +126,21 @@ export default function Activities() {
   // brièvement pour que la personne repère tout de suite laquelle c'est.
   useEffect(() => {
     if (loading || !sharedActivityId) return;
-    if (!activities.some(a => a.id === sharedActivityId)) {
+    const target = activities.find(a => a.id === sharedActivityId);
+    if (!target) {
       toast.error(t('activities.sharedNotFound'));
       navigate('/activities', { replace: true });
       return;
     }
+    // Un lien partagé peut pointer vers une activité désormais passée —
+    // on bascule l'onglet plutôt que de dire "introuvable" à tort.
+    if (isPast(target) !== showPast) { setShowPast(isPast(target)); return; }
     const el = document.getElementById(`activity-${sharedActivityId}`);
     el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     setHighlightedId(sharedActivityId);
     const timeout = setTimeout(() => setHighlightedId(null), 3000);
     return () => clearTimeout(timeout);
-  }, [loading, sharedActivityId, activities, navigate, t]);
+  }, [loading, sharedActivityId, activities, navigate, t, isPast, showPast]);
 
   const loadGroupUnread = useCallback(async () => {
     if (!user) return;
@@ -239,22 +260,50 @@ export default function Activities() {
       </div>
 
       <div className="max-w-lg mx-auto px-4 pt-6">
+        {!loading && (
+          <div className="flex gap-2 mb-5">
+            <button onClick={() => setShowPast(false)}
+              className={cn(
+                'flex-1 rounded-full py-2.5 text-sm font-medium transition-all duration-200 border',
+                !showPast
+                  ? 'border-primary bg-primary text-white shadow-md shadow-primary/20'
+                  : 'border-border bg-background hover:bg-secondary text-foreground'
+              )}
+              style={{ fontFamily: 'Jost, sans-serif' }}>
+              {t('activities.upcomingTab')}
+            </button>
+            <button onClick={() => setShowPast(true)}
+              className={cn(
+                'flex-1 rounded-full py-2.5 text-sm font-medium transition-all duration-200 border',
+                showPast
+                  ? 'border-primary bg-primary text-white shadow-md shadow-primary/20'
+                  : 'border-border bg-background hover:bg-secondary text-foreground'
+              )}
+              style={{ fontFamily: 'Jost, sans-serif' }}>
+              {t('activities.pastTab')}
+            </button>
+          </div>
+        )}
         {loading ? (
           <div className="space-y-3">
             {[1,2,3].map(i => <div key={i} className="h-44 rounded-2xl bg-muted animate-pulse" />)}
           </div>
-        ) : activities.length === 0 ? (
+        ) : visibleActivities.length === 0 ? (
           <div className="text-center py-16">
-            <div className="text-5xl mb-4">📅</div>
-            <h3 className="font-display text-xl mb-2">{t('activities.noneScheduled')}</h3>
-            <p className="text-sm text-muted-foreground mb-6" style={{ fontFamily: 'Jost, sans-serif' }}>
-              {t('activities.beFirst')}
-            </p>
-            <button onClick={() => navigate('/activities/new')} className="btn-ocean">{t('activities.createOne')}</button>
+            <div className="text-5xl mb-4">{showPast ? '🗓️' : '📅'}</div>
+            <h3 className="font-display text-xl mb-2">{showPast ? t('activities.noPastActivities') : t('activities.noneScheduled')}</h3>
+            {!showPast && (
+              <>
+                <p className="text-sm text-muted-foreground mb-6" style={{ fontFamily: 'Jost, sans-serif' }}>
+                  {t('activities.beFirst')}
+                </p>
+                <button onClick={() => navigate('/activities/new')} className="btn-ocean">{t('activities.createOne')}</button>
+              </>
+            )}
           </div>
         ) : (
           <div className="space-y-4">
-            {activities.map(activity => {
+            {visibleActivities.map(activity => {
               const cat = ACTIVITY_CATEGORIES.find(c => c.value === activity.category);
               const isMine = activity.author_id === user?.id;
               const canDelete = isMine || isAdmin;
