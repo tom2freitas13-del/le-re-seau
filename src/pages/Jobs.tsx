@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { Plus, MapPin, Clock, Euro, MessageCircle, Briefcase, Search, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { useBlockedUsers } from '@/lib/useBlockedUsers';
 
 interface JobItem {
   id: string;
@@ -30,6 +31,7 @@ const JOB_REQUEST_STALE_DAYS = 60;
 export default function Jobs() {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
+  const { isBlocked } = useBlockedUsers();
   const navigate = useNavigate();
   const [offers, setOffers] = useState<JobItem[]>([]);
   const [requests, setRequests] = useState<JobItem[]>([]);
@@ -70,6 +72,7 @@ export default function Jobs() {
   };
 
   const currentList = (activeTab === 'offers' ? offers : requests)
+    .filter(item => !isBlocked(item.author_id))
     .filter(item => !search || item.title?.toLowerCase().includes(search.toLowerCase()) || item.description?.toLowerCase().includes(search.toLowerCase()));
 
   // Offre : expirée si sa date précise est passée. Demande : pas de date

@@ -13,6 +13,7 @@ import MessagePeopleModal from '@/components/MessagePeopleModal';
 import CreateFeedPostModal from '@/components/CreateFeedPostModal';
 import FeedCommentsSheet from '@/components/FeedCommentsSheet';
 import type { ProfileCardProfile } from '@/components/ProfileCard';
+import { useBlockedUsers } from '@/lib/useBlockedUsers';
 
 interface FeedPost {
   id: string;
@@ -27,6 +28,7 @@ interface Person { user_id: string; name: string | null; photo_url: string | nul
 export default function HomeFeed() {
   const { t } = useTranslation();
   const { user, isAdmin } = useAuth();
+  const { isBlocked } = useBlockedUsers();
   const navigate = useNavigate();
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [profiles, setProfiles] = useState<Record<string, ProfileCardProfile>>({});
@@ -120,6 +122,8 @@ export default function HomeFeed() {
 
   if (!user) return null;
 
+  const visiblePosts = posts.filter(post => !isBlocked(post.author_id));
+
   return (
     <div className="px-4 pt-14 pb-14 max-w-lg mx-auto">
       {openProfile && <ProfileDetailModal profile={openProfile} onClose={() => setOpenProfile(null)} />}
@@ -144,13 +148,13 @@ export default function HomeFeed() {
         </button>
       </div>
 
-      {posts.length === 0 ? (
+      {visiblePosts.length === 0 ? (
         <p className="text-center text-sm text-muted-foreground py-8" style={{ fontFamily: 'Jost, sans-serif' }}>
           {t('feed.noPosts')}
         </p>
       ) : (
         <div className="space-y-5">
-          {posts.map(post => {
+          {visiblePosts.map(post => {
             const author = profiles[post.author_id];
             return (
               <div key={post.id} className="card-premium overflow-hidden">

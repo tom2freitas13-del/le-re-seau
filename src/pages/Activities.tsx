@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 import LocalImage from '@/components/LocalImage';
 import { shareToWhatsApp } from '@/lib/share';
 import { setPostAuthRedirect } from '@/lib/postAuthRedirect';
+import { useBlockedUsers } from '@/lib/useBlockedUsers';
 
 interface Participant {
   user_id: string;
@@ -52,6 +53,7 @@ const CATEGORY_STYLE: Record<string, { bg: string; emoji: string; defaultPhoto: 
 export default function Activities() {
   const { t, i18n } = useTranslation();
   const { user, isAdmin } = useAuth();
+  const { isBlocked } = useBlockedUsers();
   const navigate = useNavigate();
   const { id: sharedActivityId } = useParams<{ id?: string }>();
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -74,11 +76,11 @@ export default function Activities() {
     return a.activity_date < today;
   }, []);
   const visibleActivities = useMemo(() => {
-    const filtered = activities.filter(a => showPast ? isPast(a) : !isPast(a));
+    const filtered = activities.filter(a => !isBlocked(a.author_id) && (showPast ? isPast(a) : !isPast(a)));
     // Les activités passées sont chargées triées par date croissante (le
     // tri de la requête) ; on inverse pour voir la plus récente d'abord.
     return showPast ? [...filtered].reverse() : filtered;
-  }, [activities, showPast, isPast]);
+  }, [activities, showPast, isPast, isBlocked]);
 
   const loadActivities = useCallback(async () => {
     setLoading(true);
