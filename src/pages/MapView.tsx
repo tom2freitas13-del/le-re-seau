@@ -167,11 +167,16 @@ export default function MapView() {
   const loadActivities = async () => {
     setLoading(true);
     try {
+      // BUG FIX : mêmes activités que /activities avant sa correction — sans
+      // filtre de date, une sortie d'il y a 3 mois reste épinglée sur la
+      // carte pour toujours, mélangée aux vraies sorties à venir.
+      const today = new Date().toISOString().slice(0, 10);
       const { data } = await supabase
         .from('activities')
         .select('id, title, category, location, latitude, longitude, activity_date, activity_time')
         .not('latitude', 'is', null)
-        .not('longitude', 'is', null);
+        .not('longitude', 'is', null)
+        .or(`activity_date.is.null,activity_date.gte.${today}`);
 
       if (data) {
         const { data: parts } = await supabase.from('activity_participants').select('activity_id');
