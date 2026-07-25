@@ -120,8 +120,12 @@ export default function Profile() {
       instagram: instagram.trim() || null,
       linkedin: linkedin.trim() || null,
     }).eq('user_id', user.id);
-    if (error) toast.error(t('profile.saveError'));
-    else toast.success(t('profile.saveSuccess'));
+    if (error) {
+      console.error('Profile save error:', error);
+      toast.error(error.message || t('profile.saveError'));
+    } else {
+      toast.success(t('profile.saveSuccess'));
+    }
     setLoading(false);
   };
 
