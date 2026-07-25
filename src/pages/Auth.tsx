@@ -74,15 +74,21 @@ export default function Auth() {
         toast.success(t('auth.resetEmailSent'));
         setMode('login');
       } else if (mode === 'login') {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast.success(t('auth.loginSuccess'));
-        navigate(consumePostAuthRedirect('/social'));
+        // Première connexion d'un compte tout juste créé (ex: retour après
+        // la confirmation d'email) → écran de bienvenue plutôt que /social.
+        const isNewAccount = data.user && Date.now() - new Date(data.user.created_at).getTime() < 10 * 60 * 1000;
+        navigate(consumePostAuthRedirect(isNewAccount ? '/welcome' : '/social'));
       } else {
         const referredBy = getStoredReferralCode();
         const { data, error } = await supabase.auth.signUp({
           email, password,
-          options: { emailRedirectTo: window.location.origin, data: referredBy ? { referred_by: referredBy } : undefined },
+          // Le lien de confirmation d'email doit atterrir sur l'écran de
+          // bienvenue — vers la racine, un nouvel inscrit arrivait sur la
+          // page d'accueil sans jamais voir /welcome.
+          options: { emailRedirectTo: `${window.location.origin}/welcome`, data: referredBy ? { referred_by: referredBy } : undefined },
         });
         if (error) throw error;
         // BUG FIX : avec la confirmation d'email activée, Supabase ne renvoie
