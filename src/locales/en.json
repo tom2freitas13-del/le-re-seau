@@ -746,6 +746,8 @@
     "leave": "Leave",
     "join": "Join",
     "joinConfirmed": "Registration confirmed! 🎉",
+    "joinError": "Couldn't join this activity.",
+    "minAgeBlocked": "This activity is reserved for ages {{age}} and up.",
     "deleteError": "Couldn't delete this activity.",
     "deleted": "Activity deleted.",
     "sharedNotFound": "This activity no longer exists.",

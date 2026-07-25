@@ -746,6 +746,8 @@
     "leave": "Se désinscrire",
     "join": "Participer",
     "joinConfirmed": "Inscription confirmée ! 🎉",
+    "joinError": "Impossible de rejoindre cette activité.",
+    "minAgeBlocked": "Cette activité est réservée aux {{age}} ans et plus.",
     "deleteError": "Impossible de supprimer cette activité.",
     "deleted": "Activité supprimée.",
     "sharedNotFound": "Cette activité n'existe plus.",

@@ -65,6 +65,7 @@ export default function Activities() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [groupUnread, setGroupUnread] = useState<Record<string, number>>({});
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const [myAge, setMyAge] = useState<number | null>(null);
   // BUG FIX : la page chargeait TOUTES les activités jamais créées, triées
   // par date croissante — au bout de quelques mois, les activités passées
   // s'accumulaient en haut de la liste, avant celles à venir. On sépare
@@ -113,6 +114,15 @@ export default function Activities() {
       }
     }
     setLoading(false);
+  }, [user]);
+
+  // BUG FIX : le "18+"/"16+" affiché sur une activité (min_age) n'était
+  // qu'une étiquette décorative, jamais vérifiée — n'importe qui pouvait
+  // rejoindre quel que soit son âge réel.
+  useEffect(() => {
+    if (!user) return;
+    supabase.from('profiles').select('age').eq('user_id', user.id).single()
+      .then(({ data }) => setMyAge(data?.age ?? null));
   }, [user]);
 
   useEffect(() => {
@@ -196,11 +206,18 @@ export default function Activities() {
       setMyParticipations(prev => { const s = new Set(prev); s.delete(activityId); return s; });
       setParticipantCounts(prev => ({ ...prev, [activityId]: Math.max((prev[activityId] || 1) - 1, 0) }));
     } else {
+      const activity = activities.find(a => a.id === activityId);
+      if (activity?.min_age && (myAge == null || myAge < activity.min_age)) {
+        toast.error(t('activities.minAgeBlocked', { age: activity.min_age }));
+        return;
+      }
       const { error } = await supabase.from('activity_participants').insert({ activity_id: activityId, user_id: user.id });
       if (!error) {
         setMyParticipations(prev => new Set(prev).add(activityId));
         setParticipantCounts(prev => ({ ...prev, [activityId]: (prev[activityId] || 0) + 1 }));
         toast.success(t('activities.joinConfirmed'));
+      } else {
+        toast.error(t('activities.joinError'));
       }
     }
   };
