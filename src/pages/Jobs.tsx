@@ -15,12 +15,20 @@ interface JobItem {
   description: string | null;
   location?: string | null;
   date?: string | null;
+  needed_date?: string | null;
   availability?: string | null;
   pay?: string | null;
+  created_at: string;
 }
 
+// Demandes de service : pas de date précise (juste "le week-end", "tous les
+// matins"...), donc on se base sur l'ancienneté de publication. Doit rester
+// cohérent avec le seuil de suppression de la migration 037
+// (63 jours = 60 + 3 jours de grâce "Expiré").
+const JOB_REQUEST_STALE_DAYS = 60;
+
 export default function Jobs() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [offers, setOffers] = useState<JobItem[]>([]);
@@ -63,6 +71,19 @@ export default function Jobs() {
 
   const currentList = (activeTab === 'offers' ? offers : requests)
     .filter(item => !search || item.title?.toLowerCase().includes(search.toLowerCase()) || item.description?.toLowerCase().includes(search.toLowerCase()));
+
+  // Offre : expirée si sa date précise est passée. Demande : pas de date
+  // exploitable, donc expirée par ancienneté de publication à la place.
+  const isExpired = (item: JobItem, table: 'offers' | 'requests') => {
+    if (table === 'offers') {
+      return !!item.needed_date && item.needed_date < new Date().toISOString().slice(0, 10);
+    }
+    const ageDays = (Date.now() - new Date(item.created_at).getTime()) / 86400000;
+    return ageDays > JOB_REQUEST_STALE_DAYS;
+  };
+
+  const formatNeededDate = (d: string) =>
+    new Date(d).toLocaleDateString(i18n.language === 'en' ? 'en-US' : 'fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
 
   return (
     <div className="min-h-screen pb-28 bg-background">
@@ -133,8 +154,9 @@ export default function Jobs() {
             {currentList.map(item => {
               const isMine = item.author_id === user?.id;
               const table = activeTab === 'offers' ? 'job_offers' : 'job_requests';
+              const expired = isExpired(item, activeTab);
               return (
-                <div key={item.id} className="card-premium p-5 space-y-3">
+                <div key={item.id} className={cn('card-premium p-5 space-y-3', expired && 'opacity-60')}>
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1">
                       <h3 className="font-display text-lg font-semibold mb-1">{item.title}</h3>
@@ -156,6 +178,9 @@ export default function Jobs() {
                   </div>
 
                   <div className="flex flex-wrap gap-2">
+                    {expired && (
+                      <span className="pill bg-destructive/10 text-destructive font-semibold">{t('jobs.expired')}</span>
+                    )}
                     {isMine && (
                       <span className="pill bg-pine-light text-pine">{t('jobs.yourAd')}</span>
                     )}
@@ -164,9 +189,9 @@ export default function Jobs() {
                         <MapPin className="h-3 w-3" /> {item.location}
                       </span>
                     )}
-                    {(item.date || item.availability) && (
+                    {(item.needed_date || item.date || item.availability) && (
                       <span className="pill bg-muted text-muted-foreground flex items-center gap-1">
-                        <Clock className="h-3 w-3" /> {item.date || item.availability}
+                        <Clock className="h-3 w-3" /> {item.needed_date ? formatNeededDate(item.needed_date) : (item.date || item.availability)}
                       </span>
                     )}
                     {item.pay && (

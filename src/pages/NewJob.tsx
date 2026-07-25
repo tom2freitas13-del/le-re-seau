@@ -17,7 +17,7 @@ export default function NewJob() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [location, setLocation] = useState('');
-  const [date, setDate] = useState('');
+  const [neededDate, setNeededDate] = useState('');
   const [pay, setPay] = useState('');
   const [availability, setAvailability] = useState('');
   const [loading, setLoading] = useState(false);
@@ -34,7 +34,7 @@ export default function NewJob() {
       if (tab === 'offer') {
         const { error } = await supabase.from('job_offers').insert({
           title: title.trim(), description: description.trim() || null,
-          location: location.trim() || null, date: date.trim() || null,
+          location: location.trim() || null, needed_date: neededDate || null,
           pay: pay.trim() || null, author_id: user.id,
         });
         if (error) throw error;
@@ -115,8 +115,13 @@ export default function NewJob() {
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 block" style={{ fontFamily: 'Jost, sans-serif' }}>{t('newJob.availabilityLabel')}</label>
-                  <input className={inputClass} style={{ fontFamily: 'Jost, sans-serif' }} placeholder={t('newJob.availabilityPlaceholder')} value={date} onChange={e => setDate(e.target.value)} />
+                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 block" style={{ fontFamily: 'Jost, sans-serif' }}>{t('newJob.neededDateLabel')}</label>
+                  <input type="date" className={inputClass} style={{ fontFamily: 'Jost, sans-serif' }}
+                    min={new Date().toISOString().slice(0, 10)}
+                    value={neededDate} onChange={e => setNeededDate(e.target.value)} />
+                  <p className="text-xs text-muted-foreground mt-1.5 px-1" style={{ fontFamily: 'Jost, sans-serif' }}>
+                    {t('newJob.neededDateHint')}
+                  </p>
                 </div>
                 <div>
                   <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 block" style={{ fontFamily: 'Jost, sans-serif' }}>{t('newJob.payLabel')}</label>

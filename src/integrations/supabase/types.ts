@@ -471,6 +471,7 @@ export interface Database {
           description: string | null;
           location: string | null;
           date: string | null;
+          needed_date: string | null;
           pay: string | null;
           category: string | null;
           created_at: string;
@@ -482,6 +483,7 @@ export interface Database {
           description?: string | null;
           location?: string | null;
           date?: string | null;
+          needed_date?: string | null;
           pay?: string | null;
           category?: string | null;
           created_at?: string;
