@@ -941,7 +941,15 @@ function SalonView({ salonId, onBack }: { salonId: string; onBack: () => void })
           const readCount = (readsByMessage[m.id] || []).length;
           return (
             <div key={m.id} className={`flex flex-col ${mine ? 'items-end' : 'items-start'}`}>
-              <div className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
+              <div className={`flex items-end gap-1 ${mine ? 'justify-end' : 'justify-start'}`}>
+                {!mine && (
+                  <ReportButton
+                    targetType="salon_message"
+                    targetId={m.id}
+                    targetUserId={m.user_id}
+                    className="h-9 w-9 flex items-center justify-center text-muted-foreground/50 hover:text-destructive transition-colors flex-shrink-0 order-last"
+                  />
+                )}
                 {m.attachment_type === 'audio' && m.attachment_url ? (
                   <div className={`max-w-[75%] rounded-2xl px-3 py-2 ${mine ? 'bg-primary' : 'bg-secondary'}`}
                     {...(mine ? bindLongPress(() => handleDeleteMessage(m.id)) : {})}>
@@ -1306,9 +1314,19 @@ function CommentsPanel({ postId, onCommentAdded }: { postId: string; onCommentAd
   return (
     <div className="pt-2 border-t border-border/50 space-y-2">
       {comments.map(c => (
-        <div key={c.id} className="text-xs" style={{ fontFamily: 'Jost, sans-serif' }}>
-          <span className="font-semibold">{names[c.author_id] || t('commentsPanel.defaultMember')} : </span>
-          <span className="text-muted-foreground">{c.content}</span>
+        <div key={c.id} className="text-xs flex items-start justify-between gap-2" style={{ fontFamily: 'Jost, sans-serif' }}>
+          <p>
+            <span className="font-semibold">{names[c.author_id] || t('commentsPanel.defaultMember')} : </span>
+            <span className="text-muted-foreground">{c.content}</span>
+          </p>
+          {c.author_id !== user?.id && (
+            <ReportButton
+              targetType="forum_comment"
+              targetId={c.id}
+              targetUserId={c.author_id}
+              className="text-muted-foreground/50 hover:text-destructive transition-colors flex-shrink-0"
+            />
+          )}
         </div>
       ))}
       <div className="flex gap-2">

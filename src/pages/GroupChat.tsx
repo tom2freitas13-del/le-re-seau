@@ -10,6 +10,7 @@ import { useMessageLikesAndReads } from '@/lib/useMessageLikesAndReads';
 import MessagePeopleModal from '@/components/MessagePeopleModal';
 import MessageLikeReadRow from '@/components/MessageLikeReadRow';
 import { useLongPress } from '@/lib/useLongPress';
+import { ReportButton } from '@/components/ReportModal';
 
 interface GroupMessage {
   id: string;
@@ -313,7 +314,15 @@ export default function GroupChat() {
           const readCount = (readsByMessage[m.id] || []).length;
           return (
             <div key={m.id} className={`flex flex-col ${mine ? 'items-end' : 'items-start'}`}>
-              <div className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
+              <div className={`flex items-end gap-1 ${mine ? 'justify-end' : 'justify-start'}`}>
+                {!mine && (
+                  <ReportButton
+                    targetType="group_message"
+                    targetId={m.id}
+                    targetUserId={m.sender_id}
+                    className="h-9 w-9 flex items-center justify-center text-muted-foreground/50 hover:text-destructive transition-colors flex-shrink-0 order-last"
+                  />
+                )}
                 {m.attachment_type === 'audio' && m.attachment_url ? (
                   <div className={`max-w-[75%] rounded-2xl px-3 py-2 ${mine ? 'bg-primary' : 'bg-secondary'}`}
                     {...(mine ? bindLongPress(() => handleDeleteMessage(m.id)) : {})}>

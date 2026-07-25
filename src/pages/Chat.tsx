@@ -6,7 +6,7 @@ import { useAuth } from '@/lib/auth-context';
 import { ArrowLeft, Send, MoreVertical, Check, CheckCheck, Mic, Square, SmilePlus, Image as ImageIcon } from 'lucide-react';
 import { AdminBadge } from '@/components/ProfileCard';
 import { avatarFallbackInitial, formatLastSeen } from '@/lib/constants';
-import { ReportModal } from '@/components/ReportModal';
+import { ReportModal, ReportButton } from '@/components/ReportModal';
 import { useBlockedUsers } from '@/lib/useBlockedUsers';
 import { usePresence } from '@/lib/presence-context';
 import { toast } from 'sonner';
@@ -363,6 +363,14 @@ export default function Chat() {
                       className="h-9 w-9 flex items-center justify-center text-muted-foreground/50 hover:text-foreground transition-colors flex-shrink-0">
                       <SmilePlus className="h-4 w-4" />
                     </button>
+                    {!mine && (
+                      <ReportButton
+                        targetType="message"
+                        targetId={m.id}
+                        targetUserId={m.sender_id}
+                        className="h-9 w-9 flex items-center justify-center text-muted-foreground/50 hover:text-destructive transition-colors flex-shrink-0"
+                      />
+                    )}
                   </div>
 
                   {pickerFor === m.id && (

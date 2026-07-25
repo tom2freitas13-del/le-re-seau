@@ -8,6 +8,7 @@ import { Plus, MapPin, Clock, Euro, MessageCircle, Briefcase, Search, Trash2 } f
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useBlockedUsers } from '@/lib/useBlockedUsers';
+import { ReportButton } from '@/components/ReportModal';
 
 interface JobItem {
   id: string;
@@ -169,7 +170,7 @@ export default function Jobs() {
                         </p>
                       )}
                     </div>
-                    {isMine && (
+                    {isMine ? (
                       <button
                         onClick={() => handleDelete(item.id, table)}
                         disabled={deletingId === item.id}
@@ -177,6 +178,13 @@ export default function Jobs() {
                         className="text-muted-foreground hover:text-destructive transition-colors p-1.5 rounded-lg hover:bg-destructive/10 disabled:opacity-50 flex-shrink-0">
                         <Trash2 className="h-4 w-4" />
                       </button>
+                    ) : (
+                      <ReportButton
+                        targetType={activeTab === 'offers' ? 'job_offer' : 'job_request'}
+                        targetId={item.id}
+                        targetUserId={item.author_id}
+                        className="text-muted-foreground hover:text-destructive transition-colors p-1.5 rounded-lg hover:bg-destructive/10 flex-shrink-0"
+                      />
                     )}
                   </div>
 

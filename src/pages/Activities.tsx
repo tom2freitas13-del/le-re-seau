@@ -10,6 +10,7 @@ import { ACTIVITY_CATEGORIES, avatarFallbackInitial } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import LocalImage from '@/components/LocalImage';
 import { shareToWhatsApp } from '@/lib/share';
+import { ReportButton } from '@/components/ReportModal';
 import { setPostAuthRedirect } from '@/lib/postAuthRedirect';
 import { useBlockedUsers } from '@/lib/useBlockedUsers';
 
@@ -341,7 +342,7 @@ export default function Activities() {
                         className="h-9 w-9 rounded-full glass flex items-center justify-center text-[#25D366] hover:bg-[#25D366]/10 transition-colors">
                         <Share2 className="h-4 w-4" />
                       </button>
-                      {canDelete && (
+                      {canDelete ? (
                         <button
                           onClick={() => handleDelete(activity.id)}
                           disabled={deletingId === activity.id}
@@ -349,6 +350,13 @@ export default function Activities() {
                           className="h-9 w-9 rounded-full glass flex items-center justify-center text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-50">
                           <Trash2 className="h-4 w-4" />
                         </button>
+                      ) : (
+                        <ReportButton
+                          targetType="activity"
+                          targetId={activity.id}
+                          targetUserId={activity.author_id}
+                          className="h-9 w-9 rounded-full glass flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                        />
                       )}
                     </div>
                   </div>

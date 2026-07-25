@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import { avatarFallbackInitial } from '@/lib/constants';
 import { toast } from 'sonner';
+import { ReportButton } from '@/components/ReportModal';
 
 interface Comment {
   id: string;
@@ -91,10 +92,17 @@ export default function FeedCommentsSheet({ postId, onClose, onCommentAdded }: F
                   <span className="text-sm font-medium" style={{ fontFamily: 'Jost, sans-serif' }}>{c.name || t('groupChat.defaultUser')}</span>
                   <p className="text-sm text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>{c.content}</p>
                 </div>
-                {(c.author_id === user?.id || isAdmin) && (
+                {(c.author_id === user?.id || isAdmin) ? (
                   <button onClick={() => handleDelete(c.id)} className="text-muted-foreground hover:text-destructive transition-colors flex-shrink-0">
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
+                ) : (
+                  <ReportButton
+                    targetType="feed_comment"
+                    targetId={c.id}
+                    targetUserId={c.author_id}
+                    className="text-muted-foreground hover:text-destructive transition-colors flex-shrink-0"
+                  />
                 )}
               </div>
             ))
