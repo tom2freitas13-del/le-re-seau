@@ -631,12 +631,19 @@ function SalonView({ salonId, onBack }: { salonId: string; onBack: () => void })
   }, [t]);
 
   const loadMessages = useCallback(async () => {
-    const { data } = await supabase.from('salon_messages').select('*').eq('salon', salonId).order('created_at', { ascending: true }).limit(100);
+    // BUG FIX : ce tri était ascendant AVANT le limit(100), donc on ne
+    // récupérait jamais que les 100 tout premiers messages du salon depuis
+    // sa création. Passé ce seuil (n'importe quel salon un tant soit peu
+    // actif), quiconque ouvrait la page se retrouvait bloqué sur l'histoire
+    // ancienne, sans jamais voir les messages récents. On récupère les 100
+    // plus récents (tri descendant), puis on les remet en ordre chronologique.
+    const { data } = await supabase.from('salon_messages').select('*').eq('salon', salonId).order('created_at', { ascending: false }).limit(100);
     if (data) {
-      setMessages(data);
-      Array.from(new Set(data.map(m => m.user_id))).forEach(ensureSenderName);
-      await loadForMessages(data.map(m => m.id));
-      if (user) markMessagesRead(data.filter(m => m.user_id !== user.id).map(m => m.id));
+      const chronological = data.reverse();
+      setMessages(chronological);
+      Array.from(new Set(chronological.map(m => m.user_id))).forEach(ensureSenderName);
+      await loadForMessages(chronological.map(m => m.id));
+      if (user) markMessagesRead(chronological.filter(m => m.user_id !== user.id).map(m => m.id));
     }
   }, [salonId, ensureSenderName, loadForMessages, user, markMessagesRead]);
 
