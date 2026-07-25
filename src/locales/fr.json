@@ -600,6 +600,7 @@
     "unblock": "✅ Débloquer",
     "block": "🚫 Bloquer",
     "blockedMessage": "Vous avez bloqué {{name}}. Débloquez-le depuis le menu pour reprendre la conversation.",
+    "sendError": "Ce message n'a pas pu être envoyé.",
     "sentPhoto": "Photo envoyée",
     "sendPhoto": "Envoyer une photo",
     "messagePlaceholder": "Écrire un message...",

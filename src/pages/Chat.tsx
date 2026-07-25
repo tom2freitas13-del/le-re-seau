@@ -162,7 +162,13 @@ export default function Chat() {
     clearTimeout(stopTypingTimeout.current);
     sendTyping(false);
     const { error } = await supabase.from('messages').insert({ sender_id: user.id, receiver_id: partnerId, content: text });
-    if (error) setContent(text);
+    if (error) {
+      setContent(text);
+      // Message générique volontaire (ne confirme pas explicitement un
+      // blocage) : peut aussi échouer si le destinataire nous a bloqué,
+      // ce que la policy RLS empêche désormais silencieusement.
+      toast.error(t('chat.sendError'));
+    }
     setSending(false);
   };
 
