@@ -211,12 +211,23 @@ export default function Activities() {
         toast.error(t('activities.minAgeBlocked', { age: activity.min_age }));
         return;
       }
+      if (activity?.max_participants && (participantCounts[activityId] || 0) >= activity.max_participants) {
+        toast.error(t('activities.activityFull'));
+        return;
+      }
       const { error } = await supabase.from('activity_participants').insert({ activity_id: activityId, user_id: user.id });
       if (!error) {
         setMyParticipations(prev => new Set(prev).add(activityId));
         setParticipantCounts(prev => ({ ...prev, [activityId]: (prev[activityId] || 0) + 1 }));
         toast.success(t('activities.joinConfirmed'));
       } else {
+        // Le compteur local peut être périmé (pas de synchro temps réel) :
+        // on le recale sur la base réelle pour ne pas rester bloqué sur un
+        // nombre faux après un rejet (activité devenue complète entre-temps,
+        // détecté ici par la policy RLS).
+        const { count: realCount } = await supabase.from('activity_participants')
+          .select('*', { count: 'exact', head: true }).eq('activity_id', activityId);
+        setParticipantCounts(prev => ({ ...prev, [activityId]: realCount ?? prev[activityId] ?? 0 }));
         toast.error(t('activities.joinError'));
       }
     }
