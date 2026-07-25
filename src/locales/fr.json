@@ -116,6 +116,8 @@
     "noAccountForEmail": "Ce compte n'existe pas. Crée-le en cliquant sur « S'inscrire » 👇",
     "emailNotConfirmed": "Ton adresse email n'est pas encore confirmée : clique sur le lien reçu par mail (pense aux spams).",
     "rateLimited": "Trop de tentatives. Patiente un instant puis réessaie.",
+    "weakPassword": "Ce mot de passe n'est pas accepté (8 caractères minimum, différent de l'ancien).",
+    "sessionExpired": "Ta session a expiré. Reconnecte-toi et réessaie.",
     "confirmEmailSent": "Compte créé ! Vérifie ta boîte mail (et tes spams) pour confirmer ton adresse avant de te connecter.",
     "loginSuccess": "Connexion réussie ! 🌊",
     "signupSuccess": "Inscription réussie ! Vérifiez votre email 📬",

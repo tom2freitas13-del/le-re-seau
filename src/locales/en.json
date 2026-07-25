@@ -116,6 +116,8 @@
     "noAccountForEmail": "This account doesn't exist. Create it by clicking \"Sign up\" 👇",
     "emailNotConfirmed": "Your email address isn't confirmed yet: click the link we sent you (check your spam folder).",
     "rateLimited": "Too many attempts. Wait a moment and try again.",
+    "weakPassword": "This password isn't accepted (8 characters minimum, different from the old one).",
+    "sessionExpired": "Your session has expired. Sign in again and retry.",
     "confirmEmailSent": "Account created! Check your inbox (and spam folder) to confirm your address before signing in.",
     "loginSuccess": "Logged in! 🌊",
     "signupSuccess": "Signup successful! Check your email 📬",

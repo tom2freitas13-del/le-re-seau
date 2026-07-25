@@ -14,6 +14,7 @@ import { isPushSupported, getPushPermissionState, subscribeToPush, unsubscribeFr
 import { setLanguage } from '@/lib/i18n';
 import { buildReferralLink } from '@/lib/referral';
 import { shareToWhatsApp } from '@/lib/share';
+import { translateAuthError } from '@/lib/authErrors';
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return <h3 className="font-display text-xl font-semibold mb-3">{children}</h3>;
@@ -78,7 +79,7 @@ export default function Settings() {
     const { error } = await supabase.auth.updateUser({ password: newPassword });
     setPwdSaving(false);
     if (error) {
-      toast.error(error.message || t('settings.passwordUpdateError'));
+      toast.error(translateAuthError(t, error));
       return;
     }
     setNewPassword('');

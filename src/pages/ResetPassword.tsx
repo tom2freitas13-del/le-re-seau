@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import { toast } from 'sonner';
 import { Eye, EyeOff, Waves, KeyRound } from 'lucide-react';
+import { translateAuthError } from '@/lib/authErrors';
 
 // Page d'atterrissage du lien "mot de passe oublié" : Supabase ouvre une
 // session temporaire via le jeton contenu dans l'URL (detectSessionInUrl),
@@ -29,7 +30,7 @@ export default function ResetPassword() {
     const { error } = await supabase.auth.updateUser({ password });
     setSaving(false);
     if (error) {
-      toast.error(error.message || t('resetPassword.error'));
+      toast.error(translateAuthError(t, error));
       return;
     }
     toast.success(t('resetPassword.success'));

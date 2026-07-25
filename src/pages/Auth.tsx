@@ -7,6 +7,7 @@ import { useAuth } from '@/lib/auth-context';
 import { Eye, EyeOff, Waves } from 'lucide-react';
 import { getStoredReferralCode, clearStoredReferralCode } from '@/lib/referral';
 import { consumePostAuthRedirect } from '@/lib/postAuthRedirect';
+import { translateAuthError } from '@/lib/authErrors';
 
 // Fond en dégradé CSS plutôt qu'une photo stock — fiable à 100%, pas de risque
 // d'afficher une image qui ne correspond pas à son contexte.
@@ -140,12 +141,7 @@ export default function Auth() {
       // Toujours un message en français — les messages bruts de Supabase
       // sont en anglais. Le détail reste en console pour le débogage.
       console.error('Auth error:', error);
-      const msg = error instanceof Error ? error.message.toLowerCase() : '';
-      if (msg.includes('rate limit') || msg.includes('for security purposes')) {
-        toast.error(t('auth.rateLimited'));
-      } else {
-        toast.error(t('auth.genericError'));
-      }
+      toast.error(translateAuthError(t, error));
     } finally {
       setLoading(false);
     }
