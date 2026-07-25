@@ -24,14 +24,15 @@ Deno.serve(async (req) => {
 
     const body = message.content.length > 100 ? message.content.slice(0, 100) + "…" : message.content;
 
-    await Promise.all(subs.map(async (sub: any) => {
+    await Promise.all(subs.map(async (sub: { id: string; endpoint: string; p256dh: string; auth: string }) => {
       try {
         await webpush.sendNotification(
           { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
           JSON.stringify({ title: senderName, body, url: `/chat/${message.sender_id}` })
         );
-      } catch (err: any) {
-        if (err.statusCode === 404 || err.statusCode === 410) {
+      } catch (err) {
+        const status = (err as { statusCode?: number }).statusCode;
+        if (status === 404 || status === 410) {
           await supabase.from("push_subscriptions").delete().eq("id", sub.id);
         }
       }

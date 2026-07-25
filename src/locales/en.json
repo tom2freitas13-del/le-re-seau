@@ -465,8 +465,11 @@
     "title": "Private messages",
     "newGroup": "Group",
     "myGroups": "My groups",
-    "noConversations": "No conversations yet. Go to Community to chat with someone!",
-    "defaultUser": "User"
+    "noConversations": "No conversations yet. Search for someone above, or try a suggestion!",
+    "defaultUser": "User",
+    "searchPlaceholder": "Search for someone to message...",
+    "noSearchResults": "No one matches that search.",
+    "suggestionsTitle": "You might hit it off"
   },
   "createGroupModal": {
     "title": "New group",
@@ -499,7 +502,9 @@
     "photoSendError": "Couldn't send the photo.",
     "photoContent": "📷 Photo",
     "typing_one": "{{names}} is typing...",
-    "typing_other": "{{names}} are typing..."
+    "typing_other": "{{names}} are typing...",
+    "confirmDeleteMessage": "Delete this message?",
+    "deleteMessageError": "Couldn't delete this message."
   },
   "forumView": {
     "title": "📰 Forum",
@@ -584,7 +589,9 @@
     "likedBy": "Liked by",
     "seenBy": "Seen by",
     "loading": "Loading...",
-    "noOne": "No one yet"
+    "noOne": "No one yet",
+    "confirmDeleteMessage": "Delete this message?",
+    "deleteMessageError": "Couldn't delete this message."
   },
   "chat": {
     "conversation": "Conversation",
@@ -605,7 +612,9 @@
     "voiceSendError": "Couldn't send the voice message.",
     "photoTypeError": "Please choose an image file.",
     "photoSizeError": "The image must be under {{max}} MB.",
-    "photoSendError": "Couldn't send the photo."
+    "photoSendError": "Couldn't send the photo.",
+    "confirmDeleteMessage": "Delete this message?",
+    "deleteMessageError": "Couldn't delete this message."
   },
   "newJob": {
     "title": "Post an ad",

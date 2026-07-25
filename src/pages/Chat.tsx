@@ -11,6 +11,7 @@ import { useBlockedUsers } from '@/lib/useBlockedUsers';
 import { usePresence } from '@/lib/presence-context';
 import { toast } from 'sonner';
 import { MAX_PHOTO_SIZE_MB, pickAudioMimeType, uploadVoiceMessage, uploadPhoto } from '@/lib/attachments';
+import { useLongPress } from '@/lib/useLongPress';
 
 interface Message {
   id: string;
@@ -44,6 +45,7 @@ export default function Chat() {
   const [reportOpen, setReportOpen] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const { isBlocked, blockUser, unblockUser } = useBlockedUsers();
+  const bindLongPress = useLongPress();
   const { isOnline } = usePresence();
   const partnerOnline = partnerId ? isOnline(partnerId) : false;
   const [partnerTyping, setPartnerTyping] = useState(false);
@@ -250,6 +252,14 @@ export default function Chat() {
     }
   };
 
+  const handleDeleteMessage = async (messageId: string) => {
+    if (!user) return;
+    if (!window.confirm(t('chat.confirmDeleteMessage'))) return;
+    const { error } = await supabase.from('messages').delete().eq('id', messageId).eq('sender_id', user.id);
+    if (error) { toast.error(t('chat.deleteMessageError')); return; }
+    setMessages(prev => prev.filter(m => m.id !== messageId));
+  };
+
   const handleBack = () => (window.history.length > 1 ? navigate(-1) : navigate('/discussions'));
 
   if (authLoading) return null;
@@ -333,16 +343,19 @@ export default function Chat() {
                 <div key={m.id} className={`flex flex-col ${mine ? 'items-end' : 'items-start'}`}>
                   <div className={`group flex items-end gap-1.5 ${mine ? 'flex-row-reverse' : 'flex-row'}`}>
                     {m.attachment_type === 'audio' && m.attachment_url ? (
-                      <div className={`max-w-[75%] rounded-2xl px-3 py-2 ${mine ? 'bg-primary' : 'bg-secondary'}`}>
+                      <div className={`max-w-[75%] rounded-2xl px-3 py-2 ${mine ? 'bg-primary' : 'bg-secondary'}`}
+                        {...(mine ? bindLongPress(() => handleDeleteMessage(m.id)) : {})}>
                         <audio controls src={m.attachment_url} className="h-9 max-w-[220px]" />
                       </div>
                     ) : m.attachment_type === 'image' && m.attachment_url ? (
-                      <a href={m.attachment_url} target="_blank" rel="noopener noreferrer" className="block max-w-[75%] rounded-2xl overflow-hidden">
+                      <a href={m.attachment_url} target="_blank" rel="noopener noreferrer" className="block max-w-[75%] rounded-2xl overflow-hidden select-none"
+                        {...(mine ? bindLongPress(() => handleDeleteMessage(m.id)) : {})}>
                         <img src={m.attachment_url} alt={t('chat.sentPhoto')} className="max-h-64 w-auto object-cover" />
                       </a>
                     ) : (
-                      <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm ${mine ? 'bg-primary text-white' : 'bg-secondary text-foreground'}`}
-                        style={{ fontFamily: 'Jost, sans-serif' }}>
+                      <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm select-none active:opacity-70 transition-opacity ${mine ? 'bg-primary text-white' : 'bg-secondary text-foreground'}`}
+                        style={{ fontFamily: 'Jost, sans-serif' }}
+                        {...(mine ? bindLongPress(() => handleDeleteMessage(m.id)) : {})}>
                         {m.content}
                       </div>
                     )}
@@ -412,7 +425,7 @@ export default function Chat() {
                 onChange={e => handleContentChange(e.target.value)}
                 placeholder={t('chat.messagePlaceholder')}
                 maxLength={2000}
-                className="flex-1 px-4 py-3 rounded-full border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20"
+                className="flex-1 px-4 py-3 rounded-full border border-border bg-background text-base outline-none focus:ring-2 focus:ring-primary/20"
                 style={{ fontFamily: 'Jost, sans-serif' }}
               />
               {content.trim() ? (

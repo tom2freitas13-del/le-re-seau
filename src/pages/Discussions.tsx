@@ -4,7 +4,8 @@ import { useAuth } from '@/lib/auth-context';
 import BottomNav from '@/components/BottomNav';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { MessageCircle, Send, ArrowLeft, Heart, MessageSquare, Mail, Mic, Square, Image as ImageIcon, X, Plus, Users, Check, Briefcase } from 'lucide-react';
+import { MessageCircle, Send, ArrowLeft, Heart, MessageSquare, Mail, Mic, Square, Image as ImageIcon, X, Plus, Users, Check, Briefcase, Search, Sparkles } from 'lucide-react';
+import { computeMatchScore } from '@/lib/matchScore';
 import { SALONS } from '@/lib/constants';
 import { toast } from 'sonner';
 import { avatarFallbackInitial } from '@/lib/constants';
@@ -17,6 +18,7 @@ import { MAX_PHOTO_SIZE_MB, pickAudioMimeType, uploadVoiceMessage, uploadPhoto }
 import { useMessageLikesAndReads } from '@/lib/useMessageLikesAndReads';
 import MessagePeopleModal from '@/components/MessagePeopleModal';
 import MessageLikeReadRow from '@/components/MessageLikeReadRow';
+import { useLongPress } from '@/lib/useLongPress';
 
 interface SalonMessage {
   id: string;
@@ -52,6 +54,19 @@ interface GroupItem {
   name: string;
   emoji: string | null;
   description: string | null;
+}
+
+interface SuggestedProfile {
+  user_id: string;
+  name: string | null;
+  photo_url: string | null;
+  score: number;
+}
+
+interface SearchedProfile {
+  user_id: string;
+  name: string | null;
+  photo_url: string | null;
 }
 
 export default function Discussions() {
@@ -236,6 +251,10 @@ function MessagesView({ onBack }: { onBack: () => void }) {
   const [groups, setGroups] = useState<GroupItem[]>([]);
   const [groupUnread, setGroupUnread] = useState<Record<string, number>>({});
   const [showCreateGroup, setShowCreateGroup] = useState(false);
+  const [suggestions, setSuggestions] = useState<SuggestedProfile[]>([]);
+  const [search, setSearch] = useState('');
+  const [searchResults, setSearchResults] = useState<SearchedProfile[] | null>(null);
+  const [searching, setSearching] = useState(false);
 
   const loadGroups = useCallback(async () => {
     if (!user) return;
@@ -308,7 +327,43 @@ function MessagesView({ onBack }: { onBack: () => void }) {
     setLoading(false);
   }, [user, t]);
 
-  useEffect(() => { loadConversations(); loadGroups(); }, [loadConversations, loadGroups]);
+  // Suggère les membres avec qui discuter en priorité, sur le même calcul
+  // d'affinité que Social — jusqu'ici il fallait passer par Communauté pour
+  // trouver quelqu'un avec qui démarrer une conversation privée.
+  const loadSuggestions = useCallback(async () => {
+    if (!user) return;
+    const { data: mine } = await supabase.from('profiles').select('interests, status, availability').eq('user_id', user.id).single();
+    if (!mine?.interests?.length) return;
+    const { data: others } = await supabase.from('profiles')
+      .select('user_id, name, photo_url, interests, status, availability')
+      .not('name', 'is', null).neq('user_id', user.id).limit(100);
+    if (!others) return;
+    const scored = others
+      .map(o => ({ user_id: o.user_id, name: o.name, photo_url: o.photo_url, score: computeMatchScore(mine, o) }))
+      .filter(o => o.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 10);
+    setSuggestions(scored);
+  }, [user]);
+
+  useEffect(() => { loadConversations(); loadGroups(); loadSuggestions(); }, [loadConversations, loadGroups, loadSuggestions]);
+
+  // Recherche par nom pour retrouver directement quelqu'un avec qui discuter,
+  // sans passer par Communauté.
+  useEffect(() => {
+    if (!user) return;
+    const q = search.trim();
+    if (!q) { setSearchResults(null); return; }
+    setSearching(true);
+    const handle = setTimeout(async () => {
+      const { data } = await supabase.from('profiles')
+        .select('user_id, name, photo_url')
+        .ilike('name', `${q}%`).not('name', 'is', null).neq('user_id', user.id).limit(20);
+      setSearchResults(data || []);
+      setSearching(false);
+    }, 300);
+    return () => clearTimeout(handle);
+  }, [search, user]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -327,7 +382,71 @@ function MessagesView({ onBack }: { onBack: () => void }) {
       </div>
 
       <div className="max-w-lg mx-auto px-4 pt-4 space-y-6 pb-8">
-        {groups.length > 0 && (
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder={t('messagesView.searchPlaceholder')}
+            className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border bg-background text-base outline-none focus:ring-2 focus:ring-primary/20"
+            style={{ fontFamily: 'Jost, sans-serif' }}
+          />
+        </div>
+
+        {search.trim() ? (
+          <div className="space-y-2">
+            {searching ? (
+              <div className="space-y-2">
+                {[1, 2].map(i => <div key={i} className="h-16 rounded-2xl bg-muted animate-pulse" />)}
+              </div>
+            ) : !searchResults?.filter(p => !isBlocked(p.user_id)).length ? (
+              <p className="text-sm text-muted-foreground text-center py-8" style={{ fontFamily: 'Jost, sans-serif' }}>
+                {t('messagesView.noSearchResults')}
+              </p>
+            ) : (
+              searchResults.filter(p => !isBlocked(p.user_id)).map(p => (
+                <button key={p.user_id} onClick={() => navigate(`/chat/${p.user_id}`)}
+                  className="card-premium p-4 flex items-center gap-3 w-full text-left">
+                  <div className="h-12 w-12 rounded-full overflow-hidden bg-ocean-light flex items-center justify-center flex-shrink-0">
+                    {p.photo_url ? (
+                      <img src={p.photo_url} alt={p.name || ''} className="h-full w-full object-cover" />
+                    ) : (
+                      <span className="font-display text-lg text-primary/60">{avatarFallbackInitial(p.name)}</span>
+                    )}
+                  </div>
+                  <h3 className="font-medium text-sm" style={{ fontFamily: 'Jost, sans-serif' }}>{p.name || t('messagesView.defaultUser')}</h3>
+                </button>
+              ))
+            )}
+          </div>
+        ) : (
+          <>
+            {suggestions.filter(s => !isBlocked(s.user_id) && !conversations.some(c => c.partnerId === s.user_id)).length > 0 && (
+              <div>
+                <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5" style={{ fontFamily: 'Jost, sans-serif' }}>
+                  <Sparkles className="h-3.5 w-3.5" /> {t('messagesView.suggestionsTitle')}
+                </h2>
+                <div className="flex gap-3 overflow-x-auto pb-1 -mx-4 px-4">
+                  {suggestions.filter(s => !isBlocked(s.user_id) && !conversations.some(c => c.partnerId === s.user_id)).map(s => (
+                    <button key={s.user_id} onClick={() => navigate(`/chat/${s.user_id}`)}
+                      className="flex flex-col items-center gap-1.5 flex-shrink-0 w-20 text-center">
+                      <div className="relative h-16 w-16 rounded-full overflow-hidden bg-ocean-light flex items-center justify-center border-2 border-primary/20">
+                        {s.photo_url ? (
+                          <img src={s.photo_url} alt={s.name || ''} className="h-full w-full object-cover" />
+                        ) : (
+                          <span className="font-display text-xl text-primary/60">{avatarFallbackInitial(s.name)}</span>
+                        )}
+                        <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 pill bg-primary text-white text-[10px] px-1.5 py-0 leading-4 whitespace-nowrap">
+                          {s.score}%
+                        </span>
+                      </div>
+                      <p className="text-xs truncate w-full mt-1" style={{ fontFamily: 'Jost, sans-serif' }}>{s.name || t('messagesView.defaultUser')}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            {groups.length > 0 && (
           <div>
             <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2" style={{ fontFamily: 'Jost, sans-serif' }}>
               {t('messagesView.myGroups')}
@@ -406,6 +525,8 @@ function MessagesView({ onBack }: { onBack: () => void }) {
           </div>
         )}
         </div>
+          </>
+        )}
       </div>
 
       {showCreateGroup && (
@@ -604,6 +725,7 @@ function SalonView({ salonId, onBack }: { salonId: string; onBack: () => void })
   const bottomRef = useRef<HTMLDivElement>(null);
   const salon = SALONS.find(s => s.id === salonId)!;
   const { isBlocked } = useBlockedUsers();
+  const bindLongPress = useLongPress();
   const [isRecording, setIsRecording] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -706,6 +828,14 @@ function SalonView({ salonId, onBack }: { salonId: string; onBack: () => void })
     if (userIds.length === 0) { setPeopleModalData([]); return; }
     const { data } = await supabase.from('profiles').select('user_id, name, photo_url').in('user_id', userIds);
     setPeopleModalData(data || []);
+  };
+
+  const handleDeleteMessage = async (messageId: string) => {
+    if (!user) return;
+    if (!window.confirm(t('salonView.confirmDeleteMessage'))) return;
+    const { error } = await supabase.from('salon_messages').delete().eq('id', messageId).eq('user_id', user.id);
+    if (error) { toast.error(t('salonView.deleteMessageError')); return; }
+    setMessages(prev => prev.filter(m => m.id !== messageId));
   };
 
   const sendTyping = (typing: boolean) => {
@@ -813,17 +943,20 @@ function SalonView({ salonId, onBack }: { salonId: string; onBack: () => void })
             <div key={m.id} className={`flex flex-col ${mine ? 'items-end' : 'items-start'}`}>
               <div className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
                 {m.attachment_type === 'audio' && m.attachment_url ? (
-                  <div className={`max-w-[75%] rounded-2xl px-3 py-2 ${mine ? 'bg-primary' : 'bg-secondary'}`}>
+                  <div className={`max-w-[75%] rounded-2xl px-3 py-2 ${mine ? 'bg-primary' : 'bg-secondary'}`}
+                    {...(mine ? bindLongPress(() => handleDeleteMessage(m.id)) : {})}>
                     {!mine && <p className={cn('text-xs font-semibold opacity-70 mb-0.5', mine ? '' : 'text-foreground')}>{senderNames[m.user_id] || '...'}</p>}
                     <audio controls src={m.attachment_url} className="h-9 max-w-[220px]" />
                   </div>
                 ) : m.attachment_type === 'image' && m.attachment_url ? (
-                  <a href={m.attachment_url} target="_blank" rel="noopener noreferrer" className="block max-w-[75%] rounded-2xl overflow-hidden">
+                  <a href={m.attachment_url} target="_blank" rel="noopener noreferrer" className="block max-w-[75%] rounded-2xl overflow-hidden select-none"
+                    {...(mine ? bindLongPress(() => handleDeleteMessage(m.id)) : {})}>
                     <img src={m.attachment_url} alt={t('salonView.sentPhoto')} className="max-h-64 w-auto object-cover" />
                   </a>
                 ) : (
-                  <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm ${mine ? 'bg-primary text-white' : 'bg-secondary text-foreground'}`}
-                    style={{ fontFamily: 'Jost, sans-serif' }}>
+                  <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm select-none active:opacity-70 transition-opacity ${mine ? 'bg-primary text-white' : 'bg-secondary text-foreground'}`}
+                    style={{ fontFamily: 'Jost, sans-serif' }}
+                    {...(mine ? bindLongPress(() => handleDeleteMessage(m.id)) : {})}>
                     {!mine && <p className="text-xs font-semibold opacity-70 mb-0.5">{senderNames[m.user_id] || '...'}</p>}
                     {m.content}
                   </div>
@@ -870,7 +1003,7 @@ function SalonView({ salonId, onBack }: { salonId: string; onBack: () => void })
           )}
           <input value={content} onChange={e => handleContentChange(e.target.value)} maxLength={1000}
             placeholder={t('salonView.writeInChannel', { channel: t(`salons.${salon.id}.label`).toLowerCase() })}
-            className="flex-1 px-4 py-3 rounded-full border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20"
+            className="flex-1 px-4 py-3 rounded-full border border-border bg-background text-base outline-none focus:ring-2 focus:ring-primary/20"
             style={{ fontFamily: 'Jost, sans-serif' }} />
           {content.trim() ? (
             <button type="submit" disabled={sending}

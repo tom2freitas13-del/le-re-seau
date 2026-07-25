@@ -9,6 +9,7 @@ import { MAX_PHOTO_SIZE_MB, pickAudioMimeType, uploadVoiceMessage, uploadPhoto }
 import { useMessageLikesAndReads } from '@/lib/useMessageLikesAndReads';
 import MessagePeopleModal from '@/components/MessagePeopleModal';
 import MessageLikeReadRow from '@/components/MessageLikeReadRow';
+import { useLongPress } from '@/lib/useLongPress';
 
 interface GroupMessage {
   id: string;
@@ -50,6 +51,7 @@ export default function GroupChat() {
   } = useMessageLikesAndReads('chat_group_message_likes', 'chat_group_message_reads');
   const [peopleModal, setPeopleModal] = useState<{ title: string; userIds: string[] } | null>(null);
   const [peopleModalData, setPeopleModalData] = useState<{ user_id: string; name: string | null; photo_url: string | null }[] | null>(null);
+  const bindLongPress = useLongPress();
 
   const ensureSenderName = useCallback(async (senderId: string) => {
     setSenderNames(prev => {
@@ -148,6 +150,14 @@ export default function GroupChat() {
   }, [user, groupId]);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
+
+  const handleDeleteMessage = async (messageId: string) => {
+    if (!user) return;
+    if (!window.confirm(t('groupChat.confirmDeleteMessage'))) return;
+    const { error } = await supabase.from('chat_group_messages').delete().eq('id', messageId).eq('sender_id', user.id);
+    if (error) { toast.error(t('groupChat.deleteMessageError')); return; }
+    setMessages(prev => prev.filter(m => m.id !== messageId));
+  };
 
   const openPeopleModal = async (title: string, userIds: string[]) => {
     setPeopleModal({ title, userIds });
@@ -305,17 +315,20 @@ export default function GroupChat() {
             <div key={m.id} className={`flex flex-col ${mine ? 'items-end' : 'items-start'}`}>
               <div className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
                 {m.attachment_type === 'audio' && m.attachment_url ? (
-                  <div className={`max-w-[75%] rounded-2xl px-3 py-2 ${mine ? 'bg-primary' : 'bg-secondary'}`}>
+                  <div className={`max-w-[75%] rounded-2xl px-3 py-2 ${mine ? 'bg-primary' : 'bg-secondary'}`}
+                    {...(mine ? bindLongPress(() => handleDeleteMessage(m.id)) : {})}>
                     {!mine && <p className="text-xs font-semibold opacity-70 mb-0.5">{senderNames[m.sender_id] || '...'}</p>}
                     <audio controls src={m.attachment_url} className="h-9 max-w-[220px]" />
                   </div>
                 ) : m.attachment_type === 'image' && m.attachment_url ? (
-                  <a href={m.attachment_url} target="_blank" rel="noopener noreferrer" className="block max-w-[75%] rounded-2xl overflow-hidden">
+                  <a href={m.attachment_url} target="_blank" rel="noopener noreferrer" className="block max-w-[75%] rounded-2xl overflow-hidden select-none"
+                    {...(mine ? bindLongPress(() => handleDeleteMessage(m.id)) : {})}>
                     <img src={m.attachment_url} alt={t('groupChat.sentPhoto')} className="max-h-64 w-auto object-cover" />
                   </a>
                 ) : (
-                  <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm ${mine ? 'bg-primary text-white' : 'bg-secondary text-foreground'}`}
-                    style={{ fontFamily: 'Jost, sans-serif' }}>
+                  <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm select-none active:opacity-70 transition-opacity ${mine ? 'bg-primary text-white' : 'bg-secondary text-foreground'}`}
+                    style={{ fontFamily: 'Jost, sans-serif' }}
+                    {...(mine ? bindLongPress(() => handleDeleteMessage(m.id)) : {})}>
                     {!mine && (
                       <p className="text-xs font-semibold opacity-70 mb-0.5">{senderNames[m.sender_id] || '...'}</p>
                     )}
@@ -367,7 +380,7 @@ export default function GroupChat() {
             onChange={e => handleContentChange(e.target.value)}
             placeholder={t('groupChat.messagePlaceholder')}
             maxLength={2000}
-            className="flex-1 px-4 py-3 rounded-full border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20"
+            className="flex-1 px-4 py-3 rounded-full border border-border bg-background text-base outline-none focus:ring-2 focus:ring-primary/20"
             style={{ fontFamily: 'Jost, sans-serif' }}
           />
           {content.trim() ? (

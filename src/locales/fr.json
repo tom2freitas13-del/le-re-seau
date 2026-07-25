@@ -465,8 +465,11 @@
     "title": "Messages privés",
     "newGroup": "Groupe",
     "myGroups": "Mes groupes",
-    "noConversations": "Aucune conversation. Allez dans Communauté pour échanger avec quelqu'un !",
-    "defaultUser": "Utilisateur"
+    "noConversations": "Aucune conversation. Cherche quelqu'un ci-dessus, ou lance-toi avec une suggestion !",
+    "defaultUser": "Utilisateur",
+    "searchPlaceholder": "Chercher quelqu'un à qui écrire...",
+    "noSearchResults": "Personne ne correspond à cette recherche.",
+    "suggestionsTitle": "Vous pourriez bien vous entendre"
   },
   "createGroupModal": {
     "title": "Nouveau groupe",
@@ -499,7 +502,9 @@
     "photoSendError": "Échec de l'envoi de la photo.",
     "photoContent": "📷 Photo",
     "typing_one": "{{names}} écrit...",
-    "typing_other": "{{names}} écrivent..."
+    "typing_other": "{{names}} écrivent...",
+    "confirmDeleteMessage": "Supprimer ce message ?",
+    "deleteMessageError": "Impossible de supprimer ce message."
   },
   "forumView": {
     "title": "📰 Forum",
@@ -584,7 +589,9 @@
     "likedBy": "Aimé par",
     "seenBy": "Vu par",
     "loading": "Chargement...",
-    "noOne": "Personne pour l'instant"
+    "noOne": "Personne pour l'instant",
+    "confirmDeleteMessage": "Supprimer ce message ?",
+    "deleteMessageError": "Impossible de supprimer ce message."
   },
   "chat": {
     "conversation": "Conversation",
@@ -605,7 +612,9 @@
     "voiceSendError": "Échec de l'envoi du message vocal.",
     "photoTypeError": "Merci de choisir un fichier image.",
     "photoSizeError": "L'image doit faire moins de {{max}} Mo.",
-    "photoSendError": "Échec de l'envoi de la photo."
+    "photoSendError": "Échec de l'envoi de la photo.",
+    "confirmDeleteMessage": "Supprimer ce message ?",
+    "deleteMessageError": "Impossible de supprimer ce message."
   },
   "newJob": {
     "title": "Publier une annonce",
