@@ -762,6 +762,8 @@
     "filterAll": "All",
     "nothingToReport": "Nothing to report",
     "noReportsInCategory": "No reports in this category.",
+    "reportedContentLabel": "Reported content",
+    "feedPostNoCaption": "(photo with no caption)",
     "reportedBy": "Reported by:",
     "concerns": "About:",
     "banned": "Banned",

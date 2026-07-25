@@ -762,6 +762,8 @@
     "filterAll": "Tous",
     "nothingToReport": "Rien à signaler",
     "noReportsInCategory": "Aucun signalement dans cette catégorie.",
+    "reportedContentLabel": "Contenu signalé",
+    "feedPostNoCaption": "(photo sans légende)",
     "reportedBy": "Signalé par :",
     "concerns": "Concerne :",
     "banned": "Banni",

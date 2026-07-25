@@ -33,8 +33,63 @@ export default function Admin() {
   const [reporterNames, setReporterNames] = useState<Record<string, string>>({});
   const [targetNames, setTargetNames] = useState<Record<string, string>>({});
   const [bannedStatus, setBannedStatus] = useState<Record<string, boolean>>({});
+  // BUG FIX : le panneau n'affichait jamais le contenu réellement signalé,
+  // seulement le commentaire du signaleur — un admin ne pouvait pas
+  // vérifier par lui-même de quoi il s'agissait sans quitter la page.
+  const [reportedContent, setReportedContent] = useState<Record<string, string>>({});
   const [filter, setFilter] = useState<'pending' | 'reviewed' | 'dismissed' | 'all'>('pending');
   const [loading, setLoading] = useState(true);
+
+  // Récupère un aperçu du contenu signalé, table par table selon target_type.
+  // 'profile' n'a pas besoin d'aperçu, le nom de la personne suffit.
+  const loadReportedContent = useCallback(async (targetsByType: Record<string, string[]>) => {
+    const content: Record<string, string> = {};
+    const fetchers: PromiseLike<void>[] = [];
+
+    if (targetsByType.message?.length) {
+      fetchers.push(supabase.from('messages').select('id, content').in('id', targetsByType.message)
+        .then(({ data }) => (data || []).forEach(r => { content[r.id] = r.content; })));
+    }
+    if (targetsByType.group_message?.length) {
+      fetchers.push(supabase.from('chat_group_messages').select('id, content').in('id', targetsByType.group_message)
+        .then(({ data }) => (data || []).forEach(r => { content[r.id] = r.content; })));
+    }
+    if (targetsByType.salon_message?.length) {
+      fetchers.push(supabase.from('salon_messages').select('id, content').in('id', targetsByType.salon_message)
+        .then(({ data }) => (data || []).forEach(r => { content[r.id] = r.content; })));
+    }
+    if (targetsByType.forum_post?.length) {
+      fetchers.push(supabase.from('forum_posts').select('id, content').in('id', targetsByType.forum_post)
+        .then(({ data }) => (data || []).forEach(r => { content[r.id] = r.content; })));
+    }
+    if (targetsByType.forum_comment?.length) {
+      fetchers.push(supabase.from('forum_comments').select('id, content').in('id', targetsByType.forum_comment)
+        .then(({ data }) => (data || []).forEach(r => { content[r.id] = r.content; })));
+    }
+    if (targetsByType.job_offer?.length) {
+      fetchers.push(supabase.from('job_offers').select('id, title').in('id', targetsByType.job_offer)
+        .then(({ data }) => (data || []).forEach(r => { content[r.id] = r.title; })));
+    }
+    if (targetsByType.job_request?.length) {
+      fetchers.push(supabase.from('job_requests').select('id, title').in('id', targetsByType.job_request)
+        .then(({ data }) => (data || []).forEach(r => { content[r.id] = r.title; })));
+    }
+    if (targetsByType.activity?.length) {
+      fetchers.push(supabase.from('activities').select('id, title').in('id', targetsByType.activity)
+        .then(({ data }) => (data || []).forEach(r => { content[r.id] = r.title; })));
+    }
+    if (targetsByType.feed_post?.length) {
+      fetchers.push(supabase.from('feed_posts').select('id, caption').in('id', targetsByType.feed_post)
+        .then(({ data }) => (data || []).forEach(r => { content[r.id] = r.caption || t('admin.feedPostNoCaption'); })));
+    }
+    if (targetsByType.feed_comment?.length) {
+      fetchers.push(supabase.from('feed_comments').select('id, content').in('id', targetsByType.feed_comment)
+        .then(({ data }) => (data || []).forEach(r => { content[r.id] = r.content; })));
+    }
+
+    await Promise.all(fetchers);
+    setReportedContent(content);
+  }, [t]);
 
   const loadReports = useCallback(async () => {
     setLoading(true);
@@ -56,9 +111,13 @@ export default function Admin() {
         setTargetNames(names);
         setBannedStatus(banned);
       }
+
+      const targetsByType: Record<string, string[]> = {};
+      data.forEach(r => { (targetsByType[r.target_type] ||= []).push(r.target_id); });
+      loadReportedContent(targetsByType);
     }
     setLoading(false);
-  }, [filter, t]);
+  }, [filter, t, loadReportedContent]);
 
   useEffect(() => {
     if (authLoading) return;
@@ -150,6 +209,17 @@ export default function Admin() {
                       {new Date(report.created_at).toLocaleDateString()}
                     </span>
                   </div>
+
+                  {reportedContent[report.target_id] && (
+                    <div className="rounded-xl bg-secondary/60 px-3 py-2.5">
+                      <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1" style={{ fontFamily: 'Jost, sans-serif' }}>
+                        {t('admin.reportedContentLabel')}
+                      </p>
+                      <p className="text-sm" style={{ fontFamily: 'Jost, sans-serif', lineHeight: 1.6 }}>
+                        {reportedContent[report.target_id]}
+                      </p>
+                    </div>
+                  )}
 
                   {report.details && (
                     <p className="text-sm text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif', lineHeight: 1.6 }}>
