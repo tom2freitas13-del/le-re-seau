@@ -23,6 +23,9 @@ export default function Auth() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  // Fait clignoter le bouton « S'inscrire » quand on tente de se connecter
+  // avec un email qui n'a pas de compte.
+  const [signupBlink, setSignupBlink] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -75,7 +78,27 @@ export default function Auth() {
         setMode('login');
       } else if (mode === 'login') {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+        if (error) {
+          // Supabase renvoie la même erreur pour "mauvais mot de passe" et
+          // "compte inexistant" (anti-énumération) — on distingue les deux
+          // via la fonction SQL email_exists pour guider clairement.
+          if (error.message.toLowerCase().includes('invalid login credentials')) {
+            const { data: exists } = await supabase.rpc('email_exists', { check_email: email });
+            if (exists === false) {
+              toast.error(t('auth.noAccountForEmail'));
+              setSignupBlink(true);
+              setTimeout(() => setSignupBlink(false), 6000);
+            } else {
+              toast.error(t('auth.wrongPassword'));
+            }
+            return;
+          }
+          if (error.message.toLowerCase().includes('email not confirmed')) {
+            toast.error(t('auth.emailNotConfirmed'));
+            return;
+          }
+          throw error;
+        }
         toast.success(t('auth.loginSuccess'));
         // Première connexion d'un compte tout juste créé (ex: retour après
         // la confirmation d'email) → écran de bienvenue plutôt que /social.
@@ -114,7 +137,15 @@ export default function Auth() {
         }
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : t('auth.genericError'));
+      // Toujours un message en français — les messages bruts de Supabase
+      // sont en anglais. Le détail reste en console pour le débogage.
+      console.error('Auth error:', error);
+      const msg = error instanceof Error ? error.message.toLowerCase() : '';
+      if (msg.includes('rate limit') || msg.includes('for security purposes')) {
+        toast.error(t('auth.rateLimited'));
+      } else {
+        toast.error(t('auth.genericError'));
+      }
     } finally {
       setLoading(false);
     }
@@ -259,11 +290,15 @@ export default function Auth() {
               {t('auth.backToLogin')}
             </button>
           ) : (
-            <button onClick={() => setMode(isLogin ? 'signup' : 'login')}
+            <button onClick={() => { setSignupBlink(false); setMode(isLogin ? 'signup' : 'login'); }}
               className="mt-4 w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors"
               style={{ fontFamily: 'Jost, sans-serif' }}>
               {isLogin ? t('auth.noAccount') : t('auth.hasAccount')}
-              <span className="text-primary font-medium">{isLogin ? t('auth.signup') : t('auth.login')}</span>
+              <span className={signupBlink
+                ? 'inline-block rounded-full bg-primary px-3 py-1 text-white font-semibold animate-pulse [animation-duration:0.9s]'
+                : 'text-primary font-medium'}>
+                {isLogin ? t('auth.signup') : t('auth.login')}
+              </span>
             </button>
           )}
         </div>
