@@ -8,7 +8,22 @@
 // être exposée côté client — c'est pour ça qu'elle passe par une
 // Edge Function plutôt que d'être appelée directement depuis le site.
 
-import { createClient } from 'npm:@supabase/supabase-js@2';
+import { createClient, type SupabaseClient } from 'npm:@supabase/supabase-js@2';
+
+// BUG FIX (obligation RGPD) : ne nettoyait que 2 des 5 buckets réellement
+// utilisés — les messages vocaux, les photos partagées en message privé et
+// les photos du fil restaient orphelines dans le Storage après suppression
+// du compte. Tous suivent la même convention de dossier userId/fichier.
+const USER_STORAGE_BUCKETS = ['avatars', 'activity-photos', 'chat-audio', 'chat-images', 'feed-photos'];
+
+async function deleteUserFiles(adminClient: SupabaseClient, userId: string) {
+  await Promise.all(USER_STORAGE_BUCKETS.map(async (bucket) => {
+    const { data: files } = await adminClient.storage.from(bucket).list(userId);
+    if (files?.length) {
+      await adminClient.storage.from(bucket).remove(files.map(f => `${userId}/${f.name}`));
+    }
+  }));
+}
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -49,16 +64,9 @@ Deno.serve(async (req: Request) => {
     // Client "admin" avec la clé service_role, seul habilité à supprimer un compte.
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
-    // Supprime les photos de l'utilisateur dans le Storage (avatars + activités)
+    // Supprime les fichiers de l'utilisateur dans tous les buckets Storage
     // avant de supprimer le compte, pour ne pas laisser de fichiers orphelins.
-    const { data: avatarFiles } = await adminClient.storage.from('avatars').list(userId);
-    if (avatarFiles?.length) {
-      await adminClient.storage.from('avatars').remove(avatarFiles.map(f => `${userId}/${f.name}`));
-    }
-    const { data: activityFiles } = await adminClient.storage.from('activity-photos').list(userId);
-    if (activityFiles?.length) {
-      await adminClient.storage.from('activity-photos').remove(activityFiles.map(f => `${userId}/${f.name}`));
-    }
+    await deleteUserFiles(adminClient, userId);
 
     // Supprime le compte d'authentification. Toutes les tables liées
     // (profiles, messages, forum_posts, reports, blocked_users, etc.)
