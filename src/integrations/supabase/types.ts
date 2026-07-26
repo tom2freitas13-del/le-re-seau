@@ -28,6 +28,7 @@ export interface Database {
           language: 'fr' | 'en';
           referred_by: string | null;
           referral_count: number;
+          city: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -49,6 +50,7 @@ export interface Database {
           language?: 'fr' | 'en';
           referred_by?: string | null;
           referral_count?: number;
+          city?: string | null;
           created_at?: string;
           updated_at?: string;
         };

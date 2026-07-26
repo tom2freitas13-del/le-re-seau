@@ -4,10 +4,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
-import { Camera, Instagram, Linkedin, Check, Settings as SettingsIcon } from 'lucide-react';
+import { Camera, Instagram, Linkedin, Check, Settings as SettingsIcon, MapPin } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import { cn } from '@/lib/utils';
-import { STATUS_OPTIONS, AVAILABILITY_OPTIONS, INTEREST_OPTIONS, MIN_AGE, MAX_AGE } from '@/lib/constants';
+import { STATUS_OPTIONS, AVAILABILITY_OPTIONS, INTEREST_OPTIONS, MIN_AGE, MAX_AGE, ILE_DE_RE_CITIES } from '@/lib/constants';
 
 const BIO_MAX = 300;
 const MAX_PHOTO_SIZE_MB = 5;
@@ -31,6 +31,7 @@ export default function Profile() {
   const [bio, setBio] = useState('');
   const [status, setStatus] = useState('');
   const [availability, setAvailability] = useState('');
+  const [city, setCity] = useState('');
   const [interests, setInterests] = useState<string[]>([]);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [instagram, setInstagram] = useState('');
@@ -45,6 +46,7 @@ export default function Profile() {
       setBio(data.bio || '');
       setStatus(data.status || '');
       setAvailability(data.availability || '');
+      setCity(data.city || '');
       setInterests(data.interests || []);
       setPhotoUrl(data.photo_url);
       setInstagram(data.instagram || '');
@@ -116,6 +118,7 @@ export default function Profile() {
       photo_url: photoUrl,
       status: (status || null) as 'resident' | 'frequent' | 'vacation' | null,
       availability: (availability || null) as 'weekend' | 'week' | 'summer' | 'year' | null,
+      city: city || null,
       interests,
       instagram: instagram.trim() || null,
       linkedin: linkedin.trim() || null,
@@ -139,7 +142,8 @@ export default function Profile() {
     { key: 'interests', done: interests.length > 0, label: t('profile.completionInterests') },
     { key: 'status', done: status.length > 0, label: t('profile.completionStatus') },
     { key: 'availability', done: availability.length > 0, label: t('profile.completionAvailability') },
-  ], [name, photoUrl, bio, interests, status, availability, t]);
+    { key: 'city', done: city.length > 0, label: t('profile.completionCity') },
+  ], [name, photoUrl, bio, interests, status, availability, city, t]);
   const completionPercent = Math.round((profileSteps.filter(s => s.done).length / profileSteps.length) * 100);
 
   return (
@@ -320,6 +324,30 @@ export default function Profile() {
                 )}
                 style={{ fontFamily: 'Jost, sans-serif' }}>
                 {t(`availabilityOptions.${opt.value}`)}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Ville de résidence */}
+        <div className="card-premium p-5">
+          <SectionTitle>
+            <span className="inline-flex items-center gap-1.5"><MapPin className="h-4 w-4 text-primary" /> {t('profile.cityTitle')}</span>
+          </SectionTitle>
+          <p className="text-xs text-muted-foreground mb-3" style={{ fontFamily: 'Jost, sans-serif' }}>
+            {t('profile.cityDesc')}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {ILE_DE_RE_CITIES.map(c => (
+              <button key={c} onClick={() => setCity(c === city ? '' : c)}
+                className={cn(
+                  'rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 border',
+                  city === c
+                    ? 'border-primary bg-primary text-white shadow-md shadow-primary/20'
+                    : 'border-border bg-background hover:bg-secondary text-foreground'
+                )}
+                style={{ fontFamily: 'Jost, sans-serif' }}>
+                {c}
               </button>
             ))}
           </div>

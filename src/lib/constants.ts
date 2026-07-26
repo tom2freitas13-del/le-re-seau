@@ -66,6 +66,23 @@ export const ACTIVITY_CATEGORIES = [
 export const MIN_AGE = 15;
 export const MAX_AGE = 120;
 
+// Les 10 communes de l'Île de Ré — noms exacts utilisés tels quels (pas de
+// clé i18n, ce sont des noms propres) pour repérer une activité "proche de
+// chez soi" : on cherche si ce nom apparaît dans l'adresse de l'activité
+// (ex: "Rue de la Plage, 17590 Ars-en-Ré").
+export const ILE_DE_RE_CITIES = [
+  'Rivedoux-Plage',
+  'La Flotte',
+  'Sainte-Marie-de-Ré',
+  'Saint-Martin-de-Ré',
+  'Le Bois-Plage-en-Ré',
+  'La Couarde-sur-Mer',
+  'Ars-en-Ré',
+  'Loix',
+  'Les Portes-en-Ré',
+  'Saint-Clément-des-Baleines',
+] as const;
+
 // Nombre d'amis invités (referral_count) pour débloquer le badge Ambassadeur
 export const AMBASSADOR_REFERRAL_THRESHOLD = 3;
 
