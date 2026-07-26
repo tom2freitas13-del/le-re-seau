@@ -5,7 +5,7 @@ import ProfileCard from '@/components/ProfileCard';
 import BottomNav from '@/components/BottomNav';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Users, Sparkles, Compass, Clock, Search } from 'lucide-react';
+import { Users, Sparkles, MapPin, Wifi, Search } from 'lucide-react';
 import { useBlockedUsers } from '@/lib/useBlockedUsers';
 import { usePresence } from '@/lib/presence-context';
 import StoriesBar from '@/components/StoriesBar';
@@ -21,6 +21,7 @@ interface Profile {
   interests: string[] | null;
   status: string | null;
   availability: string | null;
+  city?: string | null;
   instagram?: string | null;
   linkedin?: string | null;
   is_admin?: boolean | null;
@@ -28,8 +29,8 @@ interface Profile {
 
 const tabs = [
   { id: 'suggestions', labelKey: 'social.tabSuggestions', icon: Sparkles },
-  { id: 'discover', labelKey: 'social.tabDiscover', icon: Compass },
-  { id: 'nearby', labelKey: 'social.tabNearby', icon: Clock },
+  { id: 'proximity', labelKey: 'social.tabProximity', icon: MapPin },
+  { id: 'online', labelKey: 'social.tabOnline', icon: Wifi },
 ];
 
 // BUG FIX (#15) : pagination simple pour éviter de charger des centaines
@@ -127,15 +128,20 @@ export default function Social() {
     .filter(({ score }) => score > 0)
     .sort((a, b) => onlineFirst(a, b) || b.score - a.score);
 
-  const nearby = withScores
-    .filter(({ profile }) => profile.availability && myProfile?.availability && profile.availability === myProfile.availability)
-    .sort(onlineFirst);
+  // "À proximité" = même ville de résidence (profile.city, rempli dans
+  // Profil) plutôt qu'une notion de disponibilité — l'île ne fait que 30km,
+  // la commune suffit à repérer les gens du coin.
+  const proximity = withScores
+    .filter(({ profile }) => !!profile.city && profile.city === myProfile?.city)
+    .sort((a, b) => b.score - a.score);
 
-  const discover = [...withScores].sort(onlineFirst);
+  const online = withScores
+    .filter(({ profile }) => onlineUserIds.has(profile.user_id))
+    .sort((a, b) => b.score - a.score);
 
   const currentList = activeTab === 'suggestions' ? suggestions
-    : activeTab === 'nearby' ? nearby
-    : discover;
+    : activeTab === 'proximity' ? proximity
+    : online;
 
   const isSearching = searchResults !== null;
   const displayedList = isSearching
@@ -217,9 +223,9 @@ export default function Social() {
                 ? t('social.noResultsFor', { query: search.trim() })
                 : activeTab === 'suggestions'
                 ? t('social.emptySuggestions')
-                : activeTab === 'nearby'
-                ? t('social.emptyNearby')
-                : t('social.emptyDiscover')}
+                : activeTab === 'proximity'
+                ? (myProfile?.city ? t('social.emptyProximity') : t('social.emptyProximityNoCity'))
+                : t('social.emptyOnline')}
             </p>
           </div>
         ) : (
@@ -237,7 +243,7 @@ export default function Social() {
                 <ProfileCard key={profile.id} profile={profile} matchScore={score} />
               ))}
             </div>
-            {!isSearching && activeTab === 'discover' && hasMore && (
+            {!isSearching && hasMore && (
               <button onClick={loadMore} className="btn-ghost w-full mt-4">
                 {t('social.loadMore')}
               </button>

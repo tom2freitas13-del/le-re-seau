@@ -8,6 +8,7 @@ import { Camera, Instagram, Linkedin, Check, Settings as SettingsIcon, MapPin } 
 import BottomNav from '@/components/BottomNav';
 import { cn } from '@/lib/utils';
 import { STATUS_OPTIONS, AVAILABILITY_OPTIONS, INTEREST_OPTIONS, MIN_AGE, MAX_AGE, ILE_DE_RE_CITIES } from '@/lib/constants';
+import { usePendingReportsCount } from '@/lib/usePendingReportsCount';
 
 const BIO_MAX = 300;
 const MAX_PHOTO_SIZE_MB = 5;
@@ -23,6 +24,7 @@ export default function Profile() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const pendingReports = usePendingReportsCount();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [name, setName] = useState('');
@@ -153,8 +155,13 @@ export default function Profile() {
         <div className="max-w-lg mx-auto px-4 py-4 flex items-center justify-between">
           <h1 className="font-display text-2xl font-semibold">{t('profile.title')}</h1>
           <Link to="/settings" title={t('settings.title')}
-            className="h-10 w-10 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
+            className="relative h-10 w-10 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
             <SettingsIcon className="h-5 w-5" />
+            {pendingReports > 0 && (
+              <span className="absolute top-1 right-1 h-4 min-w-[16px] px-1 rounded-full bg-red-500 text-white text-[9px] font-semibold flex items-center justify-center">
+                {pendingReports > 9 ? '9+' : pendingReports}
+              </span>
+            )}
           </Link>
         </div>
       </div>

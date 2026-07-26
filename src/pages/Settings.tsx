@@ -15,6 +15,7 @@ import { setLanguage } from '@/lib/i18n';
 import { buildReferralLink } from '@/lib/referral';
 import { shareToWhatsApp } from '@/lib/share';
 import { translateAuthError } from '@/lib/authErrors';
+import { usePendingReportsCount } from '@/lib/usePendingReportsCount';
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return <h3 className="font-display text-xl font-semibold mb-3">{children}</h3>;
@@ -27,7 +28,7 @@ export default function Settings() {
   const { t, i18n } = useTranslation();
   const { user, signOut, isAdmin } = useAuth();
   const navigate = useNavigate();
-  const [pendingReports, setPendingReports] = useState(0);
+  const pendingReports = usePendingReportsCount();
   const [pushPermission, setPushPermission] = useState<NotificationPermission | 'unsupported'>('default');
   const [pushSubscribed, setPushSubscribed] = useState(false);
   const [pushLoading, setPushLoading] = useState(false);
@@ -54,20 +55,6 @@ export default function Settings() {
   }, [user]);
 
   useEffect(() => { loadReferralCount(); }, [loadReferralCount]);
-
-  useEffect(() => {
-    if (!isAdmin) return;
-    const loadPendingReports = async () => {
-      const { count } = await supabase.from('reports').select('*', { count: 'exact', head: true }).eq('status', 'pending');
-      setPendingReports(count || 0);
-    };
-    loadPendingReports();
-    const channel = supabase
-      .channel('settings-pending-reports')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'reports' }, loadPendingReports)
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [isAdmin]);
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
