@@ -19,6 +19,7 @@ import { useMessageLikesAndReads } from '@/lib/useMessageLikesAndReads';
 import MessagePeopleModal from '@/components/MessagePeopleModal';
 import MessageLikeReadRow from '@/components/MessageLikeReadRow';
 import { useLongPress } from '@/lib/useLongPress';
+import MiniProfileModal from '@/components/MiniProfileModal';
 
 interface SalonMessage {
   id: string;
@@ -1048,6 +1049,9 @@ function ForumView({ onBack }: { onBack: () => void }) {
   const [posts, setPosts] = useState<ForumPost[]>([]);
   const [authorNames, setAuthorNames] = useState<Record<string, string>>({});
   const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
+  const [likesByPost, setLikesByPost] = useState<Record<string, string[]>>({});
+  const [likesModalPostId, setLikesModalPostId] = useState<string | null>(null);
+  const [profileModalUserId, setProfileModalUserId] = useState<string | null>(null);
   const [myLikes, setMyLikes] = useState<Set<string>>(new Set());
   const [commentCounts, setCommentCounts] = useState<Record<string, number>>({});
   const [newPost, setNewPost] = useState('');
@@ -1086,12 +1090,30 @@ function ForumView({ onBack }: { onBack: () => void }) {
       const { data: likes } = await supabase.from('forum_likes').select('post_id, user_id').in('post_id', postIds);
       const counts: Record<string, number> = {};
       const mine = new Set<string>();
+      const byPost: Record<string, string[]> = {};
       (likes || []).forEach(l => {
         counts[l.post_id] = (counts[l.post_id] || 0) + 1;
         if (l.user_id === user?.id) mine.add(l.post_id);
+        byPost[l.post_id] = [...(byPost[l.post_id] || []), l.user_id];
       });
       setLikeCounts(counts);
       setMyLikes(mine);
+      setLikesByPost(byPost);
+
+      // Les noms des auteurs de posts sont déjà chargés ci-dessus, mais pas
+      // forcément ceux de tous les likers (une personne peut aimer un post
+      // sans jamais avoir posté) — complète la map pour la liste "a aimé".
+      const likerIds = Array.from(new Set((likes || []).map(l => l.user_id))).filter(id => !authorIds.includes(id));
+      if (likerIds.length) {
+        const { data: likerProfiles } = await supabase.from('profiles').select('user_id, name').in('user_id', likerIds);
+        if (likerProfiles?.length) {
+          setAuthorNames(prev => {
+            const merged = { ...prev };
+            likerProfiles.forEach(p => { merged[p.user_id] = p.name || t('forumView.defaultMember'); });
+            return merged;
+          });
+        }
+      }
 
       const { data: comments } = await supabase.from('forum_comments').select('post_id').in('post_id', postIds);
       const cCounts: Record<string, number> = {};
@@ -1240,12 +1262,12 @@ function ForumView({ onBack }: { onBack: () => void }) {
         {posts.filter(post => !isBlocked(post.author_id)).map(post => (
           <div key={post.id} className="card-premium p-4 space-y-2">
             <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
+              <button onClick={() => setProfileModalUserId(post.author_id)} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                 <div className="h-8 w-8 rounded-full bg-ocean-light flex items-center justify-center text-xs font-semibold text-primary/70 flex-shrink-0">
                   {avatarFallbackInitial(authorNames[post.author_id])}
                 </div>
                 <span className="text-sm font-medium" style={{ fontFamily: 'Jost, sans-serif' }}>{authorNames[post.author_id] || t('forumView.defaultMember')}</span>
-              </div>
+              </button>
               {post.author_id !== user?.id && (
                 <ReportButton targetType="forum_post" targetId={post.id} targetUserId={post.author_id} className="text-muted-foreground hover:text-destructive transition-colors p-1 rounded-lg hover:bg-destructive/10" />
               )}
@@ -1260,10 +1282,16 @@ function ForumView({ onBack }: { onBack: () => void }) {
               <audio controls src={post.attachment_url} className="h-9 max-w-full" />
             )}
             <div className="flex items-center gap-4 pt-1">
-              <button onClick={() => toggleLike(post.id)} className={cn('flex items-center gap-1.5 text-xs', myLikes.has(post.id) ? 'text-red-500' : 'text-muted-foreground')}>
-                <Heart className={cn('h-4 w-4', myLikes.has(post.id) && 'fill-red-500')} />
-                {likeCounts[post.id] || 0}
-              </button>
+              <div className="flex items-center gap-1">
+                <button onClick={() => toggleLike(post.id)} className={cn('flex items-center p-1 -m-1', myLikes.has(post.id) ? 'text-red-500' : 'text-muted-foreground')}>
+                  <Heart className={cn('h-4 w-4', myLikes.has(post.id) && 'fill-red-500')} />
+                </button>
+                <button
+                  onClick={() => (likeCounts[post.id] || 0) > 0 && setLikesModalPostId(post.id)}
+                  className={cn('text-xs', (likeCounts[post.id] || 0) > 0 ? 'text-muted-foreground hover:text-foreground hover:underline' : 'text-muted-foreground')}>
+                  {likeCounts[post.id] || 0}
+                </button>
+              </div>
               <button onClick={() => setOpenComments(openComments === post.id ? null : post.id)} className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <MessageSquare className="h-4 w-4" />
                 {commentCounts[post.id] || 0}
@@ -1275,6 +1303,28 @@ function ForumView({ onBack }: { onBack: () => void }) {
           </div>
         ))}
       </div>
+
+      {likesModalPostId && (
+        <div className="fixed inset-0 z-[100] bg-black/50 flex items-center justify-center px-4" onClick={() => setLikesModalPostId(null)}>
+          <div className="bg-card rounded-3xl p-5 w-full max-w-xs max-h-[70vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <h3 className="font-display text-base font-semibold mb-2 flex items-center gap-1.5">
+              <Heart className="h-4 w-4 text-red-500 fill-red-500" /> {t('forumView.likedBy')}
+            </h3>
+            <div className="space-y-1">
+              {(likesByPost[likesModalPostId] || []).map(uid => (
+                <button key={uid} onClick={() => { setLikesModalPostId(null); setProfileModalUserId(uid); }}
+                  className="w-full text-left px-2 py-2 rounded-xl hover:bg-secondary transition-colors text-sm"
+                  style={{ fontFamily: 'Jost, sans-serif' }}>
+                  {authorNames[uid] || t('forumView.defaultMember')}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {profileModalUserId && <MiniProfileModal userId={profileModalUserId} onClose={() => setProfileModalUserId(null)} />}
+
       <BottomNav />
     </div>
   );
@@ -1286,6 +1336,7 @@ function CommentsPanel({ postId, onCommentAdded }: { postId: string; onCommentAd
   const [comments, setComments] = useState<{ id: string; content: string; author_id: string }[]>([]);
   const [names, setNames] = useState<Record<string, string>>({});
   const [text, setText] = useState('');
+  const [profileModalUserId, setProfileModalUserId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     const { data } = await supabase.from('forum_comments').select('id, content, author_id').eq('post_id', postId).order('created_at', { ascending: true });
@@ -1316,7 +1367,10 @@ function CommentsPanel({ postId, onCommentAdded }: { postId: string; onCommentAd
       {comments.map(c => (
         <div key={c.id} className="text-xs flex items-start justify-between gap-2" style={{ fontFamily: 'Jost, sans-serif' }}>
           <p>
-            <span className="font-semibold">{names[c.author_id] || t('commentsPanel.defaultMember')} : </span>
+            <button onClick={() => setProfileModalUserId(c.author_id)} className="font-semibold hover:underline">
+              {names[c.author_id] || t('commentsPanel.defaultMember')}
+            </button>
+            {' : '}
             <span className="text-muted-foreground">{c.content}</span>
           </p>
           {c.author_id !== user?.id && (
@@ -1335,6 +1389,8 @@ function CommentsPanel({ postId, onCommentAdded }: { postId: string; onCommentAd
           style={{ fontFamily: 'Jost, sans-serif' }} />
         <button onClick={submit} disabled={!text.trim()} className="text-xs text-primary font-medium disabled:opacity-50">{t('commentsPanel.send')}</button>
       </div>
+
+      {profileModalUserId && <MiniProfileModal userId={profileModalUserId} onClose={() => setProfileModalUserId(null)} />}
     </div>
   );
 }

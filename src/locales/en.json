@@ -527,7 +527,8 @@
     "voiceSendError": "Couldn't send the voice message.",
     "photoTypeError": "Please choose an image file.",
     "photoSizeError": "The image must be under {{max}} MB.",
-    "photoSendError": "Couldn't send the photo."
+    "photoSendError": "Couldn't send the photo.",
+    "likedBy": "Liked by"
   },
   "commentsPanel": {
     "defaultMember": "Member",
@@ -807,6 +808,10 @@
   "profileDetail": {
     "matchPercent": "⭐ {{score}}% match with your interests",
     "interestsTitle": "Interests"
+  },
+  "miniProfile": {
+    "loading": "Loading...",
+    "notFound": "Profile not found."
   },
   "profileCard": {
     "admin": "Admin",
