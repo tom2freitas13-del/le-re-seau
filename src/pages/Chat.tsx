@@ -7,6 +7,7 @@ import { ArrowLeft, Send, MoreVertical, Check, CheckCheck, Mic, Square, SmilePlu
 import { AdminBadge } from '@/components/ProfileCard';
 import { avatarFallbackInitial, formatLastSeen } from '@/lib/constants';
 import { ReportModal, ReportButton } from '@/components/ReportModal';
+import ConfirmDialog from '@/components/ConfirmDialog';
 import { useBlockedUsers } from '@/lib/useBlockedUsers';
 import { usePresence } from '@/lib/presence-context';
 import { toast } from 'sonner';
@@ -58,6 +59,8 @@ export default function Chat() {
   const [reactions, setReactions] = useState<Reaction[]>([]);
   const [pickerFor, setPickerFor] = useState<string | null>(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [deletingMessage, setDeletingMessage] = useState(false);
   const photoInputRef = useRef<HTMLInputElement>(null);
 
   const loadPartner = useCallback(async () => {
@@ -260,11 +263,13 @@ export default function Chat() {
 
   const handleDeleteMessage = async (messageId: string) => {
     if (!user) return;
-    if (!window.confirm(t('chat.confirmDeleteMessage'))) return;
+    setDeletingMessage(true);
     // Pas de filtre .eq('sender_id', ...) ici : un admin doit pouvoir
     // supprimer le message de quelqu'un d'autre (modération). La policy RLS
     // reste la vraie barrière de sécurité (auteur ou admin uniquement).
     const { error } = await supabase.from('messages').delete().eq('id', messageId);
+    setDeletingMessage(false);
+    setConfirmDeleteId(null);
     if (error) { toast.error(t('chat.deleteMessageError')); return; }
     setMessages(prev => prev.filter(m => m.id !== messageId));
   };
@@ -332,6 +337,15 @@ export default function Chat() {
         <ReportModal targetType="profile" targetId={partnerId} targetUserId={partnerId} onClose={() => setReportOpen(false)} />
       )}
 
+      {confirmDeleteId && (
+        <ConfirmDialog
+          message={t('chat.confirmDeleteMessage')}
+          confirming={deletingMessage}
+          onCancel={() => setConfirmDeleteId(null)}
+          onConfirm={() => handleDeleteMessage(confirmDeleteId)}
+        />
+      )}
+
       {blocked ? (
         <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
           <p className="text-4xl mb-3">🚫</p>
@@ -353,18 +367,18 @@ export default function Chat() {
                   <div className={`group flex items-end gap-1.5 ${mine ? 'flex-row-reverse' : 'flex-row'}`}>
                     {m.attachment_type === 'audio' && m.attachment_url ? (
                       <div className={`max-w-[75%] rounded-2xl px-3 py-2 ${mine ? 'bg-primary' : 'bg-secondary'}`}
-                        {...((mine || isAdmin) ? bindLongPress(() => handleDeleteMessage(m.id)) : {})}>
+                        {...((mine || isAdmin) ? bindLongPress(() => setConfirmDeleteId(m.id)) : {})}>
                         <audio controls src={m.attachment_url} className="h-9 max-w-[220px]" />
                       </div>
                     ) : m.attachment_type === 'image' && m.attachment_url ? (
                       <a href={m.attachment_url} target="_blank" rel="noopener noreferrer" className="block max-w-[75%] rounded-2xl overflow-hidden select-none"
-                        {...((mine || isAdmin) ? bindLongPress(() => handleDeleteMessage(m.id)) : {})}>
+                        {...((mine || isAdmin) ? bindLongPress(() => setConfirmDeleteId(m.id)) : {})}>
                         <img src={m.attachment_url} alt={t('chat.sentPhoto')} className="max-h-64 w-auto object-cover" />
                       </a>
                     ) : (
                       <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm select-none active:opacity-70 transition-opacity ${mine ? 'bg-primary text-white' : 'bg-secondary text-foreground'}`}
                         style={{ fontFamily: 'Jost, sans-serif' }}
-                        {...((mine || isAdmin) ? bindLongPress(() => handleDeleteMessage(m.id)) : {})}>
+                        {...((mine || isAdmin) ? bindLongPress(() => setConfirmDeleteId(m.id)) : {})}>
                         {m.content}
                       </div>
                     )}

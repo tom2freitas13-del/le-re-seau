@@ -555,6 +555,7 @@
     "photoTypeError": "Merci de choisir un fichier image.",
     "photoSizeError": "L'image doit faire moins de {{max}} Mo.",
     "photoSendError": "Échec de l'envoi de la photo.",
+    "confirmDeletePost": "Supprimer cette photo ?",
     "deleteError": "Impossible de supprimer cette photo.",
     "likeCount_one": "{{count}} j'aime",
     "likeCount_other": "{{count}} j'aime",
@@ -697,6 +698,7 @@
     "reviewError": "Impossible d'envoyer l'avis.",
     "noReviews": "Aucun avis pour l'instant. Soyez le premier !",
     "deleteModeration": "Supprimer cet avis (modération)",
+    "confirmDelete": "Supprimer cet avis ?",
     "deleteSuccess": "Avis supprimé.",
     "deleteError": "Impossible de supprimer l'avis."
   },

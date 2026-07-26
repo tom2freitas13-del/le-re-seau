@@ -555,6 +555,7 @@
     "photoTypeError": "Please choose an image file.",
     "photoSizeError": "The image must be under {{max}} MB.",
     "photoSendError": "Failed to upload the photo.",
+    "confirmDeletePost": "Delete this photo?",
     "deleteError": "Couldn't delete this photo.",
     "likeCount_one": "{{count}} like",
     "likeCount_other": "{{count}} likes",
@@ -697,6 +698,7 @@
     "reviewError": "Couldn't send the review.",
     "noReviews": "No reviews yet. Be the first!",
     "deleteModeration": "Delete this review (moderation)",
+    "confirmDelete": "Delete this review?",
     "deleteSuccess": "Review deleted.",
     "deleteError": "Couldn't delete the review."
   },

@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/auth-context';
 import { toast } from 'sonner';
 import { avatarFallbackInitial } from '@/lib/constants';
 import { cn } from '@/lib/utils';
+import ConfirmDialog from '@/components/ConfirmDialog';
 
 interface Poi {
   id: string;
@@ -67,6 +68,7 @@ export default function PoiDetailModal({ poi, onClose }: PoiDetailModalProps) {
   const { user, isAdmin } = useAuth();
   const [reviews, setReviews] = useState<Review[] | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [myRating, setMyRating] = useState(0);
   const [myComment, setMyComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -106,6 +108,7 @@ export default function PoiDetailModal({ poi, onClose }: PoiDetailModalProps) {
     setDeletingId(reviewId);
     const { error } = await supabase.from('poi_reviews').delete().eq('id', reviewId);
     setDeletingId(null);
+    setConfirmDeleteId(null);
     if (error) { toast.error(t('poiDetail.deleteError')); return; }
     toast.success(t('poiDetail.deleteSuccess'));
     loadReviews();
@@ -216,7 +219,7 @@ export default function PoiDetailModal({ poi, onClose }: PoiDetailModalProps) {
                     )}
                   </div>
                   {isAdmin && (
-                    <button onClick={() => handleDeleteReview(r.id)} disabled={deletingId === r.id}
+                    <button onClick={() => setConfirmDeleteId(r.id)} disabled={deletingId === r.id}
                       title={t('poiDetail.deleteModeration')}
                       className="text-muted-foreground hover:text-destructive transition-colors flex-shrink-0 disabled:opacity-50">
                       <Trash2 className="h-4 w-4" />
@@ -228,6 +231,15 @@ export default function PoiDetailModal({ poi, onClose }: PoiDetailModalProps) {
           </div>
         </div>
       </div>
+
+      {confirmDeleteId && (
+        <ConfirmDialog
+          message={t('poiDetail.confirmDelete')}
+          confirming={deletingId === confirmDeleteId}
+          onCancel={() => setConfirmDeleteId(null)}
+          onConfirm={() => handleDeleteReview(confirmDeleteId)}
+        />
+      )}
     </div>
   );
 }

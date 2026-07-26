@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import { avatarFallbackInitial } from '@/lib/constants';
+import ConfirmDialog from '@/components/ConfirmDialog';
 
 export interface StoryItem {
   id: string;
@@ -44,6 +45,7 @@ export default function StoryViewer({ groups, startGroupIndex, onClose }: {
   const [progress, setProgress] = useState(0);
   const [viewers, setViewers] = useState<{ name: string | null }[] | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [replyText, setReplyText] = useState('');
   const [sendingReply, setSendingReply] = useState(false);
   const [paused, setPaused] = useState(false);
@@ -79,10 +81,11 @@ export default function StoryViewer({ groups, startGroupIndex, onClose }: {
 
   const handleDelete = async () => {
     if (!story || deleting) return;
-    if (!window.confirm(t('storyViewer.confirmDelete'))) return;
     setDeleting(true);
     const { error } = await supabase.from('stories').delete().eq('id', story.id);
     setDeleting(false);
+    setConfirmDelete(false);
+    setPaused(false);
     if (error) { toast.error(t('storyViewer.deleteError')); return; }
     toast.success(t('storyViewer.deleted'));
 
@@ -191,7 +194,7 @@ export default function StoryViewer({ groups, startGroupIndex, onClose }: {
         <p className="text-white text-sm font-medium flex-1" style={{ fontFamily: 'Jost, sans-serif' }}>{group.name || t('storyViewer.defaultMember')}</p>
         <p className="text-white/60 text-xs">{timeAgo(story.created_at, t)}</p>
         {isMine && (
-          <button onClick={handleDelete} disabled={deleting} className="h-9 w-9 flex items-center justify-center text-white flex-shrink-0 disabled:opacity-50">
+          <button onClick={() => { setPaused(true); setConfirmDelete(true); }} disabled={deleting} className="h-9 w-9 flex items-center justify-center text-white flex-shrink-0 disabled:opacity-50">
             <Trash2 className="h-4.5 w-4.5" />
           </button>
         )}
@@ -260,6 +263,15 @@ export default function StoryViewer({ groups, startGroupIndex, onClose }: {
             </button>
           )}
         </form>
+      )}
+
+      {confirmDelete && (
+        <ConfirmDialog
+          message={t('storyViewer.confirmDelete')}
+          confirming={deleting}
+          onCancel={() => { setConfirmDelete(false); setPaused(false); }}
+          onConfirm={handleDelete}
+        />
       )}
     </div>
   );

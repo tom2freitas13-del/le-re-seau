@@ -14,6 +14,7 @@ import CreateFeedPostModal from '@/components/CreateFeedPostModal';
 import FeedCommentsSheet from '@/components/FeedCommentsSheet';
 import type { ProfileCardProfile } from '@/components/ProfileCard';
 import { useBlockedUsers } from '@/lib/useBlockedUsers';
+import ConfirmDialog from '@/components/ConfirmDialog';
 
 interface FeedPost {
   id: string;
@@ -40,6 +41,7 @@ export default function HomeFeed() {
   const [likersModal, setLikersModal] = useState<{ postId: string; people: Person[] | null } | null>(null);
   const [commentsPostId, setCommentsPostId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const loadPosts = useCallback(async () => {
     const { data } = await supabase.from('feed_posts').select('*').order('created_at', { ascending: false }).limit(30);
@@ -116,6 +118,7 @@ export default function HomeFeed() {
     setDeletingId(postId);
     const { error } = await supabase.from('feed_posts').delete().eq('id', postId);
     setDeletingId(null);
+    setConfirmDeleteId(null);
     if (error) { toast.error(t('feed.deleteError')); return; }
     setPosts(prev => prev.filter(p => p.id !== postId));
   };
@@ -172,7 +175,7 @@ export default function HomeFeed() {
                     </span>
                   </button>
                   {post.author_id === user.id || isAdmin ? (
-                    <button onClick={() => handleDelete(post.id)} disabled={deletingId === post.id}
+                    <button onClick={() => setConfirmDeleteId(post.id)} disabled={deletingId === post.id}
                       className="text-muted-foreground hover:text-destructive transition-colors flex-shrink-0 disabled:opacity-50">
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -213,6 +216,15 @@ export default function HomeFeed() {
             );
           })}
         </div>
+      )}
+
+      {confirmDeleteId && (
+        <ConfirmDialog
+          message={t('feed.confirmDeletePost')}
+          confirming={deletingId === confirmDeleteId}
+          onCancel={() => setConfirmDeleteId(null)}
+          onConfirm={() => handleDelete(confirmDeleteId)}
+        />
       )}
     </div>
   );
