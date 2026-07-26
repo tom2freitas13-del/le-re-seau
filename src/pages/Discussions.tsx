@@ -1194,7 +1194,7 @@ function ForumView({ onBack }: { onBack: () => void }) {
         <div className="card-premium p-4 space-y-2">
           <textarea value={newPost} onChange={e => setNewPost(e.target.value)} maxLength={1000} rows={2}
             placeholder={t('forumView.whatsNew')}
-            className="w-full px-3 py-2 rounded-xl border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+            className="w-full px-3 py-2 rounded-xl border border-border bg-background text-base outline-none focus:ring-2 focus:ring-primary/20 resize-none"
             style={{ fontFamily: 'Jost, sans-serif' }} />
 
           {pendingAttachment && (
@@ -1331,7 +1331,7 @@ function CommentsPanel({ postId, onCommentAdded }: { postId: string; onCommentAd
       ))}
       <div className="flex gap-2">
         <input value={text} onChange={e => setText(e.target.value)} maxLength={500} placeholder={t('commentsPanel.addComment')}
-          className="flex-1 px-3 py-1.5 rounded-full border border-border bg-background text-xs outline-none focus:ring-2 focus:ring-primary/20"
+          className="flex-1 px-3 py-1.5 rounded-full border border-border bg-background text-base outline-none focus:ring-2 focus:ring-primary/20"
           style={{ fontFamily: 'Jost, sans-serif' }} />
         <button onClick={submit} disabled={!text.trim()} className="text-xs text-primary font-medium disabled:opacity-50">{t('commentsPanel.send')}</button>
       </div>

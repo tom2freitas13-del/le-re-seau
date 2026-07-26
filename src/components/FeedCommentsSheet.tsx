@@ -113,7 +113,7 @@ export default function FeedCommentsSheet({ postId, onClose, onCommentAdded }: F
           <input value={text} onChange={e => setText(e.target.value)} maxLength={500}
             placeholder={t('feed.addComment')}
             onKeyDown={e => { if (e.key === 'Enter') submit(); }}
-            className="flex-1 px-4 py-2.5 rounded-full border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20"
+            className="flex-1 px-4 py-2.5 rounded-full border border-border bg-background text-base outline-none focus:ring-2 focus:ring-primary/20"
             style={{ fontFamily: 'Jost, sans-serif' }} />
           <button onClick={submit} disabled={!text.trim() || sending} className="text-sm text-primary font-semibold disabled:opacity-50 flex-shrink-0">
             {t('feed.send')}
