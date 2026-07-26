@@ -529,12 +529,17 @@
     "photoTypeError": "Merci de choisir un fichier image.",
     "photoSizeError": "L'image doit faire moins de {{max}} Mo.",
     "photoSendError": "Échec de l'envoi de la photo.",
-    "likedBy": "Ont aimé"
+    "likedBy": "Ont aimé",
+    "deleteModeration": "Supprimer (modération)",
+    "confirmDeletePost": "Supprimer ce post ?",
+    "deletePostError": "Impossible de supprimer ce post."
   },
   "commentsPanel": {
     "defaultMember": "Membre",
     "addComment": "Ajouter un commentaire...",
-    "send": "Envoyer"
+    "send": "Envoyer",
+    "confirmDelete": "Supprimer ce commentaire ?",
+    "deleteError": "Impossible de supprimer ce commentaire."
   },
   "feed": {
     "title": "Le fil de la communauté",

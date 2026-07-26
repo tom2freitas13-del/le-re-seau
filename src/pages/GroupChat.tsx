@@ -26,7 +26,7 @@ interface GroupMessage {
 export default function GroupChat() {
   const { t } = useTranslation();
   const { groupId } = useParams<{ groupId: string }>();
-  const { user, loading: authLoading } = useAuth();
+  const { user, isAdmin, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [group, setGroup] = useState<{ name: string; emoji: string | null } | null>(null);
   const [messages, setMessages] = useState<GroupMessage[]>([]);
@@ -155,7 +155,10 @@ export default function GroupChat() {
   const handleDeleteMessage = async (messageId: string) => {
     if (!user) return;
     if (!window.confirm(t('groupChat.confirmDeleteMessage'))) return;
-    const { error } = await supabase.from('chat_group_messages').delete().eq('id', messageId).eq('sender_id', user.id);
+    // Pas de filtre .eq('sender_id', ...) ici : un admin doit pouvoir
+    // supprimer le message de quelqu'un d'autre (modération). La policy RLS
+    // (041) reste la vraie barrière de sécurité (auteur ou admin uniquement).
+    const { error } = await supabase.from('chat_group_messages').delete().eq('id', messageId);
     if (error) { toast.error(t('groupChat.deleteMessageError')); return; }
     setMessages(prev => prev.filter(m => m.id !== messageId));
   };
@@ -325,19 +328,19 @@ export default function GroupChat() {
                 )}
                 {m.attachment_type === 'audio' && m.attachment_url ? (
                   <div className={`max-w-[75%] rounded-2xl px-3 py-2 ${mine ? 'bg-primary' : 'bg-secondary'}`}
-                    {...(mine ? bindLongPress(() => handleDeleteMessage(m.id)) : {})}>
+                    {...((mine || isAdmin) ? bindLongPress(() => handleDeleteMessage(m.id)) : {})}>
                     {!mine && <p className="text-xs font-semibold opacity-70 mb-0.5">{senderNames[m.sender_id] || '...'}</p>}
                     <audio controls src={m.attachment_url} className="h-9 max-w-[220px]" />
                   </div>
                 ) : m.attachment_type === 'image' && m.attachment_url ? (
                   <a href={m.attachment_url} target="_blank" rel="noopener noreferrer" className="block max-w-[75%] rounded-2xl overflow-hidden select-none"
-                    {...(mine ? bindLongPress(() => handleDeleteMessage(m.id)) : {})}>
+                    {...((mine || isAdmin) ? bindLongPress(() => handleDeleteMessage(m.id)) : {})}>
                     <img src={m.attachment_url} alt={t('groupChat.sentPhoto')} className="max-h-64 w-auto object-cover" />
                   </a>
                 ) : (
                   <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm select-none active:opacity-70 transition-opacity ${mine ? 'bg-primary text-white' : 'bg-secondary text-foreground'}`}
                     style={{ fontFamily: 'Jost, sans-serif' }}
-                    {...(mine ? bindLongPress(() => handleDeleteMessage(m.id)) : {})}>
+                    {...((mine || isAdmin) ? bindLongPress(() => handleDeleteMessage(m.id)) : {})}>
                     {!mine && (
                       <p className="text-xs font-semibold opacity-70 mb-0.5">{senderNames[m.sender_id] || '...'}</p>
                     )}

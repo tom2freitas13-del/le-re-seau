@@ -35,7 +35,7 @@ const REACTION_EMOJIS = ['❤️', '😂', '👍', '😮', '😢'];
 export default function Chat() {
   const { t } = useTranslation();
   const { partnerId } = useParams<{ partnerId: string }>();
-  const { user, loading: authLoading } = useAuth();
+  const { user, isAdmin, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([]);
   const [partner, setPartner] = useState<{ name: string | null; photo_url: string | null; last_seen: string | null; is_admin?: boolean | null } | null>(null);
@@ -261,7 +261,10 @@ export default function Chat() {
   const handleDeleteMessage = async (messageId: string) => {
     if (!user) return;
     if (!window.confirm(t('chat.confirmDeleteMessage'))) return;
-    const { error } = await supabase.from('messages').delete().eq('id', messageId).eq('sender_id', user.id);
+    // Pas de filtre .eq('sender_id', ...) ici : un admin doit pouvoir
+    // supprimer le message de quelqu'un d'autre (modération). La policy RLS
+    // reste la vraie barrière de sécurité (auteur ou admin uniquement).
+    const { error } = await supabase.from('messages').delete().eq('id', messageId);
     if (error) { toast.error(t('chat.deleteMessageError')); return; }
     setMessages(prev => prev.filter(m => m.id !== messageId));
   };
@@ -350,18 +353,18 @@ export default function Chat() {
                   <div className={`group flex items-end gap-1.5 ${mine ? 'flex-row-reverse' : 'flex-row'}`}>
                     {m.attachment_type === 'audio' && m.attachment_url ? (
                       <div className={`max-w-[75%] rounded-2xl px-3 py-2 ${mine ? 'bg-primary' : 'bg-secondary'}`}
-                        {...(mine ? bindLongPress(() => handleDeleteMessage(m.id)) : {})}>
+                        {...((mine || isAdmin) ? bindLongPress(() => handleDeleteMessage(m.id)) : {})}>
                         <audio controls src={m.attachment_url} className="h-9 max-w-[220px]" />
                       </div>
                     ) : m.attachment_type === 'image' && m.attachment_url ? (
                       <a href={m.attachment_url} target="_blank" rel="noopener noreferrer" className="block max-w-[75%] rounded-2xl overflow-hidden select-none"
-                        {...(mine ? bindLongPress(() => handleDeleteMessage(m.id)) : {})}>
+                        {...((mine || isAdmin) ? bindLongPress(() => handleDeleteMessage(m.id)) : {})}>
                         <img src={m.attachment_url} alt={t('chat.sentPhoto')} className="max-h-64 w-auto object-cover" />
                       </a>
                     ) : (
                       <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm select-none active:opacity-70 transition-opacity ${mine ? 'bg-primary text-white' : 'bg-secondary text-foreground'}`}
                         style={{ fontFamily: 'Jost, sans-serif' }}
-                        {...(mine ? bindLongPress(() => handleDeleteMessage(m.id)) : {})}>
+                        {...((mine || isAdmin) ? bindLongPress(() => handleDeleteMessage(m.id)) : {})}>
                         {m.content}
                       </div>
                     )}

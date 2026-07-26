@@ -4,7 +4,7 @@ import { useAuth } from '@/lib/auth-context';
 import BottomNav from '@/components/BottomNav';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { MessageCircle, Send, ArrowLeft, Heart, MessageSquare, Mail, Mic, Square, Image as ImageIcon, X, Plus, Users, Check, Briefcase, Search, Sparkles } from 'lucide-react';
+import { MessageCircle, Send, ArrowLeft, Heart, MessageSquare, Mail, Mic, Square, Image as ImageIcon, X, Plus, Users, Check, Briefcase, Search, Sparkles, Trash2 } from 'lucide-react';
 import { computeMatchScore } from '@/lib/matchScore';
 import { SALONS } from '@/lib/constants';
 import { toast } from 'sonner';
@@ -718,7 +718,7 @@ function CreateGroupModal({ onClose, onCreated }: { onClose: () => void; onCreat
 // ─────────────────────────────────────────────────────────────
 function SalonView({ salonId, onBack }: { salonId: string; onBack: () => void }) {
   const { t } = useTranslation();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [messages, setMessages] = useState<SalonMessage[]>([]);
   const [senderNames, setSenderNames] = useState<Record<string, string>>({});
   const [content, setContent] = useState('');
@@ -834,7 +834,10 @@ function SalonView({ salonId, onBack }: { salonId: string; onBack: () => void })
   const handleDeleteMessage = async (messageId: string) => {
     if (!user) return;
     if (!window.confirm(t('salonView.confirmDeleteMessage'))) return;
-    const { error } = await supabase.from('salon_messages').delete().eq('id', messageId).eq('user_id', user.id);
+    // Pas de filtre .eq('user_id', ...) ici : un admin doit pouvoir
+    // supprimer le message de quelqu'un d'autre (modération). La policy RLS
+    // reste la vraie barrière de sécurité (auteur ou admin uniquement).
+    const { error } = await supabase.from('salon_messages').delete().eq('id', messageId);
     if (error) { toast.error(t('salonView.deleteMessageError')); return; }
     setMessages(prev => prev.filter(m => m.id !== messageId));
   };
@@ -953,19 +956,19 @@ function SalonView({ salonId, onBack }: { salonId: string; onBack: () => void })
                 )}
                 {m.attachment_type === 'audio' && m.attachment_url ? (
                   <div className={`max-w-[75%] rounded-2xl px-3 py-2 ${mine ? 'bg-primary' : 'bg-secondary'}`}
-                    {...(mine ? bindLongPress(() => handleDeleteMessage(m.id)) : {})}>
+                    {...((mine || isAdmin) ? bindLongPress(() => handleDeleteMessage(m.id)) : {})}>
                     {!mine && <p className={cn('text-xs font-semibold opacity-70 mb-0.5', mine ? '' : 'text-foreground')}>{senderNames[m.user_id] || '...'}</p>}
                     <audio controls src={m.attachment_url} className="h-9 max-w-[220px]" />
                   </div>
                 ) : m.attachment_type === 'image' && m.attachment_url ? (
                   <a href={m.attachment_url} target="_blank" rel="noopener noreferrer" className="block max-w-[75%] rounded-2xl overflow-hidden select-none"
-                    {...(mine ? bindLongPress(() => handleDeleteMessage(m.id)) : {})}>
+                    {...((mine || isAdmin) ? bindLongPress(() => handleDeleteMessage(m.id)) : {})}>
                     <img src={m.attachment_url} alt={t('salonView.sentPhoto')} className="max-h-64 w-auto object-cover" />
                   </a>
                 ) : (
                   <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm select-none active:opacity-70 transition-opacity ${mine ? 'bg-primary text-white' : 'bg-secondary text-foreground'}`}
                     style={{ fontFamily: 'Jost, sans-serif' }}
-                    {...(mine ? bindLongPress(() => handleDeleteMessage(m.id)) : {})}>
+                    {...((mine || isAdmin) ? bindLongPress(() => handleDeleteMessage(m.id)) : {})}>
                     {!mine && <p className="text-xs font-semibold opacity-70 mb-0.5">{senderNames[m.user_id] || '...'}</p>}
                     {m.content}
                   </div>
@@ -1045,7 +1048,7 @@ function SalonView({ salonId, onBack }: { salonId: string; onBack: () => void })
 // ─────────────────────────────────────────────────────────────
 function ForumView({ onBack }: { onBack: () => void }) {
   const { t } = useTranslation();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [posts, setPosts] = useState<ForumPost[]>([]);
   const [authorNames, setAuthorNames] = useState<Record<string, string>>({});
   const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
@@ -1201,6 +1204,13 @@ function ForumView({ onBack }: { onBack: () => void }) {
     }
   };
 
+  const handleDeletePost = async (postId: string) => {
+    if (!window.confirm(t('forumView.confirmDeletePost'))) return;
+    const { error } = await supabase.from('forum_posts').delete().eq('id', postId);
+    if (error) { toast.error(t('forumView.deletePostError')); return; }
+    setPosts(prev => prev.filter(p => p.id !== postId));
+  };
+
   return (
     <div className="min-h-screen pb-28 bg-background">
       <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-md border-b border-border/50">
@@ -1269,7 +1279,14 @@ function ForumView({ onBack }: { onBack: () => void }) {
                 <span className="text-sm font-medium" style={{ fontFamily: 'Jost, sans-serif' }}>{authorNames[post.author_id] || t('forumView.defaultMember')}</span>
               </button>
               {post.author_id !== user?.id && (
-                <ReportButton targetType="forum_post" targetId={post.id} targetUserId={post.author_id} className="text-muted-foreground hover:text-destructive transition-colors p-1 rounded-lg hover:bg-destructive/10" />
+                isAdmin ? (
+                  <button onClick={() => handleDeletePost(post.id)} title={t('forumView.deleteModeration')}
+                    className="text-muted-foreground hover:text-destructive transition-colors p-1 rounded-lg hover:bg-destructive/10">
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                ) : (
+                  <ReportButton targetType="forum_post" targetId={post.id} targetUserId={post.author_id} className="text-muted-foreground hover:text-destructive transition-colors p-1 rounded-lg hover:bg-destructive/10" />
+                )
               )}
             </div>
             <p className="text-sm" style={{ fontFamily: 'Jost, sans-serif', lineHeight: 1.6 }}>{post.content}</p>
@@ -1332,7 +1349,7 @@ function ForumView({ onBack }: { onBack: () => void }) {
 
 function CommentsPanel({ postId, onCommentAdded }: { postId: string; onCommentAdded: () => void }) {
   const { t } = useTranslation();
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [comments, setComments] = useState<{ id: string; content: string; author_id: string }[]>([]);
   const [names, setNames] = useState<Record<string, string>>({});
   const [text, setText] = useState('');
@@ -1362,6 +1379,13 @@ function CommentsPanel({ postId, onCommentAdded }: { postId: string; onCommentAd
     if (!error) { onCommentAdded(); load(); }
   };
 
+  const handleDeleteComment = async (commentId: string) => {
+    if (!window.confirm(t('commentsPanel.confirmDelete'))) return;
+    const { error } = await supabase.from('forum_comments').delete().eq('id', commentId);
+    if (error) { toast.error(t('commentsPanel.deleteError')); return; }
+    setComments(prev => prev.filter(c => c.id !== commentId));
+  };
+
   return (
     <div className="pt-2 border-t border-border/50 space-y-2">
       {comments.map(c => (
@@ -1374,12 +1398,19 @@ function CommentsPanel({ postId, onCommentAdded }: { postId: string; onCommentAd
             <span className="text-muted-foreground">{c.content}</span>
           </p>
           {c.author_id !== user?.id && (
-            <ReportButton
-              targetType="forum_comment"
-              targetId={c.id}
-              targetUserId={c.author_id}
-              className="text-muted-foreground/50 hover:text-destructive transition-colors flex-shrink-0"
-            />
+            isAdmin ? (
+              <button onClick={() => handleDeleteComment(c.id)} title={t('forumView.deleteModeration')}
+                className="text-muted-foreground/50 hover:text-destructive transition-colors flex-shrink-0">
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            ) : (
+              <ReportButton
+                targetType="forum_comment"
+                targetId={c.id}
+                targetUserId={c.author_id}
+                className="text-muted-foreground/50 hover:text-destructive transition-colors flex-shrink-0"
+              />
+            )
           )}
         </div>
       ))}
