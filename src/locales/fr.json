@@ -222,6 +222,7 @@
     "ctaFinalSubtitle": "Gratuit, sans pub, fait avec ♥ pour l'île.",
     "ctaFinalJoined": "Voir la communauté →",
     "ctaFinalCreate": "Créer mon profil gratuit →",
+    "citiesTitle": "Les villages de l'Île de Ré",
     "footerTagline": "Une plateforme locale indépendante pour connecter les habitants et visiteurs de l'Île de Ré.",
     "footerAbout": "À propos",
     "footerRules": "Règles de la communauté",
@@ -370,6 +371,17 @@
     "contactBody": "Pour toute demande relative à vos données :",
     "cookiesTitle": "Cookies",
     "cookiesBody": "Nous utilisons uniquement les cookies techniques nécessaires à l'authentification et au fonctionnement du site. Aucun cookie publicitaire ni de suivi tiers."
+  },
+  "cityPage": {
+    "memberCount_one": "{{count}} membre de Le Ré-seau habite à {{city}}",
+    "memberCount_other": "{{count}} membres de Le Ré-seau habitent à {{city}}",
+    "nearbyTitle": "À voir dans le coin",
+    "ctaTitle": "Rejoignez la communauté de {{city}}",
+    "ctaSubtitle": "Activités, rencontres et bons plans entre voisins, toute l'année.",
+    "ctaJoin": "Créer mon profil",
+    "ctaJoined": "Voir la communauté",
+    "otherCitiesTitle": "Les autres villages de l'île",
+    "viewMap": "Voir sur la carte de l'île"
   },
   "about": {
     "title": "Qui sommes-nous",
@@ -822,7 +834,18 @@
     "removePro": "Retirer le statut pro",
     "proStatusError": "Erreur lors de la mise à jour du statut pro.",
     "userMadePro": "Compte pro activé.",
-    "userRemovedPro": "Statut pro retiré."
+    "userRemovedPro": "Statut pro retiré.",
+    "statsTitle": "Stats",
+    "statsTotalMembers": "Membres totaux",
+    "statsActiveToday": "Actifs aujourd'hui",
+    "statsActiveWeek": "Actifs cette semaine",
+    "statsOnlineNow": "En ligne maintenant",
+    "statsNewWeek": "Nouveaux cette semaine",
+    "statsPostsWeek": "Publications cette semaine",
+    "statsSignupTrend": "Nouveaux membres (14 derniers jours)",
+    "statsPostsTrend": "Publications (14 derniers jours)",
+    "statsReportsTitle": "Signalements",
+    "statsPerDay": "ce jour-là"
   },
   "reportModal": {
     "title": "Signaler",

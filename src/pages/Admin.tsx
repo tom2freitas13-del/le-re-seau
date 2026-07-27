@@ -3,10 +3,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ShieldCheck, ArrowLeft, Check, X, Ban, ShieldOff, Store, Search } from 'lucide-react';
+import { ShieldCheck, ArrowLeft, Check, X, Ban, ShieldOff, Store, Search, BarChart3 } from 'lucide-react';
 import { toast } from 'sonner';
 import { REPORT_REASONS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
+import AdminStatsPanel from '@/components/AdminStatsPanel';
 
 interface Report {
   id: string;
@@ -46,7 +47,7 @@ export default function Admin() {
   const [reportedContent, setReportedContent] = useState<Record<string, string>>({});
   const [filter, setFilter] = useState<'pending' | 'reviewed' | 'dismissed' | 'all'>('pending');
   const [loading, setLoading] = useState(true);
-  const [section, setSection] = useState<'reports' | 'pro'>('reports');
+  const [section, setSection] = useState<'reports' | 'pro' | 'stats'>('reports');
   const [proQuery, setProQuery] = useState('');
   const [proResults, setProResults] = useState<ProSearchResult[]>([]);
   const [proSearching, setProSearching] = useState(false);
@@ -206,7 +207,15 @@ export default function Admin() {
             style={{ fontFamily: 'Jost, sans-serif' }}>
             <Store className="h-3.5 w-3.5" /> {t('admin.proTitle')}
           </button>
+          <button onClick={() => setSection('stats')}
+            className={cn('flex-1 rounded-full px-4 py-2.5 text-sm font-medium transition-all flex items-center justify-center gap-1.5',
+              section === 'stats' ? 'bg-primary text-white shadow-md shadow-primary/20' : 'bg-secondary text-muted-foreground')}
+            style={{ fontFamily: 'Jost, sans-serif' }}>
+            <BarChart3 className="h-3.5 w-3.5" /> {t('admin.statsTitle')}
+          </button>
         </div>
+
+        {section === 'stats' && <AdminStatsPanel />}
 
         {section === 'pro' && (
           <div className="space-y-3">

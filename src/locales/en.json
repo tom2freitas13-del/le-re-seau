@@ -222,6 +222,7 @@
     "ctaFinalSubtitle": "Free, no ads, made with ♥ for the island.",
     "ctaFinalJoined": "See the community →",
     "ctaFinalCreate": "Create my free profile →",
+    "citiesTitle": "The villages of Île de Ré",
     "footerTagline": "An independent local platform to connect residents and visitors of Île de Ré.",
     "footerAbout": "About",
     "footerRules": "Community rules",
@@ -370,6 +371,17 @@
     "contactBody": "For any request regarding your data:",
     "cookiesTitle": "Cookies",
     "cookiesBody": "We only use technical cookies necessary for authentication and the site's operation. No advertising or third-party tracking cookies."
+  },
+  "cityPage": {
+    "memberCount_one": "{{count}} Le Ré-seau member lives in {{city}}",
+    "memberCount_other": "{{count}} Le Ré-seau members live in {{city}}",
+    "nearbyTitle": "Worth seeing nearby",
+    "ctaTitle": "Join the {{city}} community",
+    "ctaSubtitle": "Activities, meetups and local tips between neighbors, all year round.",
+    "ctaJoin": "Create my profile",
+    "ctaJoined": "See the community",
+    "otherCitiesTitle": "The island's other villages",
+    "viewMap": "View on the island map"
   },
   "about": {
     "title": "About us",
@@ -822,7 +834,18 @@
     "removePro": "Remove pro status",
     "proStatusError": "Error updating pro status.",
     "userMadePro": "Pro account enabled.",
-    "userRemovedPro": "Pro status removed."
+    "userRemovedPro": "Pro status removed.",
+    "statsTitle": "Stats",
+    "statsTotalMembers": "Total members",
+    "statsActiveToday": "Active today",
+    "statsActiveWeek": "Active this week",
+    "statsOnlineNow": "Online now",
+    "statsNewWeek": "New this week",
+    "statsPostsWeek": "Posts this week",
+    "statsSignupTrend": "New members (last 14 days)",
+    "statsPostsTrend": "Posts (last 14 days)",
+    "statsReportsTitle": "Reports",
+    "statsPerDay": "that day"
   },
   "reportModal": {
     "title": "Report",

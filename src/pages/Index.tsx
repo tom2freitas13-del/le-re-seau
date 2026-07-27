@@ -8,6 +8,7 @@ import LocalImage from '@/components/LocalImage';
 import { usePresence } from '@/lib/presence-context';
 import BottomNav from '@/components/BottomNav';
 import HomeFeed from '@/components/HomeFeed';
+import { CITY_CONTENT } from '@/lib/cityContent';
 
 // Photos locales : mets tes fichiers dans public/images/ et ils seront
 // accessibles ici avec le chemin /images/nom-du-fichier.jpg
@@ -259,8 +260,23 @@ export default function Index() {
         </div>
       </div>
 
+      {/* ── VILLAGES DE L'ÎLE (liens internes, utile aussi pour le référencement) ── */}
+      <div className="border-t border-border/50 mt-10 py-10 bg-sand/20">
+        <div className="max-w-lg mx-auto px-4">
+          <h2 className="section-title mb-6 text-center text-xl">{t('home.citiesTitle')}</h2>
+          <div className="flex flex-wrap justify-center gap-2">
+            {CITY_CONTENT.map(c => (
+              <Link key={c.slug} to={`/ile-de-re/${c.slug}`}
+                className="pill bg-secondary text-foreground hover:bg-ocean-light hover:text-primary transition-colors flex items-center gap-1">
+                {c.emoji} {c.name}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* ── FOOTER LEGAL ── */}
-      <footer className="border-t border-border/50 mt-10">
+      <footer className="border-t border-border/50">
         <div className="max-w-lg mx-auto px-4 py-10 text-center space-y-6">
 
           {/* Branding */}

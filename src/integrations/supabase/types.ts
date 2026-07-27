@@ -669,6 +669,13 @@ export interface Database {
         };
         Relationships: [];
       };
+      city_member_counts: {
+        Row: {
+          city: string;
+          member_count: number;
+        };
+        Relationships: [];
+      };
     };
     Functions: {
       email_exists: {
