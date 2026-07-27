@@ -15,6 +15,7 @@ import FeedCommentsSheet from '@/components/FeedCommentsSheet';
 import type { ProfileCardProfile } from '@/components/ProfileCard';
 import { useBlockedUsers } from '@/lib/useBlockedUsers';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import ImageLightbox from '@/components/ImageLightbox';
 
 interface FeedPost {
   id: string;
@@ -42,6 +43,7 @@ export default function HomeFeed() {
   const [commentsPostId, setCommentsPostId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
 
   const loadPosts = useCallback(async () => {
     const { data } = await supabase.from('feed_posts').select('*').order('created_at', { ascending: false }).limit(30);
@@ -185,9 +187,9 @@ export default function HomeFeed() {
                   )}
                 </div>
 
-                <div className="bg-ocean-light">
+                <button onClick={() => setLightboxUrl(post.photo_url)} className="block w-full bg-ocean-light">
                   <img src={post.photo_url} alt="" className="w-full max-h-[420px] object-cover" />
-                </div>
+                </button>
 
                 <div className="p-4 space-y-2">
                   {post.caption && (
@@ -226,6 +228,8 @@ export default function HomeFeed() {
           onConfirm={() => handleDelete(confirmDeleteId)}
         />
       )}
+
+      {lightboxUrl && <ImageLightbox src={lightboxUrl} alt="" onClose={() => setLightboxUrl(null)} />}
     </div>
   );
 }
