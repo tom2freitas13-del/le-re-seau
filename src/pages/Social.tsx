@@ -49,6 +49,7 @@ export default function Social() {
   const [hasMore, setHasMore] = useState(true);
   const { isBlocked } = useBlockedUsers();
   const { onlineUserIds, onlineCount } = usePresence();
+  const [onlineProfiles, setOnlineProfiles] = useState<Profile[]>([]);
   const [search, setSearch] = useState('');
   const [searchResults, setSearchResults] = useState<Profile[] | null>(null);
   const [searching, setSearching] = useState(false);
@@ -82,6 +83,19 @@ export default function Social() {
     loadMyProfile();
     loadProfilesPage(0, true);
   }, [user, navigate, loadMyProfile, loadProfilesPage]);
+
+  // BUG FIX : l'onglet "En ligne" filtrait la liste déjà paginée (20 profils
+  // chargés par défaut) — si les membres en ligne n'étaient pas dans cette
+  // première page, l'onglet affichait "personne" alors que le compteur du
+  // header (basé sur la présence temps réel, indépendant de la pagination)
+  // les comptait bien. On récupère donc directement les profils des membres
+  // en ligne, quelle que soit la page chargée par ailleurs.
+  useEffect(() => {
+    if (!user) return;
+    const ids = Array.from(onlineUserIds).filter(id => id !== user.id);
+    if (ids.length === 0) { setOnlineProfiles([]); return; }
+    supabase.from('profiles').select('*').in('user_id', ids).then(({ data }) => setOnlineProfiles(data || []));
+  }, [user, onlineUserIds]);
 
   // Recherche par nom sur l'ensemble des membres (pas seulement la page
   // déjà chargée), pour retrouver tout le monde même au-delà de la pagination.
@@ -135,8 +149,9 @@ export default function Social() {
     .filter(({ profile }) => !!profile.city && profile.city === myProfile?.city)
     .sort((a, b) => b.score - a.score);
 
-  const online = withScores
-    .filter(({ profile }) => onlineUserIds.has(profile.user_id))
+  const online = onlineProfiles
+    .filter(profile => !isBlocked(profile.user_id))
+    .map(profile => ({ profile, score: myProfile ? computeMatchScore(myProfile, profile) : 0 }))
     .sort((a, b) => b.score - a.score);
 
   const currentList = activeTab === 'suggestions' ? suggestions
