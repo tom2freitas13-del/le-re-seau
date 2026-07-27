@@ -5,7 +5,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import { ArrowLeft, Send, MoreVertical, Check, CheckCheck, Mic, Square, SmilePlus, Image as ImageIcon } from 'lucide-react';
 import { AdminBadge } from '@/components/ProfileCard';
-import { avatarFallbackInitial, formatLastSeen } from '@/lib/constants';
+import { avatarFallbackInitial, formatLastSeen, formatMessageTime } from '@/lib/constants';
+import { useTimeTick } from '@/lib/useTimeTick';
 import { ReportModal, ReportButton } from '@/components/ReportModal';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { useBlockedUsers } from '@/lib/useBlockedUsers';
@@ -38,6 +39,7 @@ export default function Chat() {
   const { partnerId } = useParams<{ partnerId: string }>();
   const { user, isAdmin, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  useTimeTick();
   const [messages, setMessages] = useState<Message[]>([]);
   const [partner, setPartner] = useState<{ name: string | null; photo_url: string | null; last_seen: string | null; is_admin?: boolean | null } | null>(null);
   const [content, setContent] = useState('');
@@ -421,11 +423,16 @@ export default function Chat() {
                     </div>
                   )}
 
-                  {mine && (
-                    m.read
-                      ? <CheckCheck className="h-3.5 w-3.5 text-primary mt-0.5 mr-1" />
-                      : <Check className="h-3.5 w-3.5 text-muted-foreground mt-0.5 mr-1" />
-                  )}
+                  <div className={`flex items-center gap-1 mt-0.5 ${mine ? 'mr-1' : 'ml-1'}`}>
+                    <span className="text-[10px] text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>
+                      {formatMessageTime(m.created_at, t)}
+                    </span>
+                    {mine && (
+                      m.read
+                        ? <CheckCheck className="h-3.5 w-3.5 text-primary" />
+                        : <Check className="h-3.5 w-3.5 text-muted-foreground" />
+                    )}
+                  </div>
                 </div>
               );
             })}

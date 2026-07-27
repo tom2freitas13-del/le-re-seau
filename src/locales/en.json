@@ -15,7 +15,17 @@
     "lastSeenHoursAgo": "Seen {{count}}h ago",
     "lastSeenYesterday": "Seen yesterday",
     "lastSeenDaysAgo": "Seen {{count}}d ago",
-    "lastSeenOnDate": "Seen on {{date}}"
+    "lastSeenOnDate": "Seen on {{date}}",
+    "messageTimeJustNow": "Just now",
+    "messageTimeMinAgo": "{{count}}m ago",
+    "messageTimeHoursAgo": "{{count}}h ago",
+    "messageTimeYesterday": "Yesterday",
+    "messageTimeDaysAgo_one": "{{count}} day ago",
+    "messageTimeDaysAgo_other": "{{count}} days ago",
+    "messageTimeLastWeek": "Last week",
+    "messageTimeWeeksAgo_one": "{{count}} week ago",
+    "messageTimeWeeksAgo_other": "{{count}} weeks ago",
+    "messageTimeOnDate": "{{date}}"
   },
   "statusOptions": {
     "resident": "I live on the island",

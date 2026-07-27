@@ -12,6 +12,8 @@ import MessageLikeReadRow from '@/components/MessageLikeReadRow';
 import { useLongPress } from '@/lib/useLongPress';
 import { ReportButton } from '@/components/ReportModal';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import { formatMessageTime } from '@/lib/constants';
+import { useTimeTick } from '@/lib/useTimeTick';
 
 interface GroupMessage {
   id: string;
@@ -29,6 +31,7 @@ export default function GroupChat() {
   const { groupId } = useParams<{ groupId: string }>();
   const { user, isAdmin, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  useTimeTick();
   const [group, setGroup] = useState<{ name: string; emoji: string | null } | null>(null);
   const [messages, setMessages] = useState<GroupMessage[]>([]);
   const [senderNames, setSenderNames] = useState<Record<string, string>>({});
@@ -362,6 +365,9 @@ export default function GroupChat() {
                 onShowLikers={() => openPeopleModal(t('groupChat.likedBy'), likesByMessage[m.id] || [])}
                 onShowViewers={() => openPeopleModal(t('groupChat.seenBy'), readsByMessage[m.id] || [])}
               />
+              <span className="text-[10px] text-muted-foreground px-1 mt-0.5" style={{ fontFamily: 'Jost, sans-serif' }}>
+                {formatMessageTime(m.created_at, t)}
+              </span>
             </div>
           );
         })}

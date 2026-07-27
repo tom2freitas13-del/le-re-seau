@@ -15,7 +15,17 @@
     "lastSeenHoursAgo": "Vu il y a {{count}} h",
     "lastSeenYesterday": "Vu hier",
     "lastSeenDaysAgo": "Vu il y a {{count}} j",
-    "lastSeenOnDate": "Vu le {{date}}"
+    "lastSeenOnDate": "Vu le {{date}}",
+    "messageTimeJustNow": "À l'instant",
+    "messageTimeMinAgo": "Il y a {{count}}min",
+    "messageTimeHoursAgo": "Il y a {{count}}h",
+    "messageTimeYesterday": "Hier",
+    "messageTimeDaysAgo_one": "Il y a {{count}} jour",
+    "messageTimeDaysAgo_other": "Il y a {{count}} jours",
+    "messageTimeLastWeek": "La semaine dernière",
+    "messageTimeWeeksAgo_one": "Il y a {{count}} semaine",
+    "messageTimeWeeksAgo_other": "Il y a {{count}} semaines",
+    "messageTimeOnDate": "{{date}}"
   },
   "statusOptions": {
     "resident": "J'habite sur l'île",
