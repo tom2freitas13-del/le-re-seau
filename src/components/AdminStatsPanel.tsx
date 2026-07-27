@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { LineChart, Line, ResponsiveContainer, Tooltip } from 'recharts';
+import { LineChart, Line, XAxis, ResponsiveContainer, Tooltip } from 'recharts';
 import { Users, UserCheck, Wifi, UserPlus, MessageSquare, Flag } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { usePresence } from '@/lib/presence-context';
@@ -10,18 +10,34 @@ const TREND_DAYS = 14;
 
 interface DayBucket { date: string; count: number; }
 
+// Clé "AAAA-MM-JJ" en heure LOCALE (pas UTC) : created_at est stocké en UTC
+// en base, donc découper la chaîne ISO brute (created_at.slice(0, 10))
+// décale certains posts sur le mauvais jour local selon l'heure et le fuseau
+// (ex: un post à 23h30 en France peut déjà être le lendemain en UTC).
+function localDayKey(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 function bucketByDay(rows: { created_at: string }[], days: number): DayBucket[] {
   const buckets = new Map<string, number>();
   for (let i = days - 1; i >= 0; i--) {
     const d = new Date();
     d.setDate(d.getDate() - i);
-    buckets.set(d.toISOString().slice(0, 10), 0);
+    buckets.set(localDayKey(d), 0);
   }
   rows.forEach(r => {
-    const key = r.created_at.slice(0, 10);
+    const key = localDayKey(new Date(r.created_at));
     if (buckets.has(key)) buckets.set(key, (buckets.get(key) || 0) + 1);
   });
   return Array.from(buckets.entries()).map(([date, count]) => ({ date, count }));
+}
+
+// `date` est une clé "AAAA-MM-JJ" locale (voir localDayKey) — on la reconstruit
+// en Date locale plutôt que new Date("AAAA-MM-JJ"), que le JS interprète en
+// UTC et qui peut donc afficher le jour précédent/suivant selon le fuseau.
+function formatDayKey(dateKey: string): string {
+  const [y, m, d] = dateKey.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
 }
 
 function StatTile({ icon: Icon, label, value, color }: { icon: React.ElementType; label: string; value: number | string; color: string }) {
@@ -38,16 +54,22 @@ function SparklineCard({ title, total, data, color }: { title: string; total: nu
   const { t } = useTranslation();
   return (
     <div className="card-premium p-4">
-      <div className="flex items-baseline justify-between mb-2">
+      <div className="flex items-baseline justify-between mb-0.5">
         <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider" style={{ fontFamily: 'Jost, sans-serif' }}>{title}</h4>
         <span className="font-display text-lg font-semibold">{total}</span>
       </div>
+      {data.length > 0 && (
+        <p className="text-[10px] text-muted-foreground mb-2" style={{ fontFamily: 'Jost, sans-serif' }}>
+          {formatDayKey(data[0].date)} → {formatDayKey(data[data.length - 1].date)}
+        </p>
+      )}
       <div className="h-16">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: 4 }}>
+            <XAxis dataKey="date" hide />
             <Tooltip
               formatter={(value: number) => [value, t('admin.statsPerDay')]}
-              labelFormatter={(label: string) => new Date(label).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}
+              labelFormatter={(label: string) => formatDayKey(label)}
               contentStyle={{ fontSize: 12, fontFamily: 'Jost, sans-serif', borderRadius: 8 }}
             />
             <Line type="monotone" dataKey="count" stroke={color} strokeWidth={2} dot={false} isAnimationActive={false} />
