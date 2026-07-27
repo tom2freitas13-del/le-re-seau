@@ -30,6 +30,7 @@ export interface Database {
           referred_by: string | null;
           referral_count: number;
           city: string | null;
+          profile_nudge_sent: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -53,6 +54,7 @@ export interface Database {
           referred_by?: string | null;
           referral_count?: number;
           city?: string | null;
+          profile_nudge_sent?: boolean;
           created_at?: string;
           updated_at?: string;
         };

@@ -10,6 +10,8 @@ import { useBlockedUsers } from '@/lib/useBlockedUsers';
 import { usePresence } from '@/lib/presence-context';
 import StoriesBar from '@/components/StoriesBar';
 import { computeMatchScore } from '@/lib/matchScore';
+import { INTEREST_OPTIONS } from '@/lib/constants';
+import { cn } from '@/lib/utils';
 
 interface Profile {
   id: string;
@@ -59,6 +61,10 @@ export default function Social() {
   const [search, setSearch] = useState('');
   const [searchResults, setSearchResults] = useState<Profile[] | null>(null);
   const [searching, setSearching] = useState(false);
+  const [interestFilter, setInterestFilter] = useState<string[]>([]);
+
+  const toggleInterestFilter = (value: string) =>
+    setInterestFilter(prev => prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value]);
 
   const loadMyProfile = useCallback(async () => {
     if (!user) return;
@@ -160,9 +166,13 @@ export default function Social() {
     : online;
 
   const isSearching = searchResults !== null;
-  const displayedList = isSearching
+  const matchesInterestFilter = ({ profile }: { profile: Profile }) =>
+    interestFilter.length === 0 || interestFilter.some(i => profile.interests?.includes(i));
+
+  const displayedList = (isSearching
     ? searchResults.filter(p => !isBlocked(p.user_id)).map(p => ({ profile: p, score: 0 }))
-    : currentList;
+    : currentList
+  ).filter(matchesInterestFilter);
   const visibleList = isSearching ? displayedList : displayedList.slice(0, visibleCount);
   const hasMore = !isSearching && displayedList.length > visibleCount;
 
@@ -198,6 +208,24 @@ export default function Social() {
               className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20"
               style={{ fontFamily: 'Jost, sans-serif' }}
             />
+          </div>
+
+          {/* Filtre par centre d'intérêt — se compose avec les onglets et la
+              recherche par nom plutôt que de les remplacer, pour pouvoir
+              chercher "qui aime le surf" sans perdre le tri par compatibilité. */}
+          <div className="flex gap-1.5 overflow-x-auto pb-1 mb-3 -mx-4 px-4">
+            {INTEREST_OPTIONS.map(opt => (
+              <button key={opt.value} onClick={() => toggleInterestFilter(opt.value)}
+                className={cn(
+                  'flex-shrink-0 rounded-full px-3 py-1.5 text-xs font-medium border transition-all duration-200',
+                  interestFilter.includes(opt.value)
+                    ? 'border-primary bg-ocean-light text-primary shadow-sm'
+                    : 'border-border bg-background text-muted-foreground hover:bg-secondary'
+                )}
+                style={{ fontFamily: 'Jost, sans-serif' }}>
+                {opt.emoji} {t(`interestOptions.${opt.value}`)}
+              </button>
+            ))}
           </div>
 
           {/* Tabs */}
@@ -237,7 +265,9 @@ export default function Social() {
             <div className="text-5xl mb-4">{isSearching ? '🔍' : '🏖️'}</div>
             <h3 className="font-display text-xl mb-2">{isSearching ? t('social.noResults') : t('social.noOneYet')}</h3>
             <p className="text-sm text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>
-              {isSearching
+              {interestFilter.length > 0
+                ? t('social.emptyInterestFilter')
+                : isSearching
                 ? t('social.noResultsFor', { query: search.trim() })
                 : activeTab === 'suggestions'
                 ? t('social.emptySuggestions')

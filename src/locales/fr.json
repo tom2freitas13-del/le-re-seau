@@ -242,6 +242,7 @@
     "noOneYet": "Personne ici pour l'instant",
     "noResultsFor": "Personne dont le prénom commence par \"{{query}}\".",
     "emptySuggestions": "Remplis tes centres d'intérêt dans ton profil pour voir des suggestions !",
+    "emptyInterestFilter": "Personne avec ce centre d'intérêt pour l'instant.",
     "emptyProximity": "Personne dans ta ville pour le moment.",
     "emptyProximityNoCity": "Renseigne ta ville de résidence dans ton profil pour voir les gens du coin.",
     "emptyOnline": "Personne n'est en ligne pour le moment.",
