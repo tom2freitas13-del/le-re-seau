@@ -42,4 +42,20 @@ describe('computeMatchScore', () => {
     const other = { interests: null, status: null, availability: null };
     expect(computeMatchScore(me, other)).toBe(0);
   });
+
+  // Régression du bug corrigé : sans centres d'intérêt d'un côté ou de
+  // l'autre, le statut/dispo en commun doit quand même donner un score non nul
+  // (avant : le "return 0" précoce dès que MES intérêts étaient vides annulait
+  // aussi les bonus, donnant 0% à tout le monde peu importe le reste).
+  it('donne un score non nul via le statut/dispo même sans intérêt d\'aucun côté', () => {
+    const me = { interests: [], status: 'resident', availability: 'year' };
+    const other = { interests: [], status: 'resident', availability: 'year' };
+    expect(computeMatchScore(me, other)).toBeGreaterThan(0);
+  });
+
+  it('donne un score non nul via le statut même si mes intérêts sont vides', () => {
+    const me = { interests: [], status: 'resident', availability: null };
+    const other = { interests: ['plage'], status: 'resident', availability: null };
+    expect(computeMatchScore(me, other)).toBeGreaterThan(0);
+  });
 });
