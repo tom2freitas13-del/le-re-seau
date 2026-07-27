@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { Camera, Instagram, Linkedin, Check, Settings as SettingsIcon, MapPin } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
+import ReferralCard from '@/components/ReferralCard';
 import { cn } from '@/lib/utils';
 import { STATUS_OPTIONS, AVAILABILITY_OPTIONS, INTEREST_OPTIONS, MIN_AGE, MAX_AGE, ILE_DE_RE_CITIES } from '@/lib/constants';
 import { usePendingReportsCount } from '@/lib/usePendingReportsCount';
@@ -386,6 +387,9 @@ export default function Profile() {
           className="btn-ocean w-full py-4 text-base font-semibold flex items-center justify-center gap-2 disabled:opacity-60">
           {loading ? t('profile.saving') : t('profile.saveProfile')}
         </button>
+
+        {/* Parrainage — en accès direct ici aussi, pas seulement dans /settings */}
+        <ReferralCard />
 
         <div className="h-4" />
       </div>
