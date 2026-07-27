@@ -24,6 +24,7 @@ export interface Database {
           linkedin: string | null;
           is_admin: boolean;
           is_banned: boolean;
+          is_pro: boolean;
           last_seen: string | null;
           language: 'fr' | 'en';
           referred_by: string | null;
@@ -46,6 +47,7 @@ export interface Database {
           linkedin?: string | null;
           is_admin?: boolean;
           is_banned?: boolean;
+          is_pro?: boolean;
           last_seen?: string | null;
           language?: 'fr' | 'en';
           referred_by?: string | null;

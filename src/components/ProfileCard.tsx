@@ -1,4 +1,4 @@
-import { MessageCircle, Instagram, Linkedin, Star, MoreVertical, ShieldCheck, UserPlus } from 'lucide-react';
+import { MessageCircle, Instagram, Linkedin, Star, MoreVertical, ShieldCheck, UserPlus, Store } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -22,6 +22,7 @@ export interface ProfileCardProfile {
   instagram?: string | null;
   linkedin?: string | null;
   is_admin?: boolean | null;
+  is_pro?: boolean | null;
   referral_count?: number | null;
 }
 
@@ -53,6 +54,22 @@ export function AmbassadorBadge({ compact = false }: { compact?: boolean }) {
   return (
     <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-primary to-pine px-2 py-0.5 text-[10px] font-semibold text-white flex-shrink-0">
       <UserPlus className="h-3 w-3" /> {t('profileCard.ambassador')}
+    </span>
+  );
+}
+
+export function ProBadge({ compact = false }: { compact?: boolean }) {
+  const { t } = useTranslation();
+  if (compact) {
+    return (
+      <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-gradient-to-r from-sky-400 to-blue-600 flex-shrink-0" title={t('profileCard.pro')}>
+        <Store className="h-2.5 w-2.5 text-white" />
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-sky-400 to-blue-600 px-2 py-0.5 text-[10px] font-semibold text-white flex-shrink-0">
+      <Store className="h-3 w-3" /> {t('profileCard.pro')}
     </span>
   );
 }
@@ -182,6 +199,7 @@ export default function ProfileCard({ profile, matchScore }: ProfileCardProps) {
               <span className="inline-flex h-2.5 w-2.5 rounded-full bg-green-400 ring-2 ring-white/80 flex-shrink-0" title={t('profileCard.online')} />
             )}
             {profile.is_admin && <AdminBadge compact />}
+            {profile.is_pro && <ProBadge compact />}
             {(profile.referral_count ?? 0) >= AMBASSADOR_REFERRAL_THRESHOLD && <AmbassadorBadge compact />}
           </h3>
         </div>

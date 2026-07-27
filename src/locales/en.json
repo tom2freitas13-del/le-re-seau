@@ -800,8 +800,19 @@
       "forum_comment": "Comment",
       "job_offer": "Job offer",
       "job_request": "Service request",
-      "activity": "Activity"
-    }
+      "activity": "Activity",
+      "feed_post": "Feed photo",
+      "feed_comment": "Feed comment"
+    },
+    "proTitle": "Pro accounts",
+    "proSearchPlaceholder": "Search a member by name...",
+    "proSearchHint": "Type a name to find a profile.",
+    "proNoResults": "No profile found.",
+    "makePro": "Make pro account",
+    "removePro": "Remove pro status",
+    "proStatusError": "Error updating pro status.",
+    "userMadePro": "Pro account enabled.",
+    "userRemovedPro": "Pro status removed."
   },
   "reportModal": {
     "title": "Report",
@@ -824,6 +835,7 @@
   "profileCard": {
     "admin": "Admin",
     "ambassador": "Ambassador",
+    "pro": "Partner",
     "online": "Online",
     "anonymous": "Anonymous",
     "message": "Message",

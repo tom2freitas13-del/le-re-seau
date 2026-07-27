@@ -800,8 +800,19 @@
       "forum_comment": "Commentaire",
       "job_offer": "Offre d'emploi",
       "job_request": "Demande de service",
-      "activity": "Activité"
-    }
+      "activity": "Activité",
+      "feed_post": "Photo du fil",
+      "feed_comment": "Commentaire du fil"
+    },
+    "proTitle": "Comptes pro",
+    "proSearchPlaceholder": "Chercher un membre par nom...",
+    "proSearchHint": "Tapez un nom pour trouver un profil.",
+    "proNoResults": "Aucun profil trouvé.",
+    "makePro": "Passer en compte pro",
+    "removePro": "Retirer le statut pro",
+    "proStatusError": "Erreur lors de la mise à jour du statut pro.",
+    "userMadePro": "Compte pro activé.",
+    "userRemovedPro": "Statut pro retiré."
   },
   "reportModal": {
     "title": "Signaler",
@@ -824,6 +835,7 @@
   "profileCard": {
     "admin": "Admin",
     "ambassador": "Ambassadeur",
+    "pro": "Partenaire",
     "online": "En ligne",
     "anonymous": "Anonyme",
     "message": "Message",

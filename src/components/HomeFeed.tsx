@@ -12,7 +12,7 @@ import ProfileDetailModal from '@/components/ProfileDetailModal';
 import MessagePeopleModal from '@/components/MessagePeopleModal';
 import CreateFeedPostModal from '@/components/CreateFeedPostModal';
 import FeedCommentsSheet from '@/components/FeedCommentsSheet';
-import type { ProfileCardProfile } from '@/components/ProfileCard';
+import { ProBadge, type ProfileCardProfile } from '@/components/ProfileCard';
 import { useBlockedUsers } from '@/lib/useBlockedUsers';
 import ConfirmDialog from '@/components/ConfirmDialog';
 
@@ -170,8 +170,9 @@ export default function HomeFeed() {
                         <span className="text-xs font-semibold text-primary">{avatarFallbackInitial(author?.name)}</span>
                       )}
                     </div>
-                    <span className="text-sm font-medium truncate" style={{ fontFamily: 'Jost, sans-serif' }}>
+                    <span className="text-sm font-medium truncate flex items-center gap-1.5" style={{ fontFamily: 'Jost, sans-serif' }}>
                       {author?.name || t('feed.defaultMember')}
+                      {author?.is_pro && <ProBadge compact />}
                     </span>
                   </button>
                   {post.author_id === user.id || isAdmin ? (
