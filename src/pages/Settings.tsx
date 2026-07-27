@@ -4,16 +4,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, LogOut, Info, ShieldCheck, Bell, BellOff, Share, Share2, Languages, UserPlus, Copy, KeyRound, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, LogOut, Info, ShieldCheck, Bell, BellOff, Share, Languages, KeyRound, Eye, EyeOff } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import { cn } from '@/lib/utils';
-import { AMBASSADOR_REFERRAL_THRESHOLD } from '@/lib/constants';
 import DeleteAccountButton from '@/components/DeleteAccountButton';
-import { AmbassadorBadge } from '@/components/ProfileCard';
+import ReferralCard from '@/components/ReferralCard';
 import { isPushSupported, getPushPermissionState, subscribeToPush, unsubscribeFromPush, isIosSafari, isStandalonePwa } from '@/lib/push-notifications';
 import { setLanguage } from '@/lib/i18n';
-import { buildReferralLink } from '@/lib/referral';
-import { shareToWhatsApp } from '@/lib/share';
 import { translateAuthError } from '@/lib/authErrors';
 import { usePendingReportsCount } from '@/lib/usePendingReportsCount';
 
@@ -32,7 +29,6 @@ export default function Settings() {
   const [pushPermission, setPushPermission] = useState<NotificationPermission | 'unsupported'>('default');
   const [pushSubscribed, setPushSubscribed] = useState(false);
   const [pushLoading, setPushLoading] = useState(false);
-  const [referralCount, setReferralCount] = useState(0);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPwd, setShowPwd] = useState(false);
@@ -47,14 +43,6 @@ export default function Settings() {
   }, [user, navigate]);
 
   useEffect(() => { refreshPushState(); }, []);
-
-  const loadReferralCount = useCallback(async () => {
-    if (!user) return;
-    const { count } = await supabase.from('profiles').select('id', { count: 'exact', head: true }).eq('referred_by', user.id);
-    setReferralCount(count || 0);
-  }, [user]);
-
-  useEffect(() => { loadReferralCount(); }, [loadReferralCount]);
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,32 +60,6 @@ export default function Settings() {
     setNewPassword('');
     setConfirmPassword('');
     toast.success(t('settings.passwordUpdated'));
-  };
-
-  const handleShareReferral = async () => {
-    if (!user) return;
-    const url = buildReferralLink(user.id);
-    const shareData = { title: 'Le Ré-seau', text: t('profile.referralShareText'), url };
-    if (navigator.share && navigator.canShare?.(shareData)) {
-      try { await navigator.share(shareData); } catch { /* l'utilisateur a annulé le partage, rien à faire */ }
-      return;
-    }
-    await handleCopyReferral();
-  };
-
-  const handleShareReferralWhatsApp = () => {
-    if (!user) return;
-    shareToWhatsApp(`${t('profile.referralShareText')} ${buildReferralLink(user.id)}`);
-  };
-
-  const handleCopyReferral = async () => {
-    if (!user) return;
-    try {
-      await navigator.clipboard.writeText(buildReferralLink(user.id));
-      toast.success(t('profile.referralLinkCopied'));
-    } catch {
-      toast.error(t('profile.referralCopyError'));
-    }
   };
 
   const refreshPushState = async () => {
@@ -252,40 +214,7 @@ export default function Settings() {
         </div>
 
         {/* Parrainage */}
-        <div className="card-premium p-5">
-          <SectionTitle>{t('profile.referralTitle')}</SectionTitle>
-          <p className="text-xs text-muted-foreground mb-4" style={{ fontFamily: 'Jost, sans-serif' }}>
-            {t('profile.referralDesc')}
-          </p>
-          {referralCount > 0 && (
-            <p className="text-sm mb-3 flex items-center gap-2" style={{ fontFamily: 'Jost, sans-serif' }}>
-              <UserPlus className="h-4 w-4 text-primary" />
-              {t('profile.referralCount', { count: referralCount })}
-            </p>
-          )}
-          {referralCount >= AMBASSADOR_REFERRAL_THRESHOLD ? (
-            <div className="mb-3">
-              <AmbassadorBadge />
-            </div>
-          ) : (
-            <p className="text-xs text-muted-foreground mb-3" style={{ fontFamily: 'Jost, sans-serif' }}>
-              {t('profile.ambassadorProgress', { count: AMBASSADOR_REFERRAL_THRESHOLD - referralCount })}
-            </p>
-          )}
-          <div className="flex gap-2">
-            <button onClick={handleShareReferral} className="btn-ocean flex-1 py-2.5 text-sm flex items-center justify-center gap-1.5">
-              <Share className="h-4 w-4" /> {t('profile.referralShareButton')}
-            </button>
-            <button onClick={handleShareReferralWhatsApp} title={t('profile.referralShareWhatsApp')}
-              className="h-11 w-11 rounded-full border border-border flex items-center justify-center text-[#25D366] hover:bg-[#25D366]/10 flex-shrink-0">
-              <Share2 className="h-4 w-4" />
-            </button>
-            <button onClick={handleCopyReferral} title={t('profile.referralCopyButton')}
-              className="h-11 w-11 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-foreground flex-shrink-0">
-              <Copy className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
+        <ReferralCard />
 
         {/* Liens & session */}
         <div className="card-premium p-5 space-y-1">

@@ -36,6 +36,7 @@ const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const LegalNotice = lazy(() => import("./pages/LegalNotice"));
 const Admin = lazy(() => import("./pages/Admin"));
+const CityPage = lazy(() => import("./pages/CityPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 function RouteLoading() {
@@ -60,7 +61,10 @@ function AppRoutes() {
 
   // BUG FIX / sécurité : un compte banni voit un écran de blocage à la place
   // du reste de l'application, sur toutes les pages sauf celles toujours accessibles.
-  if (!loading && isBanned && !ALWAYS_ACCESSIBLE.includes(location.pathname)) {
+  // Les pages villes (/ile-de-re/*) sont publiques par nature (SEO), donc
+  // toujours accessibles elles aussi, sans lister chacune des 10 communes.
+  const alwaysAccessible = ALWAYS_ACCESSIBLE.includes(location.pathname) || location.pathname.startsWith('/ile-de-re/');
+  if (!loading && isBanned && !alwaysAccessible) {
     return <BannedScreen />;
   }
 
@@ -92,6 +96,7 @@ function AppRoutes() {
           <Route path="/groups/:groupId" element={<GroupChat />} />
           <Route path="/discussions" element={<Discussions />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/ile-de-re/:city" element={<CityPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>

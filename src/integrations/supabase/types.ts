@@ -24,11 +24,13 @@ export interface Database {
           linkedin: string | null;
           is_admin: boolean;
           is_banned: boolean;
+          is_pro: boolean;
           last_seen: string | null;
           language: 'fr' | 'en';
           referred_by: string | null;
           referral_count: number;
           city: string | null;
+          profile_nudge_sent: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -46,11 +48,13 @@ export interface Database {
           linkedin?: string | null;
           is_admin?: boolean;
           is_banned?: boolean;
+          is_pro?: boolean;
           last_seen?: string | null;
           language?: 'fr' | 'en';
           referred_by?: string | null;
           referral_count?: number;
           city?: string | null;
+          profile_nudge_sent?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -664,6 +668,13 @@ export interface Database {
           total_discussions: number;
           total_services: number;
           total_activities: number;
+        };
+        Relationships: [];
+      };
+      city_member_counts: {
+        Row: {
+          city: string;
+          member_count: number;
         };
         Relationships: [];
       };

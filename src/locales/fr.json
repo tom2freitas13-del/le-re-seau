@@ -15,7 +15,17 @@
     "lastSeenHoursAgo": "Vu il y a {{count}} h",
     "lastSeenYesterday": "Vu hier",
     "lastSeenDaysAgo": "Vu il y a {{count}} j",
-    "lastSeenOnDate": "Vu le {{date}}"
+    "lastSeenOnDate": "Vu le {{date}}",
+    "messageTimeJustNow": "À l'instant",
+    "messageTimeMinAgo": "Il y a {{count}}min",
+    "messageTimeHoursAgo": "Il y a {{count}}h",
+    "messageTimeYesterday": "Hier",
+    "messageTimeDaysAgo_one": "Il y a {{count}} jour",
+    "messageTimeDaysAgo_other": "Il y a {{count}} jours",
+    "messageTimeLastWeek": "La semaine dernière",
+    "messageTimeWeeksAgo_one": "Il y a {{count}} semaine",
+    "messageTimeWeeksAgo_other": "Il y a {{count}} semaines",
+    "messageTimeOnDate": "{{date}}"
   },
   "statusOptions": {
     "resident": "J'habite sur l'île",
@@ -212,6 +222,7 @@
     "ctaFinalSubtitle": "Gratuit, sans pub, fait avec ♥ pour l'île.",
     "ctaFinalJoined": "Voir la communauté →",
     "ctaFinalCreate": "Créer mon profil gratuit →",
+    "citiesTitle": "Les villages de l'Île de Ré",
     "footerTagline": "Une plateforme locale indépendante pour connecter les habitants et visiteurs de l'Île de Ré.",
     "footerAbout": "À propos",
     "footerRules": "Règles de la communauté",
@@ -231,6 +242,7 @@
     "noOneYet": "Personne ici pour l'instant",
     "noResultsFor": "Personne dont le prénom commence par \"{{query}}\".",
     "emptySuggestions": "Remplis tes centres d'intérêt dans ton profil pour voir des suggestions !",
+    "emptyInterestFilter": "Personne avec ce centre d'intérêt pour l'instant.",
     "emptyProximity": "Personne dans ta ville pour le moment.",
     "emptyProximityNoCity": "Renseigne ta ville de résidence dans ton profil pour voir les gens du coin.",
     "emptyOnline": "Personne n'est en ligne pour le moment.",
@@ -360,6 +372,17 @@
     "contactBody": "Pour toute demande relative à vos données :",
     "cookiesTitle": "Cookies",
     "cookiesBody": "Nous utilisons uniquement les cookies techniques nécessaires à l'authentification et au fonctionnement du site. Aucun cookie publicitaire ni de suivi tiers."
+  },
+  "cityPage": {
+    "memberCount_one": "{{count}} membre de Le Ré-seau habite à {{city}}",
+    "memberCount_other": "{{count}} membres de Le Ré-seau habitent à {{city}}",
+    "nearbyTitle": "À voir dans le coin",
+    "ctaTitle": "Rejoignez la communauté de {{city}}",
+    "ctaSubtitle": "Activités, rencontres et bons plans entre voisins, toute l'année.",
+    "ctaJoin": "Créer mon profil",
+    "ctaJoined": "Voir la communauté",
+    "otherCitiesTitle": "Les autres villages de l'île",
+    "viewMap": "Voir sur la carte de l'île"
   },
   "about": {
     "title": "Qui sommes-nous",
@@ -800,8 +823,30 @@
       "forum_comment": "Commentaire",
       "job_offer": "Offre d'emploi",
       "job_request": "Demande de service",
-      "activity": "Activité"
-    }
+      "activity": "Activité",
+      "feed_post": "Photo du fil",
+      "feed_comment": "Commentaire du fil"
+    },
+    "proTitle": "Comptes pro",
+    "proSearchPlaceholder": "Chercher un membre par nom...",
+    "proSearchHint": "Tapez un nom pour trouver un profil.",
+    "proNoResults": "Aucun profil trouvé.",
+    "makePro": "Passer en compte pro",
+    "removePro": "Retirer le statut pro",
+    "proStatusError": "Erreur lors de la mise à jour du statut pro.",
+    "userMadePro": "Compte pro activé.",
+    "userRemovedPro": "Statut pro retiré.",
+    "statsTitle": "Stats",
+    "statsTotalMembers": "Membres totaux",
+    "statsActiveToday": "Actifs aujourd'hui",
+    "statsActiveWeek": "Actifs cette semaine",
+    "statsOnlineNow": "En ligne maintenant",
+    "statsNewWeek": "Nouveaux cette semaine",
+    "statsPostsWeek": "Publications cette semaine",
+    "statsSignupTrend": "Nouveaux membres (14 derniers jours)",
+    "statsPostsTrend": "Publications (14 derniers jours)",
+    "statsReportsTitle": "Signalements",
+    "statsPerDay": "ce jour-là"
   },
   "reportModal": {
     "title": "Signaler",
@@ -824,6 +869,7 @@
   "profileCard": {
     "admin": "Admin",
     "ambassador": "Ambassadeur",
+    "pro": "Partenaire",
     "online": "En ligne",
     "anonymous": "Anonyme",
     "message": "Message",

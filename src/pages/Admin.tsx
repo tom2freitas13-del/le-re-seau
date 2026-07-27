@@ -3,10 +3,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ShieldCheck, ArrowLeft, Check, X, Ban, ShieldOff } from 'lucide-react';
+import { ShieldCheck, ArrowLeft, Check, X, Ban, ShieldOff, Store, Search, BarChart3 } from 'lucide-react';
 import { toast } from 'sonner';
 import { REPORT_REASONS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
+import AdminStatsPanel from '@/components/AdminStatsPanel';
 
 interface Report {
   id: string;
@@ -18,6 +19,13 @@ interface Report {
   details: string | null;
   status: string;
   created_at: string;
+}
+
+interface ProSearchResult {
+  user_id: string;
+  name: string | null;
+  photo_url: string | null;
+  is_pro: boolean;
 }
 
 /**
@@ -39,6 +47,11 @@ export default function Admin() {
   const [reportedContent, setReportedContent] = useState<Record<string, string>>({});
   const [filter, setFilter] = useState<'pending' | 'reviewed' | 'dismissed' | 'all'>('pending');
   const [loading, setLoading] = useState(true);
+  const [section, setSection] = useState<'reports' | 'pro' | 'stats'>('reports');
+  const [proQuery, setProQuery] = useState('');
+  const [proResults, setProResults] = useState<ProSearchResult[]>([]);
+  const [proSearching, setProSearching] = useState(false);
+  const [proUpdatingId, setProUpdatingId] = useState<string | null>(null);
 
   // Récupère un aperçu du contenu signalé, table par table selon target_type.
   // 'profile' n'a pas besoin d'aperçu, le nom de la personne suffit.
@@ -142,6 +155,24 @@ export default function Admin() {
     toast.success(currentlyBanned ? t('admin.userUnbanned') : t('admin.userBanned'));
   };
 
+  const searchPro = async (query: string) => {
+    setProQuery(query);
+    if (query.trim().length < 2) { setProResults([]); return; }
+    setProSearching(true);
+    const { data } = await supabase.from('profiles').select('user_id, name, photo_url, is_pro').ilike('name', `%${query.trim()}%`).limit(10);
+    setProSearching(false);
+    setProResults(data || []);
+  };
+
+  const togglePro = async (target: ProSearchResult) => {
+    setProUpdatingId(target.user_id);
+    const { error } = await supabase.from('profiles').update({ is_pro: !target.is_pro }).eq('user_id', target.user_id);
+    setProUpdatingId(null);
+    if (error) { toast.error(t('admin.proStatusError')); return; }
+    setProResults(prev => prev.map(p => p.user_id === target.user_id ? { ...p, is_pro: !p.is_pro } : p));
+    toast.success(target.is_pro ? t('admin.userRemovedPro') : t('admin.userMadePro'));
+  };
+
   if (authLoading || !isAdmin) return null;
 
   return (
@@ -162,6 +193,69 @@ export default function Admin() {
       </div>
 
       <div className="max-w-2xl mx-auto px-4 pt-6">
+        {/* Sections */}
+        <div className="flex gap-2 mb-6">
+          <button onClick={() => setSection('reports')}
+            className={cn('flex-1 rounded-full px-4 py-2.5 text-sm font-medium transition-all',
+              section === 'reports' ? 'bg-primary text-white shadow-md shadow-primary/20' : 'bg-secondary text-muted-foreground')}
+            style={{ fontFamily: 'Jost, sans-serif' }}>
+            {t('admin.title')}
+          </button>
+          <button onClick={() => setSection('pro')}
+            className={cn('flex-1 rounded-full px-4 py-2.5 text-sm font-medium transition-all flex items-center justify-center gap-1.5',
+              section === 'pro' ? 'bg-primary text-white shadow-md shadow-primary/20' : 'bg-secondary text-muted-foreground')}
+            style={{ fontFamily: 'Jost, sans-serif' }}>
+            <Store className="h-3.5 w-3.5" /> {t('admin.proTitle')}
+          </button>
+          <button onClick={() => setSection('stats')}
+            className={cn('flex-1 rounded-full px-4 py-2.5 text-sm font-medium transition-all flex items-center justify-center gap-1.5',
+              section === 'stats' ? 'bg-primary text-white shadow-md shadow-primary/20' : 'bg-secondary text-muted-foreground')}
+            style={{ fontFamily: 'Jost, sans-serif' }}>
+            <BarChart3 className="h-3.5 w-3.5" /> {t('admin.statsTitle')}
+          </button>
+        </div>
+
+        {section === 'stats' && <AdminStatsPanel />}
+
+        {section === 'pro' && (
+          <div className="space-y-3">
+            <div className="relative">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <input value={proQuery} onChange={e => searchPro(e.target.value)}
+                placeholder={t('admin.proSearchPlaceholder')}
+                className="w-full pl-10 pr-4 py-3 rounded-xl border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20"
+                style={{ fontFamily: 'Jost, sans-serif' }} />
+            </div>
+
+            {proQuery.trim().length < 2 ? (
+              <p className="text-center text-sm text-muted-foreground py-8" style={{ fontFamily: 'Jost, sans-serif' }}>{t('admin.proSearchHint')}</p>
+            ) : proSearching ? (
+              <div className="space-y-3">
+                {[1, 2].map(i => <div key={i} className="h-16 rounded-2xl bg-muted animate-pulse" />)}
+              </div>
+            ) : proResults.length === 0 ? (
+              <p className="text-center text-sm text-muted-foreground py-8" style={{ fontFamily: 'Jost, sans-serif' }}>{t('admin.proNoResults')}</p>
+            ) : (
+              proResults.map(p => (
+                <div key={p.user_id} className="card-premium p-4 flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-ocean-light flex items-center justify-center flex-shrink-0 overflow-hidden">
+                    {p.photo_url ? <img src={p.photo_url} alt="" className="h-full w-full object-cover" /> : <Store className="h-4 w-4 text-primary" />}
+                  </div>
+                  <span className="flex-1 text-sm font-medium truncate" style={{ fontFamily: 'Jost, sans-serif' }}>
+                    {p.name || t('admin.defaultUser')}
+                  </span>
+                  <button onClick={() => togglePro(p)} disabled={proUpdatingId === p.user_id}
+                    className={cn('flex items-center gap-1.5 text-xs font-medium px-3 py-2 rounded-full flex-shrink-0 disabled:opacity-50',
+                      p.is_pro ? 'bg-secondary text-muted-foreground' : 'bg-gradient-to-r from-sky-400 to-blue-600 text-white')}>
+                    <Store className="h-3.5 w-3.5" /> {p.is_pro ? t('admin.removePro') : t('admin.makePro')}
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
+        {section === 'reports' && <>
         {/* Filtres */}
         <div className="flex gap-2 mb-6 overflow-x-auto">
           {([
@@ -263,6 +357,7 @@ export default function Admin() {
             })}
           </div>
         )}
+        </>}
       </div>
     </div>
   );

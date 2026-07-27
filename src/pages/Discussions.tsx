@@ -8,7 +8,8 @@ import { MessageCircle, Send, ArrowLeft, Heart, MessageSquare, Mail, Mic, Square
 import { computeMatchScore } from '@/lib/matchScore';
 import { SALONS } from '@/lib/constants';
 import { toast } from 'sonner';
-import { avatarFallbackInitial } from '@/lib/constants';
+import { avatarFallbackInitial, formatMessageTime } from '@/lib/constants';
+import { useTimeTick } from '@/lib/useTimeTick';
 import { cn } from '@/lib/utils';
 import { ReportButton } from '@/components/ReportModal';
 import { useBlockedUsers } from '@/lib/useBlockedUsers';
@@ -721,6 +722,7 @@ function CreateGroupModal({ onClose, onCreated }: { onClose: () => void; onCreat
 function SalonView({ salonId, onBack }: { salonId: string; onBack: () => void }) {
   const { t } = useTranslation();
   const { user, isAdmin } = useAuth();
+  useTimeTick();
   const [messages, setMessages] = useState<SalonMessage[]>([]);
   const [senderNames, setSenderNames] = useState<Record<string, string>>({});
   const [content, setContent] = useState('');
@@ -989,6 +991,9 @@ function SalonView({ salonId, onBack }: { salonId: string; onBack: () => void })
                 onShowLikers={() => openPeopleModal(t('groupChat.likedBy'), likesByMessage[m.id] || [])}
                 onShowViewers={() => openPeopleModal(t('groupChat.seenBy'), readsByMessage[m.id] || [])}
               />
+              <span className="text-[10px] text-muted-foreground px-1 mt-0.5" style={{ fontFamily: 'Jost, sans-serif' }}>
+                {formatMessageTime(m.created_at, t)}
+              </span>
             </div>
           );
         })}
@@ -1064,6 +1069,7 @@ function SalonView({ salonId, onBack }: { salonId: string; onBack: () => void })
 function ForumView({ onBack }: { onBack: () => void }) {
   const { t } = useTranslation();
   const { user, isAdmin } = useAuth();
+  useTimeTick();
   const [posts, setPosts] = useState<ForumPost[]>([]);
   const [authorNames, setAuthorNames] = useState<Record<string, string>>({});
   const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
@@ -1296,7 +1302,10 @@ function ForumView({ onBack }: { onBack: () => void }) {
                 <div className="h-8 w-8 rounded-full bg-ocean-light flex items-center justify-center text-xs font-semibold text-primary/70 flex-shrink-0">
                   {avatarFallbackInitial(authorNames[post.author_id])}
                 </div>
-                <span className="text-sm font-medium" style={{ fontFamily: 'Jost, sans-serif' }}>{authorNames[post.author_id] || t('forumView.defaultMember')}</span>
+                <span className="text-sm font-medium flex items-center gap-1.5" style={{ fontFamily: 'Jost, sans-serif' }}>
+                  {authorNames[post.author_id] || t('forumView.defaultMember')}
+                  <span className="text-[10px] font-normal text-muted-foreground">· {formatMessageTime(post.created_at, t)}</span>
+                </span>
               </button>
               {post.author_id !== user?.id && (
                 isAdmin ? (
@@ -1381,7 +1390,8 @@ function ForumView({ onBack }: { onBack: () => void }) {
 function CommentsPanel({ postId, onCommentAdded }: { postId: string; onCommentAdded: () => void }) {
   const { t } = useTranslation();
   const { user, isAdmin } = useAuth();
-  const [comments, setComments] = useState<{ id: string; content: string; author_id: string }[]>([]);
+  useTimeTick();
+  const [comments, setComments] = useState<{ id: string; content: string; author_id: string; created_at: string }[]>([]);
   const [names, setNames] = useState<Record<string, string>>({});
   const [text, setText] = useState('');
   const [profileModalUserId, setProfileModalUserId] = useState<string | null>(null);
@@ -1389,7 +1399,7 @@ function CommentsPanel({ postId, onCommentAdded }: { postId: string; onCommentAd
   const [deletingComment, setDeletingComment] = useState(false);
 
   const load = useCallback(async () => {
-    const { data } = await supabase.from('forum_comments').select('id, content, author_id').eq('post_id', postId).order('created_at', { ascending: true });
+    const { data } = await supabase.from('forum_comments').select('id, content, author_id, created_at').eq('post_id', postId).order('created_at', { ascending: true });
     if (data) {
       setComments(data);
       const ids = Array.from(new Set(data.map(c => c.author_id)));
@@ -1431,6 +1441,8 @@ function CommentsPanel({ postId, onCommentAdded }: { postId: string; onCommentAd
             </button>
             {' : '}
             <span className="text-muted-foreground">{c.content}</span>
+            {' '}
+            <span className="text-[10px] text-muted-foreground/70">· {formatMessageTime(c.created_at, t)}</span>
           </p>
           {c.author_id !== user?.id && (
             isAdmin ? (

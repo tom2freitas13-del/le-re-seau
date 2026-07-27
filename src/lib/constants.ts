@@ -119,3 +119,34 @@ export function formatLastSeen(lastSeen: string | null | undefined, t: TFunc): s
   if (diffDays < 7) return t('common.lastSeenDaysAgo', { count: diffDays });
   return t('common.lastSeenOnDate', { date: new Date(lastSeen).toLocaleDateString() });
 }
+
+function pad2(n: number): string {
+  return n.toString().padStart(2, '0');
+}
+
+// Format fixe JJ/MM/AAAA HH:mm (indépendant de la langue du navigateur,
+// contrairement à toLocaleDateString() par défaut) pour un affichage
+// prévisible des messages anciens, façon Instagram/Snapchat.
+function formatAbsoluteDateTime(date: Date): string {
+  return `${pad2(date.getDate())}/${pad2(date.getMonth() + 1)}/${date.getFullYear()} ${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
+}
+
+// Horodatage des messages (chat privé, groupes, salons, forum) façon
+// Instagram/Snapchat : relatif et qui se met à jour tout seul tant que le
+// message est récent (voir useTimeTick), puis bascule sur une date absolue
+// passé un certain âge.
+export function formatMessageTime(iso: string, t: TFunc): string {
+  const date = new Date(iso);
+  const diffMs = Date.now() - date.getTime();
+  const diffMin = Math.floor(diffMs / 60_000);
+  if (diffMin < 1) return t('common.messageTimeJustNow');
+  if (diffMin < 60) return t('common.messageTimeMinAgo', { count: diffMin });
+  const diffH = Math.floor(diffMin / 60);
+  if (diffH < 24) return t('common.messageTimeHoursAgo', { count: diffH });
+  const diffDays = Math.floor(diffH / 24);
+  if (diffDays === 1) return t('common.messageTimeYesterday');
+  if (diffDays < 7) return t('common.messageTimeDaysAgo', { count: diffDays });
+  if (diffDays < 14) return t('common.messageTimeLastWeek');
+  if (diffDays < 30) return t('common.messageTimeWeeksAgo', { count: Math.floor(diffDays / 7) });
+  return t('common.messageTimeOnDate', { date: formatAbsoluteDateTime(date) });
+}

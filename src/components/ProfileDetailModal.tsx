@@ -2,7 +2,7 @@ import { X, MessageCircle, Instagram, Linkedin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { avatarFallbackInitial } from '@/lib/constants';
-import { statusConfig, interestConfig, ProfileCardProfile, AdminBadge, AmbassadorBadge } from '@/components/ProfileCard';
+import { statusConfig, interestConfig, ProfileCardProfile, AdminBadge, AmbassadorBadge, ProBadge } from '@/components/ProfileCard';
 import { AMBASSADOR_REFERRAL_THRESHOLD } from '@/lib/constants';
 
 interface ProfileDetailModalProps {
@@ -58,6 +58,7 @@ export default function ProfileDetailModal({ profile, matchScore, onClose }: Pro
           <h2 className="font-display text-3xl font-semibold text-white flex items-center gap-2" style={{ textShadow: '0 1px 8px rgba(0,0,0,0.4)' }}>
             {profile.name || t('profileCard.anonymous')}{profile.age ? `, ${profile.age}` : ''}
             {profile.is_admin && <AdminBadge />}
+            {profile.is_pro && <ProBadge />}
             {(profile.referral_count ?? 0) >= AMBASSADOR_REFERRAL_THRESHOLD && <AmbassadorBadge />}
           </h2>
         </div>

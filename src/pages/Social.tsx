@@ -10,6 +10,8 @@ import { useBlockedUsers } from '@/lib/useBlockedUsers';
 import { usePresence } from '@/lib/presence-context';
 import StoriesBar from '@/components/StoriesBar';
 import { computeMatchScore } from '@/lib/matchScore';
+import { INTEREST_OPTIONS } from '@/lib/constants';
+import { cn } from '@/lib/utils';
 
 interface Profile {
   id: string;
@@ -33,9 +35,16 @@ const tabs = [
   { id: 'online', labelKey: 'social.tabOnline', icon: Wifi },
 ];
 
-// BUG FIX (#15) : pagination simple pour éviter de charger des centaines
-// de profils d'un coup si la communauté grandit.
-const PAGE_SIZE = 20;
+// BUG FIX : le tri par compatibilité ne portait que sur la page déjà chargée
+// (20 profils par défaut) — un très bon match plus loin dans l'ordre brut de
+// la table restait invisible tant qu'on n'avait pas cliqué "Voir plus de
+// membres" assez de fois pour l'atteindre, et il redisparaissait à chaque
+// fois qu'on quittait puis revenait sur la page (le chargement repart à la
+// première page). La communauté est encore petite : on charge tout le monde
+// d'un coup et on trie/score sur l'ensemble réel, puis on ne pagine plus que
+// l'affichage (qui, lui, ne perd jamais rien puisqu'il découpe une liste déjà
+// complète et déjà triée).
+const DISPLAY_PAGE_SIZE = 20;
 
 export default function Social() {
   const { t } = useTranslation();
@@ -45,13 +54,17 @@ export default function Social() {
   const [myProfile, setMyProfile] = useState<Profile | null>(null);
   const [activeTab, setActiveTab] = useState('suggestions');
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
+  const [visibleCount, setVisibleCount] = useState(DISPLAY_PAGE_SIZE);
   const { isBlocked } = useBlockedUsers();
   const { onlineUserIds, onlineCount } = usePresence();
+  const [onlineProfiles, setOnlineProfiles] = useState<Profile[]>([]);
   const [search, setSearch] = useState('');
   const [searchResults, setSearchResults] = useState<Profile[] | null>(null);
   const [searching, setSearching] = useState(false);
+  const [interestFilter, setInterestFilter] = useState<string[]>([]);
+
+  const toggleInterestFilter = (value: string) =>
+    setInterestFilter(prev => prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value]);
 
   const loadMyProfile = useCallback(async () => {
     if (!user) return;
@@ -59,29 +72,41 @@ export default function Social() {
     if (data) setMyProfile(data);
   }, [user]);
 
-  const loadProfilesPage = useCallback(async (pageNum: number, reset: boolean) => {
+  const loadAllProfiles = useCallback(async () => {
     if (!user) return;
-    setLoading(reset);
-    const from = pageNum * PAGE_SIZE;
-    const to = from + PAGE_SIZE - 1;
+    setLoading(true);
     const { data } = await supabase
       .from('profiles')
       .select('*')
       .not('name', 'is', null)
       .neq('user_id', user.id)
-      .range(from, to);
-    if (data) {
-      setProfiles(prev => reset ? data : [...prev, ...data]);
-      setHasMore(data.length === PAGE_SIZE);
-    }
+      .limit(1000);
+    setProfiles(data || []);
     setLoading(false);
   }, [user]);
 
   useEffect(() => {
     if (!user) { navigate('/auth'); return; }
     loadMyProfile();
-    loadProfilesPage(0, true);
-  }, [user, navigate, loadMyProfile, loadProfilesPage]);
+    loadAllProfiles();
+  }, [user, navigate, loadMyProfile, loadAllProfiles]);
+
+  // Revenir à l'affichage court quand on change d'onglet, sinon le nombre de
+  // cartes déjà "dépliées" sur un onglet resterait affiché en changeant d'onglet.
+  useEffect(() => { setVisibleCount(DISPLAY_PAGE_SIZE); }, [activeTab]);
+
+  // BUG FIX : l'onglet "En ligne" filtrait la liste déjà paginée (20 profils
+  // chargés par défaut) — si les membres en ligne n'étaient pas dans cette
+  // première page, l'onglet affichait "personne" alors que le compteur du
+  // header (basé sur la présence temps réel, indépendant de la pagination)
+  // les comptait bien. On récupère donc directement les profils des membres
+  // en ligne, quelle que soit la page chargée par ailleurs.
+  useEffect(() => {
+    if (!user) return;
+    const ids = Array.from(onlineUserIds).filter(id => id !== user.id);
+    if (ids.length === 0) { setOnlineProfiles([]); return; }
+    supabase.from('profiles').select('*').in('user_id', ids).then(({ data }) => setOnlineProfiles(data || []));
+  }, [user, onlineUserIds]);
 
   // Recherche par nom sur l'ensemble des membres (pas seulement la page
   // déjà chargée), pour retrouver tout le monde même au-delà de la pagination.
@@ -104,11 +129,7 @@ export default function Social() {
     return () => clearTimeout(handle);
   }, [search, user]);
 
-  const loadMore = () => {
-    const next = page + 1;
-    setPage(next);
-    loadProfilesPage(next, false);
-  };
+  const loadMore = () => setVisibleCount(v => v + DISPLAY_PAGE_SIZE);
 
   // Sécurité : on retire les profils des utilisateurs bloqués par la personne connectée,
   // pour qu'elle ne voie plus jamais leur contenu nulle part dans l'appli.
@@ -135,8 +156,9 @@ export default function Social() {
     .filter(({ profile }) => !!profile.city && profile.city === myProfile?.city)
     .sort((a, b) => b.score - a.score);
 
-  const online = withScores
-    .filter(({ profile }) => onlineUserIds.has(profile.user_id))
+  const online = onlineProfiles
+    .filter(profile => !isBlocked(profile.user_id))
+    .map(profile => ({ profile, score: myProfile ? computeMatchScore(myProfile, profile) : 0 }))
     .sort((a, b) => b.score - a.score);
 
   const currentList = activeTab === 'suggestions' ? suggestions
@@ -144,9 +166,15 @@ export default function Social() {
     : online;
 
   const isSearching = searchResults !== null;
-  const displayedList = isSearching
+  const matchesInterestFilter = ({ profile }: { profile: Profile }) =>
+    interestFilter.length === 0 || interestFilter.some(i => profile.interests?.includes(i));
+
+  const displayedList = (isSearching
     ? searchResults.filter(p => !isBlocked(p.user_id)).map(p => ({ profile: p, score: 0 }))
-    : currentList;
+    : currentList
+  ).filter(matchesInterestFilter);
+  const visibleList = isSearching ? displayedList : displayedList.slice(0, visibleCount);
+  const hasMore = !isSearching && displayedList.length > visibleCount;
 
   return (
     <div className="min-h-screen pb-28 bg-background">
@@ -180,6 +208,24 @@ export default function Social() {
               className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20"
               style={{ fontFamily: 'Jost, sans-serif' }}
             />
+          </div>
+
+          {/* Filtre par centre d'intérêt — se compose avec les onglets et la
+              recherche par nom plutôt que de les remplacer, pour pouvoir
+              chercher "qui aime le surf" sans perdre le tri par compatibilité. */}
+          <div className="flex gap-1.5 overflow-x-auto pb-1 mb-3 -mx-4 px-4">
+            {INTEREST_OPTIONS.map(opt => (
+              <button key={opt.value} onClick={() => toggleInterestFilter(opt.value)}
+                className={cn(
+                  'flex-shrink-0 rounded-full px-3 py-1.5 text-xs font-medium border transition-all duration-200',
+                  interestFilter.includes(opt.value)
+                    ? 'border-primary bg-ocean-light text-primary shadow-sm'
+                    : 'border-border bg-background text-muted-foreground hover:bg-secondary'
+                )}
+                style={{ fontFamily: 'Jost, sans-serif' }}>
+                {opt.emoji} {t(`interestOptions.${opt.value}`)}
+              </button>
+            ))}
           </div>
 
           {/* Tabs */}
@@ -219,7 +265,9 @@ export default function Social() {
             <div className="text-5xl mb-4">{isSearching ? '🔍' : '🏖️'}</div>
             <h3 className="font-display text-xl mb-2">{isSearching ? t('social.noResults') : t('social.noOneYet')}</h3>
             <p className="text-sm text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>
-              {isSearching
+              {interestFilter.length > 0
+                ? t('social.emptyInterestFilter')
+                : isSearching
                 ? t('social.noResultsFor', { query: search.trim() })
                 : activeTab === 'suggestions'
                 ? t('social.emptySuggestions')
@@ -239,11 +287,11 @@ export default function Social() {
               </div>
             )}
             <div className="grid grid-cols-2 gap-3">
-              {displayedList.map(({ profile, score }) => (
+              {visibleList.map(({ profile, score }) => (
                 <ProfileCard key={profile.id} profile={profile} matchScore={score} />
               ))}
             </div>
-            {!isSearching && hasMore && (
+            {hasMore && (
               <button onClick={loadMore} className="btn-ghost w-full mt-4">
                 {t('social.loadMore')}
               </button>
