@@ -33,9 +33,16 @@ const tabs = [
   { id: 'online', labelKey: 'social.tabOnline', icon: Wifi },
 ];
 
-// BUG FIX (#15) : pagination simple pour éviter de charger des centaines
-// de profils d'un coup si la communauté grandit.
-const PAGE_SIZE = 20;
+// BUG FIX : le tri par compatibilité ne portait que sur la page déjà chargée
+// (20 profils par défaut) — un très bon match plus loin dans l'ordre brut de
+// la table restait invisible tant qu'on n'avait pas cliqué "Voir plus de
+// membres" assez de fois pour l'atteindre, et il redisparaissait à chaque
+// fois qu'on quittait puis revenait sur la page (le chargement repart à la
+// première page). La communauté est encore petite : on charge tout le monde
+// d'un coup et on trie/score sur l'ensemble réel, puis on ne pagine plus que
+// l'affichage (qui, lui, ne perd jamais rien puisqu'il découpe une liste déjà
+// complète et déjà triée).
+const DISPLAY_PAGE_SIZE = 20;
 
 export default function Social() {
   const { t } = useTranslation();
@@ -45,8 +52,7 @@ export default function Social() {
   const [myProfile, setMyProfile] = useState<Profile | null>(null);
   const [activeTab, setActiveTab] = useState('suggestions');
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
+  const [visibleCount, setVisibleCount] = useState(DISPLAY_PAGE_SIZE);
   const { isBlocked } = useBlockedUsers();
   const { onlineUserIds, onlineCount } = usePresence();
   const [onlineProfiles, setOnlineProfiles] = useState<Profile[]>([]);
@@ -60,29 +66,28 @@ export default function Social() {
     if (data) setMyProfile(data);
   }, [user]);
 
-  const loadProfilesPage = useCallback(async (pageNum: number, reset: boolean) => {
+  const loadAllProfiles = useCallback(async () => {
     if (!user) return;
-    setLoading(reset);
-    const from = pageNum * PAGE_SIZE;
-    const to = from + PAGE_SIZE - 1;
+    setLoading(true);
     const { data } = await supabase
       .from('profiles')
       .select('*')
       .not('name', 'is', null)
       .neq('user_id', user.id)
-      .range(from, to);
-    if (data) {
-      setProfiles(prev => reset ? data : [...prev, ...data]);
-      setHasMore(data.length === PAGE_SIZE);
-    }
+      .limit(1000);
+    setProfiles(data || []);
     setLoading(false);
   }, [user]);
 
   useEffect(() => {
     if (!user) { navigate('/auth'); return; }
     loadMyProfile();
-    loadProfilesPage(0, true);
-  }, [user, navigate, loadMyProfile, loadProfilesPage]);
+    loadAllProfiles();
+  }, [user, navigate, loadMyProfile, loadAllProfiles]);
+
+  // Revenir à l'affichage court quand on change d'onglet, sinon le nombre de
+  // cartes déjà "dépliées" sur un onglet resterait affiché en changeant d'onglet.
+  useEffect(() => { setVisibleCount(DISPLAY_PAGE_SIZE); }, [activeTab]);
 
   // BUG FIX : l'onglet "En ligne" filtrait la liste déjà paginée (20 profils
   // chargés par défaut) — si les membres en ligne n'étaient pas dans cette
@@ -118,11 +123,7 @@ export default function Social() {
     return () => clearTimeout(handle);
   }, [search, user]);
 
-  const loadMore = () => {
-    const next = page + 1;
-    setPage(next);
-    loadProfilesPage(next, false);
-  };
+  const loadMore = () => setVisibleCount(v => v + DISPLAY_PAGE_SIZE);
 
   // Sécurité : on retire les profils des utilisateurs bloqués par la personne connectée,
   // pour qu'elle ne voie plus jamais leur contenu nulle part dans l'appli.
@@ -162,6 +163,8 @@ export default function Social() {
   const displayedList = isSearching
     ? searchResults.filter(p => !isBlocked(p.user_id)).map(p => ({ profile: p, score: 0 }))
     : currentList;
+  const visibleList = isSearching ? displayedList : displayedList.slice(0, visibleCount);
+  const hasMore = !isSearching && displayedList.length > visibleCount;
 
   return (
     <div className="min-h-screen pb-28 bg-background">
@@ -254,11 +257,11 @@ export default function Social() {
               </div>
             )}
             <div className="grid grid-cols-2 gap-3">
-              {displayedList.map(({ profile, score }) => (
+              {visibleList.map(({ profile, score }) => (
                 <ProfileCard key={profile.id} profile={profile} matchScore={score} />
               ))}
             </div>
-            {!isSearching && hasMore && (
+            {hasMore && (
               <button onClick={loadMore} className="btn-ghost w-full mt-4">
                 {t('social.loadMore')}
               </button>
