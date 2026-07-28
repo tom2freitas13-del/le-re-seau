@@ -53,7 +53,17 @@
     "running": "Running",
     "pêche": "Pêche",
     "yoga": "Yoga",
-    "randonnée": "Rando"
+    "randonnée": "Rando",
+    "restaurants": "Restaurants",
+    "enfants": "Enfants",
+    "animaux": "Animaux"
+  },
+  "forumCategories": {
+    "question": "Question",
+    "info": "Info",
+    "bon_plan": "Bon plan",
+    "entraide": "Entraide",
+    "discussion": "Discussion"
   },
   "jobCategories": {
     "all": "Tous",
@@ -181,6 +191,16 @@
     "notADatingApp": "Le Ré-seau n'est pas une appli de rencontre : c'est un réseau d'entraide et de sorties entre voisins, sans publicité, réservé à l'île.",
     "ctaProfile": "Créer mon profil",
     "ctaExplore": "Je préfère d'abord jeter un œil aux sorties"
+  },
+  "todayOnIsland": {
+    "title": "Aujourd'hui sur l'île",
+    "onlineNow_one": "{{count}} personne en ligne maintenant",
+    "onlineNow_other": "{{count}} personnes en ligne maintenant",
+    "activitiesToday_one": "{{count}} activité aujourd'hui",
+    "activitiesToday_other": "{{count}} activités aujourd'hui",
+    "noActivities": "Aucune activité prévue aujourd'hui.",
+    "goodDeals": "Bons plans récents",
+    "viewMap": "Voir sur la carte de l'île"
   },
   "home": {
     "badgeIsland": "🌊 Île de Ré",
@@ -708,6 +728,19 @@
     "viewActivity": "Voir l'activité",
     "togglePois": "Afficher/masquer les spots connus de l'île"
   },
+  "userReviews": {
+    "title": "Avis des membres",
+    "count_one": "{{count}} avis",
+    "count_other": "{{count}} avis",
+    "commentPlaceholder": "Raconte ton expérience (optionnel)",
+    "submit": "Envoyer mon avis",
+    "sending": "Envoi...",
+    "sent": "Avis envoyé !",
+    "sendError": "Impossible d'envoyer l'avis.",
+    "noReviews": "Aucun avis pour l'instant.",
+    "deleteModeration": "Supprimer (modération)",
+    "deleteError": "Impossible de supprimer l'avis."
+  },
   "poiDetail": {
     "reviewCount_one": "{{count}} avis",
     "reviewCount_other": "{{count}} avis",
@@ -870,6 +903,7 @@
     "admin": "Admin",
     "ambassador": "Ambassadeur",
     "pro": "Partenaire",
+    "availableNow": "Dispo maintenant",
     "online": "En ligne",
     "anonymous": "Anonyme",
     "message": "Message",
@@ -908,6 +942,15 @@
     "availability": "Disponibilité",
     "interests": "Centres d'intérêt",
     "interestsDesc": "Sélectionnez vos activités — elles servent à vous proposer des profils compatibles.",
+    "availableNowTitle": "Disponible maintenant",
+    "availableNowDesc": "Signale aux autres que tu es dispo pour un café, une session ou juste discuter, pendant 2h.",
+    "availableNowCountdown_one": "Actif encore {{count}} min",
+    "availableNowCountdown_other": "Actif encore {{count}} min",
+    "availableNowStart": "Activer",
+    "availableNowStop": "Arrêter",
+    "availableNowEnabled": "Tu es visible comme disponible pendant 2h !",
+    "availableNowDisabled": "Statut désactivé.",
+    "availableNowError": "Impossible de mettre à jour ton statut.",
     "cityTitle": "Ma ville de résidence",
     "cityDesc": "Reçois une notification quand une activité est créée près de chez toi.",
     "saving": "Sauvegarde...",

@@ -27,6 +27,8 @@ interface Profile {
   instagram?: string | null;
   linkedin?: string | null;
   is_admin?: boolean | null;
+  is_pro?: boolean | null;
+  available_now_until?: string | null;
 }
 
 const tabs = [

@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { Camera, Instagram, Linkedin, Check, Settings as SettingsIcon, MapPin } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import ReferralCard from '@/components/ReferralCard';
+import AvailableNowToggle from '@/components/AvailableNowToggle';
 import { cn } from '@/lib/utils';
 import { STATUS_OPTIONS, AVAILABILITY_OPTIONS, INTEREST_OPTIONS, MIN_AGE, MAX_AGE, ILE_DE_RE_CITIES } from '@/lib/constants';
 import { usePendingReportsCount } from '@/lib/usePendingReportsCount';
@@ -336,6 +337,9 @@ export default function Profile() {
             ))}
           </div>
         </div>
+
+        {/* Disponible maintenant (statut éphémère 2h, distinct de Disponibilité ci-dessus) */}
+        <AvailableNowToggle />
 
         {/* Ville de résidence */}
         <div className="card-premium p-5">

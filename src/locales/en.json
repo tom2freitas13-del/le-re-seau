@@ -53,7 +53,17 @@
     "running": "Running",
     "pêche": "Fishing",
     "yoga": "Yoga",
-    "randonnée": "Hiking"
+    "randonnée": "Hiking",
+    "restaurants": "Restaurants",
+    "enfants": "Kids",
+    "animaux": "Pets"
+  },
+  "forumCategories": {
+    "question": "Question",
+    "info": "Info",
+    "bon_plan": "Good deal",
+    "entraide": "Help",
+    "discussion": "Discussion"
   },
   "jobCategories": {
     "all": "All",
@@ -181,6 +191,16 @@
     "notADatingApp": "Le Ré-seau is not a dating app: it's a neighbourly network for outings and mutual help, ad-free, island-only.",
     "ctaProfile": "Create my profile",
     "ctaExplore": "I'd rather browse the outings first"
+  },
+  "todayOnIsland": {
+    "title": "Today on the island",
+    "onlineNow_one": "{{count}} person online now",
+    "onlineNow_other": "{{count}} people online now",
+    "activitiesToday_one": "{{count}} activity today",
+    "activitiesToday_other": "{{count}} activities today",
+    "noActivities": "No activity planned today.",
+    "goodDeals": "Recent good deals",
+    "viewMap": "View on the island map"
   },
   "home": {
     "badgeIsland": "🌊 Île de Ré",
@@ -708,6 +728,19 @@
     "viewActivity": "View activity",
     "togglePois": "Show/hide the island's known spots"
   },
+  "userReviews": {
+    "title": "Member reviews",
+    "count_one": "{{count}} review",
+    "count_other": "{{count}} reviews",
+    "commentPlaceholder": "Share your experience (optional)",
+    "submit": "Send my review",
+    "sending": "Sending...",
+    "sent": "Review sent!",
+    "sendError": "Couldn't send the review.",
+    "noReviews": "No reviews yet.",
+    "deleteModeration": "Delete (moderation)",
+    "deleteError": "Couldn't delete the review."
+  },
   "poiDetail": {
     "reviewCount_one": "{{count}} review",
     "reviewCount_other": "{{count}} reviews",
@@ -870,6 +903,7 @@
     "admin": "Admin",
     "ambassador": "Ambassador",
     "pro": "Partner",
+    "availableNow": "Available now",
     "online": "Online",
     "anonymous": "Anonymous",
     "message": "Message",
@@ -906,6 +940,15 @@
     "linkedinPlaceholder": "Your LinkedIn handle",
     "myStatus": "My status on the island",
     "availability": "Availability",
+    "availableNowTitle": "Available now",
+    "availableNowDesc": "Let others know you're up for a coffee, a session, or just a chat, for the next 2h.",
+    "availableNowCountdown_one": "Active for {{count}} more min",
+    "availableNowCountdown_other": "Active for {{count}} more min",
+    "availableNowStart": "Turn on",
+    "availableNowStop": "Turn off",
+    "availableNowEnabled": "You're now visible as available for 2h!",
+    "availableNowDisabled": "Status turned off.",
+    "availableNowError": "Couldn't update your status.",
     "cityTitle": "My city of residence",
     "cityDesc": "Get notified when an activity is created near you.",
     "interests": "Interests",

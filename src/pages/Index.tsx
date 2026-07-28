@@ -8,6 +8,7 @@ import LocalImage from '@/components/LocalImage';
 import { usePresence } from '@/lib/presence-context';
 import BottomNav from '@/components/BottomNav';
 import HomeFeed from '@/components/HomeFeed';
+import TodayOnIsland from '@/components/TodayOnIsland';
 import { CITY_CONTENT } from '@/lib/cityContent';
 
 // Photos locales : mets tes fichiers dans public/images/ et ils seront
@@ -147,6 +148,13 @@ export default function Index() {
           </div>
         </div>
       </div>
+
+      {/* ── AUJOURD'HUI SUR L'ÎLE (météo, activités du jour, bons plans) ── */}
+      {user && (
+        <div className="px-4 pt-8 max-w-lg mx-auto">
+          <TodayOnIsland />
+        </div>
+      )}
 
       {/* ── FIL DE LA COMMUNAUTÉ (photos partagées par les membres) ── */}
       <HomeFeed />

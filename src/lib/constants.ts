@@ -29,7 +29,26 @@ export const INTEREST_OPTIONS = [
   { value: 'pêche', emoji: '🎣' },
   { value: 'yoga', emoji: '🧘' },
   { value: 'randonnée', emoji: '🥾' },
+  { value: 'restaurants', emoji: '🍽️' },
+  { value: 'enfants', emoji: '👶' },
+  { value: 'animaux', emoji: '🐾' },
 ] as const;
+
+// Catégories des posts du forum — stockées dans forum_posts.tag (texte libre,
+// sans contrainte en base). 'general' reste la valeur par défaut historique
+// des posts créés avant l'ajout de ce sélecteur ; on l'affiche comme
+// "Discussion" au même titre qu'une valeur absente/inconnue.
+export const FORUM_CATEGORIES = [
+  { value: 'question', emoji: '❓' },
+  { value: 'info', emoji: 'ℹ️' },
+  { value: 'bon_plan', emoji: '🎁' },
+  { value: 'entraide', emoji: '🤝' },
+  { value: 'discussion', emoji: '💬' },
+] as const;
+
+export function normalizeForumTag(tag: string | null | undefined): string {
+  return tag && FORUM_CATEGORIES.some(c => c.value === tag) ? tag : 'discussion';
+}
 
 export const JOB_CATEGORIES = [
   { value: '', emoji: '🗂️' },

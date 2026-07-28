@@ -8,7 +8,7 @@ import { MessageCircle, Send, ArrowLeft, Heart, MessageSquare, Mail, Mic, Square
 import { computeMatchScore } from '@/lib/matchScore';
 import { SALONS } from '@/lib/constants';
 import { toast } from 'sonner';
-import { avatarFallbackInitial, formatMessageTime } from '@/lib/constants';
+import { avatarFallbackInitial, formatMessageTime, FORUM_CATEGORIES, normalizeForumTag } from '@/lib/constants';
 import { useTimeTick } from '@/lib/useTimeTick';
 import { cn } from '@/lib/utils';
 import { ReportButton } from '@/components/ReportModal';
@@ -1078,6 +1078,7 @@ function ForumView({ onBack }: { onBack: () => void }) {
   const [myLikes, setMyLikes] = useState<Set<string>>(new Set());
   const [commentCounts, setCommentCounts] = useState<Record<string, number>>({});
   const [newPost, setNewPost] = useState('');
+  const [newPostTag, setNewPostTag] = useState<string>('discussion');
   const [posting, setPosting] = useState(false);
   const [openComments, setOpenComments] = useState<string | null>(null);
   const [confirmDeletePostId, setConfirmDeletePostId] = useState<string | null>(null);
@@ -1156,11 +1157,12 @@ function ForumView({ onBack }: { onBack: () => void }) {
     const { error } = await supabase.from('forum_posts').insert({
       author_id: user.id,
       content: text,
+      tag: newPostTag,
       attachment_url: pendingAttachment?.url,
       attachment_type: pendingAttachment?.type,
     });
     if (error) toast.error(t('forumView.publishError'));
-    else { setNewPost(''); setPendingAttachment(null); loadPosts(); }
+    else { setNewPost(''); setNewPostTag('discussion'); setPendingAttachment(null); loadPosts(); }
     setPosting(false);
   };
 
@@ -1253,6 +1255,21 @@ function ForumView({ onBack }: { onBack: () => void }) {
             className="w-full px-3 py-2 rounded-xl border border-border bg-background text-base outline-none focus:ring-2 focus:ring-primary/20 resize-none"
             style={{ fontFamily: 'Jost, sans-serif' }} />
 
+          <div className="flex gap-1.5 overflow-x-auto pb-1">
+            {FORUM_CATEGORIES.map(cat => (
+              <button key={cat.value} type="button" onClick={() => setNewPostTag(cat.value)}
+                className={cn(
+                  'flex-shrink-0 rounded-full px-3 py-1.5 text-xs font-medium border transition-all duration-200',
+                  newPostTag === cat.value
+                    ? 'border-primary bg-ocean-light text-primary shadow-sm'
+                    : 'border-border bg-background text-muted-foreground hover:bg-secondary'
+                )}
+                style={{ fontFamily: 'Jost, sans-serif' }}>
+                {cat.emoji} {t(`forumCategories.${cat.value}`)}
+              </button>
+            ))}
+          </div>
+
           {pendingAttachment && (
             <div className="relative inline-block">
               {pendingAttachment.type === 'image' ? (
@@ -1316,6 +1333,14 @@ function ForumView({ onBack }: { onBack: () => void }) {
                 )
               )}
             </div>
+            {(() => {
+              const cat = FORUM_CATEGORIES.find(c => c.value === normalizeForumTag(post.tag));
+              return cat && (
+                <span className="pill bg-ocean-light text-primary inline-flex items-center gap-1 w-fit">
+                  {cat.emoji} {t(`forumCategories.${cat.value}`)}
+                </span>
+              );
+            })()}
             <p className="text-sm" style={{ fontFamily: 'Jost, sans-serif', lineHeight: 1.6 }}>{post.content}</p>
             {post.attachment_type === 'image' && post.attachment_url && (
               <a href={post.attachment_url} target="_blank" rel="noopener noreferrer" className="block rounded-xl overflow-hidden">

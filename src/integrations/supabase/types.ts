@@ -31,6 +31,7 @@ export interface Database {
           referral_count: number;
           city: string | null;
           profile_nudge_sent: boolean;
+          available_now_until: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -55,6 +56,7 @@ export interface Database {
           referral_count?: number;
           city?: string | null;
           profile_nudge_sent?: boolean;
+          available_now_until?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -293,6 +295,26 @@ export interface Database {
           created_at?: string;
         };
         Update: Partial<Database['public']['Tables']['poi_reviews']['Insert']>;
+        Relationships: [];
+      };
+      user_reviews: {
+        Row: {
+          id: string;
+          reviewer_id: string;
+          reviewed_user_id: string;
+          rating: number;
+          comment: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          reviewer_id: string;
+          reviewed_user_id: string;
+          rating: number;
+          comment?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['user_reviews']['Insert']>;
         Relationships: [];
       };
       group_reads: {

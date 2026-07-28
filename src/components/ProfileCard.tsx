@@ -24,6 +24,14 @@ export interface ProfileCardProfile {
   is_admin?: boolean | null;
   is_pro?: boolean | null;
   referral_count?: number | null;
+  available_now_until?: string | null;
+}
+
+// "Disponible maintenant" est éphémère (2h, voir Profile.tsx) — calculé à
+// l'affichage plutôt que stocké comme un booléen, pour ne pas avoir besoin
+// d'un job de nettoyage : passé le délai, ce n'est plus vrai tout seul.
+export function isAvailableNow(profile: Pick<ProfileCardProfile, 'available_now_until'>): boolean {
+  return !!profile.available_now_until && new Date(profile.available_now_until).getTime() > Date.now();
 }
 
 export function AdminBadge({ compact = false }: { compact?: boolean }) {
@@ -74,6 +82,22 @@ export function ProBadge({ compact = false }: { compact?: boolean }) {
   );
 }
 
+export function AvailableNowBadge({ compact = false }: { compact?: boolean }) {
+  const { t } = useTranslation();
+  if (compact) {
+    return (
+      <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-green-500 flex-shrink-0" title={t('profileCard.availableNow')}>
+        <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-green-500 px-2 py-0.5 text-[10px] font-semibold text-white flex-shrink-0">
+      <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" /> {t('profileCard.availableNow')}
+    </span>
+  );
+}
+
 interface ProfileCardProps {
   profile: ProfileCardProfile;
   matchScore?: number;
@@ -98,6 +122,9 @@ export const interestConfig: Record<string, { emoji: string }> = {
   pêche: { emoji: '🎣' },
   yoga: { emoji: '🧘' },
   randonnée: { emoji: '🥾' },
+  restaurants: { emoji: '🍽️' },
+  enfants: { emoji: '👶' },
+  animaux: { emoji: '🐾' },
 };
 
 export default function ProfileCard({ profile, matchScore }: ProfileCardProps) {
@@ -201,6 +228,7 @@ export default function ProfileCard({ profile, matchScore }: ProfileCardProps) {
             {profile.is_admin && <AdminBadge compact />}
             {profile.is_pro && <ProBadge compact />}
             {(profile.referral_count ?? 0) >= AMBASSADOR_REFERRAL_THRESHOLD && <AmbassadorBadge compact />}
+            {isAvailableNow(profile) && <AvailableNowBadge compact />}
           </h3>
         </div>
       </div>

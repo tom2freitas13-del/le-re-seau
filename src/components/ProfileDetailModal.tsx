@@ -2,8 +2,9 @@ import { X, MessageCircle, Instagram, Linkedin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { avatarFallbackInitial } from '@/lib/constants';
-import { statusConfig, interestConfig, ProfileCardProfile, AdminBadge, AmbassadorBadge, ProBadge } from '@/components/ProfileCard';
+import { statusConfig, interestConfig, ProfileCardProfile, AdminBadge, AmbassadorBadge, ProBadge, AvailableNowBadge, isAvailableNow } from '@/components/ProfileCard';
 import { AMBASSADOR_REFERRAL_THRESHOLD } from '@/lib/constants';
+import UserReviewsSection from '@/components/UserReviewsSection';
 
 interface ProfileDetailModalProps {
   profile: ProfileCardProfile;
@@ -60,6 +61,7 @@ export default function ProfileDetailModal({ profile, matchScore, onClose }: Pro
             {profile.is_admin && <AdminBadge />}
             {profile.is_pro && <ProBadge />}
             {(profile.referral_count ?? 0) >= AMBASSADOR_REFERRAL_THRESHOLD && <AmbassadorBadge />}
+            {isAvailableNow(profile) && <AvailableNowBadge />}
           </h2>
         </div>
       </div>
@@ -111,6 +113,8 @@ export default function ProfileDetailModal({ profile, matchScore, onClose }: Pro
             )}
           </div>
         )}
+
+        <UserReviewsSection userId={profile.user_id} />
       </div>
 
       <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-md border-t border-border/50 px-4 py-3 safe-area-bottom">
