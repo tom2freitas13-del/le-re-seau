@@ -22,6 +22,7 @@ import MessageLikeReadRow from '@/components/MessageLikeReadRow';
 import { useLongPress } from '@/lib/useLongPress';
 import MiniProfileModal from '@/components/MiniProfileModal';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import ImageLightbox from '@/components/ImageLightbox';
 
 interface SalonMessage {
   id: string;
@@ -1082,6 +1083,7 @@ function ForumView({ onBack }: { onBack: () => void }) {
   const [posting, setPosting] = useState(false);
   const [openComments, setOpenComments] = useState<string | null>(null);
   const [confirmDeletePostId, setConfirmDeletePostId] = useState<string | null>(null);
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const [deletingPost, setDeletingPost] = useState(false);
   const { isBlocked } = useBlockedUsers();
   const [pendingAttachment, setPendingAttachment] = useState<{ url: string; type: 'audio' | 'image' } | null>(null);
@@ -1343,9 +1345,9 @@ function ForumView({ onBack }: { onBack: () => void }) {
             })()}
             <p className="text-sm" style={{ fontFamily: 'Jost, sans-serif', lineHeight: 1.6 }}>{post.content}</p>
             {post.attachment_type === 'image' && post.attachment_url && (
-              <a href={post.attachment_url} target="_blank" rel="noopener noreferrer" className="block rounded-xl overflow-hidden">
+              <button onClick={() => setLightboxUrl(post.attachment_url!)} className="block w-full rounded-xl overflow-hidden">
                 <img src={post.attachment_url} alt={t('forumView.postPhoto')} className="max-h-72 w-full object-cover" />
-              </a>
+              </button>
             )}
             {post.attachment_type === 'audio' && post.attachment_url && (
               <audio controls src={post.attachment_url} className="h-9 max-w-full" />
@@ -1402,6 +1404,8 @@ function ForumView({ onBack }: { onBack: () => void }) {
           onConfirm={() => handleDeletePost(confirmDeletePostId)}
         />
       )}
+
+      {lightboxUrl && <ImageLightbox src={lightboxUrl} alt={t('forumView.postPhoto')} onClose={() => setLightboxUrl(null)} />}
 
       <BottomNav />
     </div>
