@@ -1,10 +1,13 @@
 import { X, MessageCircle, Instagram, Linkedin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { avatarFallbackInitial } from '@/lib/constants';
 import { statusConfig, interestConfig, ProfileCardProfile, AdminBadge, AmbassadorBadge, ProBadge, AvailableNowBadge, isAvailableNow } from '@/components/ProfileCard';
 import { AMBASSADOR_REFERRAL_THRESHOLD } from '@/lib/constants';
 import UserReviewsSection from '@/components/UserReviewsSection';
+import CommunityLevelBadge from '@/components/CommunityLevelBadge';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ProfileDetailModalProps {
   profile: ProfileCardProfile;
@@ -22,6 +25,12 @@ export default function ProfileDetailModal({ profile, matchScore, onClose }: Pro
   const { t } = useTranslation();
   const navigate = useNavigate();
   const status = profile.status ? statusConfig[profile.status] : null;
+  const [totalPoints, setTotalPoints] = useState(0);
+
+  useEffect(() => {
+    supabase.from('user_points_summary').select('total_points').eq('user_id', profile.user_id).maybeSingle()
+      .then(({ data }) => setTotalPoints(data?.total_points || 0));
+  }, [profile.user_id]);
 
   return (
     <div className="fixed inset-0 z-[100] bg-background overflow-y-auto">
@@ -62,6 +71,7 @@ export default function ProfileDetailModal({ profile, matchScore, onClose }: Pro
             {profile.is_pro && <ProBadge />}
             {(profile.referral_count ?? 0) >= AMBASSADOR_REFERRAL_THRESHOLD && <AmbassadorBadge />}
             {isAvailableNow(profile) && <AvailableNowBadge />}
+            {totalPoints > 0 && <CommunityLevelBadge totalPoints={totalPoints} />}
           </h2>
         </div>
       </div>

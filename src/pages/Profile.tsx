@@ -8,6 +8,7 @@ import { Camera, Instagram, Linkedin, Check, Settings as SettingsIcon, MapPin } 
 import BottomNav from '@/components/BottomNav';
 import ReferralCard from '@/components/ReferralCard';
 import AvailableNowToggle from '@/components/AvailableNowToggle';
+import { CommunityLevelProgress } from '@/components/CommunityLevelBadge';
 import { cn } from '@/lib/utils';
 import { STATUS_OPTIONS, AVAILABILITY_OPTIONS, INTEREST_OPTIONS, MIN_AGE, MAX_AGE, ILE_DE_RE_CITIES } from '@/lib/constants';
 import { usePendingReportsCount } from '@/lib/usePendingReportsCount';
@@ -40,6 +41,7 @@ export default function Profile() {
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [instagram, setInstagram] = useState('');
   const [linkedin, setLinkedin] = useState('');
+  const [totalPoints, setTotalPoints] = useState(0);
 
   const loadProfile = useCallback(async () => {
     if (!user) return;
@@ -56,6 +58,12 @@ export default function Profile() {
       setInstagram(data.instagram || '');
       setLinkedin(data.linkedin || '');
     }
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.from('user_points_summary').select('total_points').eq('user_id', user.id).maybeSingle()
+      .then(({ data }) => setTotalPoints(data?.total_points || 0));
   }, [user]);
 
   useEffect(() => {
@@ -169,6 +177,11 @@ export default function Profile() {
       </div>
 
       <div className="max-w-lg mx-auto px-4 pt-6 space-y-6">
+
+        {/* Niveau communautaire (gamification) */}
+        <div className="card-premium p-5">
+          <CommunityLevelProgress totalPoints={totalPoints} />
+        </div>
 
         {/* Progression du profil */}
         {completionPercent < 100 && (

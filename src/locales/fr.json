@@ -786,6 +786,22 @@
     "deleteModeration": "Supprimer (modération)",
     "deleteError": "Impossible de supprimer l'avis."
   },
+  "communityLevels": {
+    "newcomer": "Nouveau membre",
+    "cyclist": "Cycliste de l'île",
+    "regular": "Habitué·e",
+    "seasoned": "Loup de mer",
+    "pillar": "Pilier local",
+    "lighthouse": "Gardien du phare",
+    "pointsTotal_one": "{{count}} point",
+    "pointsTotal_other": "{{count}} points",
+    "nextLevel": "Encore {{points}} points avant {{emoji}} {{level}}"
+  },
+  "leaderboard": {
+    "title": "Les plus utiles cette semaine",
+    "points_one": "{{count}} pt",
+    "points_other": "{{count}} pts"
+  },
   "poiDetail": {
     "reviewCount_one": "{{count}} avis",
     "reviewCount_other": "{{count}} avis",

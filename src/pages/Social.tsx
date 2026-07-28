@@ -9,6 +9,7 @@ import { Users, Sparkles, MapPin, Wifi, Search, X } from 'lucide-react';
 import { useBlockedUsers } from '@/lib/useBlockedUsers';
 import { usePresence } from '@/lib/presence-context';
 import StoriesBar from '@/components/StoriesBar';
+import WeeklyLeaderboard from '@/components/WeeklyLeaderboard';
 import { computeMatchScore } from '@/lib/matchScore';
 import { INTEREST_OPTIONS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
@@ -291,6 +292,7 @@ export default function Social() {
 
       {/* Content */}
       <div className="max-w-lg mx-auto px-4 pt-6">
+        {!isSearching && !isCityFiltering && <WeeklyLeaderboard />}
         {(loading && !isSearching) || (isSearching && searching) ? (
           <div className="grid grid-cols-2 gap-3">
             {[1,2,3,4].map(i => (

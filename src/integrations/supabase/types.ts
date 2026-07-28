@@ -317,6 +317,24 @@ export interface Database {
         Update: Partial<Database['public']['Tables']['user_reviews']['Insert']>;
         Relationships: [];
       };
+      user_points_ledger: {
+        Row: {
+          id: string;
+          user_id: string;
+          points: number;
+          reason: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          points: number;
+          reason: string;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['user_points_ledger']['Insert']>;
+        Relationships: [];
+      };
       group_reads: {
         Row: {
           id: string;
@@ -697,6 +715,14 @@ export interface Database {
         Row: {
           city: string;
           member_count: number;
+        };
+        Relationships: [];
+      };
+      user_points_summary: {
+        Row: {
+          user_id: string;
+          total_points: number;
+          points_this_week: number;
         };
         Relationships: [];
       };

@@ -786,6 +786,22 @@
     "deleteModeration": "Delete (moderation)",
     "deleteError": "Couldn't delete the review."
   },
+  "communityLevels": {
+    "newcomer": "New member",
+    "cyclist": "Island cyclist",
+    "regular": "Regular",
+    "seasoned": "Old sea dog",
+    "pillar": "Local pillar",
+    "lighthouse": "Lighthouse keeper",
+    "pointsTotal_one": "{{count}} point",
+    "pointsTotal_other": "{{count}} points",
+    "nextLevel": "{{points}} more points to {{emoji}} {{level}}"
+  },
+  "leaderboard": {
+    "title": "Most helpful this week",
+    "points_one": "{{count}} pt",
+    "points_other": "{{count}} pts"
+  },
   "poiDetail": {
     "reviewCount_one": "{{count}} review",
     "reviewCount_other": "{{count}} reviews",
