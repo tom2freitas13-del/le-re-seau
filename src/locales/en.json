@@ -395,6 +395,8 @@
     "cookiesBody": "We only use technical cookies necessary for authentication and the site's operation. No advertising or third-party tracking cookies."
   },
   "cityPage": {
+    "metaTitle": "{{city}} — local Île de Ré community | Le Ré-seau",
+    "metaDescription": "{{tagline}}. Join the local community of {{city}} on Le Ré-seau: activities, meetups and local tips between Île de Ré neighbors.",
     "memberCount_one": "{{count}} Le Ré-seau member lives in {{city}}",
     "memberCount_other": "{{count}} Le Ré-seau members live in {{city}}",
     "nearbyTitle": "Worth seeing nearby",
@@ -404,6 +406,48 @@
     "ctaJoined": "See the community",
     "otherCitiesTitle": "The island's other villages",
     "viewMap": "View on the island map"
+  },
+  "cityVillages": {
+    "rivedoux-plage": {
+      "tagline": "The island's gateway",
+      "description": "The first village as you arrive via the bridge, Rivedoux-Plage is a family-friendly town with fine sandy beaches, a casino, and easy access to the mainland — the perfect spot to start exploring the island."
+    },
+    "la-flotte": {
+      "tagline": "One of France's Most Beautiful Villages",
+      "description": "A picturesque fishing port officially ranked among France's Most Beautiful Villages, La Flotte charms visitors with its arcaded streets, renowned covered market, and lively harbourside lined with restaurants."
+    },
+    "sainte-marie-de-re": {
+      "tagline": "Beaches and vineyards",
+      "description": "Between La Flotte and Le Bois-Plage, Sainte-Marie-de-Ré offers a long stretch of fine sand (Les Grenettes, a beginner-friendly surf spot) and stretches across part of the island's vineyards."
+    },
+    "saint-martin-de-re": {
+      "tagline": "The island's historic capital",
+      "description": "The island's main town, Saint-Martin-de-Ré is known for its Vauban citadel, a UNESCO World Heritage Site, and its fortified harbour, now buzzing with restaurants, bars, and shops."
+    },
+    "le-bois-plage-en-re": {
+      "tagline": "The island's largest village",
+      "description": "The island's most populous village, Le Bois-Plage-en-Ré combines long beaches (Les Gollandières), a lively market, and part of the local vineyard — a great balance between village life and relaxation."
+    },
+    "la-couarde-sur-mer": {
+      "tagline": "Young and lively vibe",
+      "description": "Known for its buzzing summer atmosphere, La Couarde-sur-Mer draws a younger crowd with its dunes, Peu Ragot beach, and La Pergola, the island's historic nightclub open since 1936."
+    },
+    "ars-en-re": {
+      "tagline": "The black-and-white steeple, a sailors' landmark",
+      "description": "Recognisable by its black-and-white painted steeple (a historic landmark for sailors), Ars-en-Ré is surrounded by the Fier d'Ars salt marshes and the Lilleau des Niges nature reserve, a haven for birds and bike rides."
+    },
+    "loix": {
+      "tagline": "The smallest village, between marshes and oysters",
+      "description": "A peninsula tucked away from the tourist bustle, Loix is the island's smallest village, surrounded by salt marshes and oyster farms — an authentic stop for those seeking calm."
+    },
+    "les-portes-en-re": {
+      "tagline": "The wild nature of the island's north",
+      "description": "The northernmost village on the island, Les Portes-en-Ré charms with its unspoiled nature — pine forest, dunes, and Trousse-Chemise beach, made famous by Charles Aznavour's song."
+    },
+    "saint-clement-des-baleines": {
+      "tagline": "The island's tip and its iconic lighthouse",
+      "description": "At the north-western tip of the island, Saint-Clément-des-Baleines is home to the famous Phare des Baleines lighthouse and the Conche des Baleines, one of the island's most beautiful beaches, known for its stunning sunsets."
+    }
   },
   "about": {
     "title": "About us",

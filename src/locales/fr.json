@@ -395,6 +395,8 @@
     "cookiesBody": "Nous utilisons uniquement les cookies techniques nécessaires à l'authentification et au fonctionnement du site. Aucun cookie publicitaire ni de suivi tiers."
   },
   "cityPage": {
+    "metaTitle": "{{city}} — communauté locale île de Ré | Le Ré-seau",
+    "metaDescription": "{{tagline}}. Rejoignez la communauté locale de {{city}} sur Le Ré-seau : activités, rencontres et bons plans entre voisins de l'Île de Ré.",
     "memberCount_one": "{{count}} membre de Le Ré-seau habite à {{city}}",
     "memberCount_other": "{{count}} membres de Le Ré-seau habitent à {{city}}",
     "nearbyTitle": "À voir dans le coin",
@@ -404,6 +406,48 @@
     "ctaJoined": "Voir la communauté",
     "otherCitiesTitle": "Les autres villages de l'île",
     "viewMap": "Voir sur la carte de l'île"
+  },
+  "cityVillages": {
+    "rivedoux-plage": {
+      "tagline": "La porte d'entrée de l'île",
+      "description": "Premier village en arrivant par le pont, Rivedoux-Plage est une commune familiale avec ses plages de sable fin, son casino et sa proximité immédiate avec le continent — l'endroit idéal pour découvrir l'île sans s'enfoncer trop loin."
+    },
+    "la-flotte": {
+      "tagline": "Un des Plus Beaux Villages de France",
+      "description": "Port de pêche pittoresque classé parmi Les Plus Beaux Villages de France, La Flotte séduit avec ses ruelles à arcades, son marché couvert réputé et son quai animé bordé de restaurants."
+    },
+    "sainte-marie-de-re": {
+      "tagline": "Plages et vignoble",
+      "description": "Entre La Flotte et Le Bois-Plage, Sainte-Marie-de-Ré offre une longue plage de sable fin (Les Grenettes, spot de surf accessible aux débutants) et s'étend sur une partie du vignoble de l'île."
+    },
+    "saint-martin-de-re": {
+      "tagline": "La capitale historique de l'île",
+      "description": "Chef-lieu de l'île, Saint-Martin-de-Ré est connue pour sa citadelle Vauban classée au patrimoine mondial de l'UNESCO et son port fortifié, aujourd'hui animé de restaurants, bars et boutiques."
+    },
+    "le-bois-plage-en-re": {
+      "tagline": "Le plus grand village de l'île",
+      "description": "Village le plus peuplé de l'île, Le Bois-Plage-en-Ré combine de longues plages (Les Gollandières), un marché animé et une partie du vignoble local — un bon équilibre entre vie de village et farniente."
+    },
+    "la-couarde-sur-mer": {
+      "tagline": "Ambiance jeune et festive",
+      "description": "Réputée pour son ambiance estivale animée, La Couarde-sur-Mer attire une clientèle plutôt jeune avec ses dunes, sa plage du Peu Ragot et La Pergola, discothèque historique de l'île ouverte depuis 1936."
+    },
+    "ars-en-re": {
+      "tagline": "Le clocher noir et blanc, repère des marins",
+      "description": "Reconnaissable à son clocher peint en noir et blanc (un amer historique pour les marins), Ars-en-Ré est entourée des marais salants du Fier d'Ars et de la réserve naturelle de Lilleau des Niges, un paradis pour les oiseaux et les balades à vélo."
+    },
+    "loix": {
+      "tagline": "Le plus petit village, entre marais et huîtres",
+      "description": "Presqu'île à l'écart de l'agitation touristique, Loix est le plus petit village de l'île, entouré de marais salants et de parcs à huîtres — une étape authentique pour qui cherche du calme."
+    },
+    "les-portes-en-re": {
+      "tagline": "La nature sauvage du nord de l'île",
+      "description": "Village le plus au nord de l'île, Les Portes-en-Ré séduit par sa nature préservée — forêt de pins, dunes, et la plage de Trousse-Chemise, rendue célèbre par la chanson de Charles Aznavour."
+    },
+    "saint-clement-des-baleines": {
+      "tagline": "La pointe de l'île et son phare emblématique",
+      "description": "À l'extrémité nord-ouest de l'île, Saint-Clément-des-Baleines abrite le célèbre Phare des Baleines et la Conche des Baleines, l'une des plus belles plages de l'île avec ses couchers de soleil réputés."
+    }
   },
   "about": {
     "title": "Qui sommes-nous",

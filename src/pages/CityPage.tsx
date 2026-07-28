@@ -38,9 +38,12 @@ export default function CityPage() {
       .then(({ data }) => setPois(data || []));
   }, [cityData]);
 
+  const tagline = cityData ? t(`cityVillages.${cityData.slug}.tagline`) : '';
+  const description = cityData ? t(`cityVillages.${cityData.slug}.description`) : '';
+
   useSeo(
-    cityData ? `${cityData.name} — communauté locale île de Ré | Le Ré-seau` : 'Le Ré-seau',
-    cityData ? `${cityData.tagline}. Rejoignez la communauté locale de ${cityData.name} sur Le Ré-seau : activités, rencontres et bons plans entre voisins de l'Île de Ré.` : ''
+    cityData ? t('cityPage.metaTitle', { city: cityData.name }) : 'Le Ré-seau',
+    cityData ? t('cityPage.metaDescription', { tagline, city: cityData.name }) : ''
   );
 
   if (!cityData) return <NotFound />;
@@ -65,14 +68,14 @@ export default function CityPage() {
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 text-white">
           <span className="text-5xl mb-3">{cityData.emoji}</span>
           <h2 className="font-display text-3xl md:text-4xl font-semibold">{cityData.name}</h2>
-          <p className="text-sm md:text-base mt-2 opacity-90 max-w-md">{cityData.tagline}</p>
+          <p className="text-sm md:text-base mt-2 opacity-90 max-w-md">{tagline}</p>
         </div>
       </div>
 
       <div className="max-w-3xl mx-auto px-4 py-10 space-y-8">
         {/* Description */}
         <p className="text-foreground/90 leading-relaxed" style={{ fontFamily: 'Jost, sans-serif', lineHeight: 1.7 }}>
-          {cityData.description}
+          {description}
         </p>
 
         {memberCount > 0 && (
