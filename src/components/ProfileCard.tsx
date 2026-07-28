@@ -230,7 +230,7 @@ export default function ProfileCard({ profile, matchScore, totalPoints }: Profil
             {profile.is_pro && <ProBadge compact />}
             {(profile.referral_count ?? 0) >= AMBASSADOR_REFERRAL_THRESHOLD && <AmbassadorBadge compact />}
             {isAvailableNow(profile) && <AvailableNowBadge compact />}
-            {!!totalPoints && totalPoints > 0 && <CommunityLevelBadge totalPoints={totalPoints} compact />}
+            <CommunityLevelBadge totalPoints={totalPoints ?? 0} compact />
           </h3>
         </div>
       </div>

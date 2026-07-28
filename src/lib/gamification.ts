@@ -38,9 +38,10 @@ export interface PointAction {
 }
 
 export const POINT_ACTIONS: PointAction[] = [
-  { reason: 'activity_created', points: 5, emoji: '📅' },
-  { reason: 'activity_first_participant', points: 10, emoji: '🎉' },
+  { reason: 'referral_joined', points: 15, emoji: '🌊' },
+  { reason: 'profile_completed', points: 10, emoji: '📝' },
+  { reason: 'activity_first_participant', points: 5, emoji: '🎉' },
+  { reason: 'activity_created', points: 3, emoji: '📅' },
   { reason: 'review_received', points: 2, emoji: '🤝' },
   { reason: 'question_answered', points: 1, emoji: '💬' },
-  { reason: 'referral_joined', points: 5, emoji: '🌊' },
 ];

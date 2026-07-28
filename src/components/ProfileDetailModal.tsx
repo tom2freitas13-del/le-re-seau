@@ -71,7 +71,7 @@ export default function ProfileDetailModal({ profile, matchScore, onClose }: Pro
             {profile.is_pro && <ProBadge />}
             {(profile.referral_count ?? 0) >= AMBASSADOR_REFERRAL_THRESHOLD && <AmbassadorBadge />}
             {isAvailableNow(profile) && <AvailableNowBadge />}
-            {totalPoints > 0 && <CommunityLevelBadge totalPoints={totalPoints} />}
+            <CommunityLevelBadge totalPoints={totalPoints} />
           </h2>
         </div>
       </div>
