@@ -8,6 +8,7 @@ import BlockButton from '@/components/BlockButton';
 import { useBlockedUsers } from '@/lib/useBlockedUsers';
 import ProfileDetailModal from '@/components/ProfileDetailModal';
 import { usePresence } from '@/lib/presence-context';
+import CommunityLevelBadge from '@/components/CommunityLevelBadge';
 
 export interface ProfileCardProfile {
   id: string;
@@ -101,6 +102,7 @@ export function AvailableNowBadge({ compact = false }: { compact?: boolean }) {
 interface ProfileCardProps {
   profile: ProfileCardProfile;
   matchScore?: number;
+  totalPoints?: number;
 }
 
 // Le libellé affiché vient de la traduction i18n (clés statusLabels.*/interestOptions.*
@@ -126,7 +128,7 @@ export const interestConfig: Record<string, { emoji: string }> = {
   animaux: { emoji: '🐾' },
 };
 
-export default function ProfileCard({ profile, matchScore }: ProfileCardProps) {
+export default function ProfileCard({ profile, matchScore, totalPoints }: ProfileCardProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const status = profile.status ? statusConfig[profile.status] : null;
@@ -228,6 +230,7 @@ export default function ProfileCard({ profile, matchScore }: ProfileCardProps) {
             {profile.is_pro && <ProBadge compact />}
             {(profile.referral_count ?? 0) >= AMBASSADOR_REFERRAL_THRESHOLD && <AmbassadorBadge compact />}
             {isAvailableNow(profile) && <AvailableNowBadge compact />}
+            {!!totalPoints && totalPoints > 0 && <CommunityLevelBadge totalPoints={totalPoints} compact />}
           </h3>
         </div>
       </div>

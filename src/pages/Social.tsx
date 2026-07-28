@@ -67,6 +67,7 @@ export default function Social() {
   const [searchResults, setSearchResults] = useState<Profile[] | null>(null);
   const [searching, setSearching] = useState(false);
   const [interestFilter, setInterestFilter] = useState<string[]>([]);
+  const [pointsMap, setPointsMap] = useState<Record<string, number>>({});
 
   const toggleInterestFilter = (value: string) =>
     setInterestFilter(prev => prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value]);
@@ -95,6 +96,15 @@ export default function Social() {
     loadMyProfile();
     loadAllProfiles();
   }, [user, navigate, loadMyProfile, loadAllProfiles]);
+
+  // Chargé une seule fois pour tout le monde (vue déjà agrégée, table encore
+  // petite) — évite une requête par carte pour afficher le rang de chacun.
+  useEffect(() => {
+    if (!user) return;
+    supabase.from('user_points_summary').select('user_id, total_points').then(({ data }) => {
+      setPointsMap(Object.fromEntries((data || []).map(row => [row.user_id, row.total_points])));
+    });
+  }, [user]);
 
   // Revenir à l'affichage court quand on change d'onglet ou de filtre ville,
   // sinon le nombre de cartes déjà "dépliées" resterait affiché en changeant.
@@ -329,7 +339,7 @@ export default function Social() {
             )}
             <div className="grid grid-cols-2 gap-3">
               {visibleList.map(({ profile, score }) => (
-                <ProfileCard key={profile.id} profile={profile} matchScore={score} />
+                <ProfileCard key={profile.id} profile={profile} matchScore={score} totalPoints={pointsMap[profile.user_id]} />
               ))}
             </div>
             {hasMore && (
