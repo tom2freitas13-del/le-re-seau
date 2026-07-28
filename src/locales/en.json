@@ -262,6 +262,8 @@
     "noResultsFor": "No one whose first name starts with \"{{query}}\".",
     "emptySuggestions": "Fill in your interests in your profile to see suggestions!",
     "emptyInterestFilter": "No one with that interest yet.",
+    "cityFilterLabel": "Members in {{city}}",
+    "emptyCityFilter": "No one has set {{city}} as their city of residence yet.",
     "emptyProximity": "No one in your city right now.",
     "emptyProximityNoCity": "Set your city of residence in your profile to see people nearby.",
     "emptyOnline": "No one is online right now.",

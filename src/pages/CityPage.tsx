@@ -110,7 +110,7 @@ export default function CityPage() {
         <div className="rounded-3xl p-8 text-center" style={{ background: 'linear-gradient(135deg, hsl(196 60% 22%), hsl(200 65% 15%))' }}>
           <h3 className="font-display text-2xl font-semibold text-white mb-2">{t('cityPage.ctaTitle', { city: cityData.name })}</h3>
           <p className="text-white/70 text-sm mb-6" style={{ fontFamily: 'Jost, sans-serif' }}>{t('cityPage.ctaSubtitle')}</p>
-          <button onClick={() => navigate(user ? '/social' : '/auth')}
+          <button onClick={() => navigate(user ? `/social?city=${encodeURIComponent(cityData.name)}` : '/auth')}
             className="bg-white text-primary rounded-full px-8 py-3.5 font-semibold text-sm tracking-wide hover:shadow-xl transition-all hover:-translate-y-0.5"
             style={{ fontFamily: 'Jost, sans-serif' }}>
             {user ? t('cityPage.ctaJoined') : t('cityPage.ctaJoin')}

@@ -3,9 +3,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import ProfileCard from '@/components/ProfileCard';
 import BottomNav from '@/components/BottomNav';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Users, Sparkles, MapPin, Wifi, Search } from 'lucide-react';
+import { Users, Sparkles, MapPin, Wifi, Search, X } from 'lucide-react';
 import { useBlockedUsers } from '@/lib/useBlockedUsers';
 import { usePresence } from '@/lib/presence-context';
 import StoriesBar from '@/components/StoriesBar';
@@ -52,6 +52,8 @@ export default function Social() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const cityFilter = searchParams.get('city');
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [myProfile, setMyProfile] = useState<Profile | null>(null);
   const [activeTab, setActiveTab] = useState('suggestions');
@@ -93,9 +95,17 @@ export default function Social() {
     loadAllProfiles();
   }, [user, navigate, loadMyProfile, loadAllProfiles]);
 
-  // Revenir à l'affichage court quand on change d'onglet, sinon le nombre de
-  // cartes déjà "dépliées" sur un onglet resterait affiché en changeant d'onglet.
-  useEffect(() => { setVisibleCount(DISPLAY_PAGE_SIZE); }, [activeTab]);
+  // Revenir à l'affichage court quand on change d'onglet ou de filtre ville,
+  // sinon le nombre de cartes déjà "dépliées" resterait affiché en changeant.
+  useEffect(() => { setVisibleCount(DISPLAY_PAGE_SIZE); }, [activeTab, cityFilter]);
+
+  // Arrivée depuis "Voir la communauté" d'une page ville (/social?city=...) :
+  // clique sur un onglet = on revient au tri normal, pas de mélange des deux modes.
+  const selectTab = (id: string) => {
+    setActiveTab(id);
+    if (cityFilter) setSearchParams(prev => { prev.delete('city'); return prev; }, { replace: true });
+  };
+  const clearCityFilter = () => setSearchParams(prev => { prev.delete('city'); return prev; }, { replace: true });
 
   // BUG FIX : l'onglet "En ligne" filtrait la liste déjà paginée (20 profils
   // chargés par défaut) — si les membres en ligne n'étaient pas dans cette
@@ -167,12 +177,23 @@ export default function Social() {
     : activeTab === 'proximity' ? proximity
     : online;
 
+  // Arrivée depuis "Voir la communauté" sur une page ville
+  // (/social?city=Ars-en-Ré) : tout le monde ayant mis cette ville comme
+  // "ville de résidence", pas seulement celle du profil du visiteur (donc
+  // distinct de l'onglet "À proximité", qui compare à SA PROPRE ville).
+  const cityFilteredList = cityFilter
+    ? withScores.filter(({ profile }) => profile.city === cityFilter).sort((a, b) => b.score - a.score)
+    : [];
+
   const isSearching = searchResults !== null;
+  const isCityFiltering = !!cityFilter && !isSearching;
   const matchesInterestFilter = ({ profile }: { profile: Profile }) =>
     interestFilter.length === 0 || interestFilter.some(i => profile.interests?.includes(i));
 
   const displayedList = (isSearching
     ? searchResults.filter(p => !isBlocked(p.user_id)).map(p => ({ profile: p, score: 0 }))
+    : isCityFiltering
+    ? cityFilteredList
     : currentList
   ).filter(matchesInterestFilter);
   const visibleList = isSearching ? displayedList : displayedList.slice(0, visibleCount);
@@ -230,21 +251,35 @@ export default function Social() {
             ))}
           </div>
 
-          {/* Tabs */}
-          <div className={`flex gap-2 ${isSearching ? 'opacity-40 pointer-events-none' : ''}`}>
-            {tabs.map(({ id, labelKey, icon: Icon }) => (
-              <button key={id} onClick={() => setActiveTab(id)}
-                className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 ${
-                  activeTab === id
-                    ? 'bg-primary text-white shadow-md shadow-primary/20'
-                    : 'bg-secondary text-muted-foreground hover:text-foreground'
-                }`}
-                style={{ fontFamily: 'Jost, sans-serif' }}>
-                <Icon className="h-3.5 w-3.5" />
-                {t(labelKey)}
+          {/* Filtre ville (arrivée depuis une page village publique) — remplace
+              les onglets tant qu'il est actif, comme la recherche par nom. */}
+          {isCityFiltering ? (
+            <div className="flex items-center gap-2 rounded-full bg-ocean-light px-4 py-2 w-fit">
+              <MapPin className="h-3.5 w-3.5 text-primary flex-shrink-0" />
+              <span className="text-sm font-medium text-primary" style={{ fontFamily: 'Jost, sans-serif' }}>
+                {t('social.cityFilterLabel', { city: cityFilter })}
+              </span>
+              <button onClick={clearCityFilter} className="text-primary hover:opacity-70 transition-opacity flex-shrink-0">
+                <X className="h-3.5 w-3.5" />
               </button>
-            ))}
-          </div>
+            </div>
+          ) : (
+            /* Tabs */
+            <div className={`flex gap-2 ${isSearching ? 'opacity-40 pointer-events-none' : ''}`}>
+              {tabs.map(({ id, labelKey, icon: Icon }) => (
+                <button key={id} onClick={() => selectTab(id)}
+                  className={`flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 ${
+                    activeTab === id
+                      ? 'bg-primary text-white shadow-md shadow-primary/20'
+                      : 'bg-secondary text-muted-foreground hover:text-foreground'
+                  }`}
+                  style={{ fontFamily: 'Jost, sans-serif' }}>
+                  <Icon className="h-3.5 w-3.5" />
+                  {t(labelKey)}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -271,6 +306,8 @@ export default function Social() {
                 ? t('social.emptyInterestFilter')
                 : isSearching
                 ? t('social.noResultsFor', { query: search.trim() })
+                : isCityFiltering
+                ? t('social.emptyCityFilter', { city: cityFilter })
                 : activeTab === 'suggestions'
                 ? t('social.emptySuggestions')
                 : activeTab === 'proximity'
@@ -280,7 +317,7 @@ export default function Social() {
           </div>
         ) : (
           <>
-            {!isSearching && activeTab === 'suggestions' && myProfile?.interests?.length && (
+            {!isSearching && !isCityFiltering && activeTab === 'suggestions' && myProfile?.interests?.length && (
               <div className="mb-4 px-4 py-3 rounded-2xl bg-ocean-light border border-primary/10 flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-primary flex-shrink-0" />
                 <p className="text-sm text-primary" style={{ fontFamily: 'Jost, sans-serif' }}>
