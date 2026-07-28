@@ -802,6 +802,20 @@
     "points_one": "{{count}} pt",
     "points_other": "{{count}} pts"
   },
+  "gamificationInfo": {
+    "linkLabel": "How do I earn points and level up?",
+    "title": "Points and ranks",
+    "howToEarnTitle": "How to earn points",
+    "ranksTitle": "The ranks",
+    "fromPoints": "from {{count}} pts",
+    "actions": {
+      "activity_created": "Create an activity",
+      "activity_first_participant": "A member joins your activity for the first time",
+      "review_received": "Receive a review from another member",
+      "question_answered": "Answer a question on the forum",
+      "referral_joined": "A friend you referred joins Le Ré-seau"
+    }
+  },
   "poiDetail": {
     "reviewCount_one": "{{count}} review",
     "reviewCount_other": "{{count}} reviews",

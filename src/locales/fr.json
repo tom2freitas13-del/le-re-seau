@@ -802,6 +802,20 @@
     "points_one": "{{count}} pt",
     "points_other": "{{count}} pts"
   },
+  "gamificationInfo": {
+    "linkLabel": "Comment gagner des points et monter de rang ?",
+    "title": "Points et rangs",
+    "howToEarnTitle": "Comment gagner des points",
+    "ranksTitle": "Les rangs",
+    "fromPoints": "dès {{count}} pts",
+    "actions": {
+      "activity_created": "Créer une activité",
+      "activity_first_participant": "Un membre rejoint ton activité pour la première fois",
+      "review_received": "Recevoir un avis d'un autre membre",
+      "question_answered": "Répondre à une question sur le forum",
+      "referral_joined": "Un ami que tu as parrainé rejoint Le Ré-seau"
+    }
+  },
   "poiDetail": {
     "reviewCount_one": "{{count}} avis",
     "reviewCount_other": "{{count}} avis",

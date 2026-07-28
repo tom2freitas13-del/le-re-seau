@@ -9,6 +9,7 @@ import BottomNav from '@/components/BottomNav';
 import ReferralCard from '@/components/ReferralCard';
 import AvailableNowToggle from '@/components/AvailableNowToggle';
 import { CommunityLevelProgress } from '@/components/CommunityLevelBadge';
+import { GamificationInfoLink } from '@/components/GamificationInfoModal';
 import { cn } from '@/lib/utils';
 import { STATUS_OPTIONS, AVAILABILITY_OPTIONS, INTEREST_OPTIONS, MIN_AGE, MAX_AGE, ILE_DE_RE_CITIES } from '@/lib/constants';
 import { usePendingReportsCount } from '@/lib/usePendingReportsCount';
@@ -181,6 +182,7 @@ export default function Profile() {
         {/* Niveau communautaire (gamification) */}
         <div className="card-premium p-5">
           <CommunityLevelProgress totalPoints={totalPoints} />
+          <GamificationInfoLink totalPoints={totalPoints} />
         </div>
 
         {/* Progression du profil */}

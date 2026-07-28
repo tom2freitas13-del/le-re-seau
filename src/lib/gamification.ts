@@ -27,3 +27,20 @@ export function getCommunityLevel(totalPoints: number): CommunityLevel {
 export function getNextCommunityLevel(totalPoints: number): CommunityLevel | null {
   return COMMUNITY_LEVELS.find(level => level.minPoints > totalPoints) || null;
 }
+
+// Actions qui rapportent des points (doit rester en phase avec les triggers
+// de la migration 059_gamification.sql) — utilisé pour l'afficher aux
+// membres via GamificationInfoModal, clés de libellé gamificationInfo.actions.<reason>.
+export interface PointAction {
+  reason: string;
+  points: number;
+  emoji: string;
+}
+
+export const POINT_ACTIONS: PointAction[] = [
+  { reason: 'activity_created', points: 5, emoji: '📅' },
+  { reason: 'activity_first_participant', points: 10, emoji: '🎉' },
+  { reason: 'review_received', points: 2, emoji: '🤝' },
+  { reason: 'question_answered', points: 1, emoji: '💬' },
+  { reason: 'referral_joined', points: 5, emoji: '🌊' },
+];
