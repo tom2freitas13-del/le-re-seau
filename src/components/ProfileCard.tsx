@@ -123,7 +123,6 @@ export const interestConfig: Record<string, { emoji: string }> = {
   yoga: { emoji: '🧘' },
   randonnée: { emoji: '🥾' },
   restaurants: { emoji: '🍽️' },
-  enfants: { emoji: '👶' },
   animaux: { emoji: '🐾' },
 };
 

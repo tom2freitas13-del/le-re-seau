@@ -30,7 +30,6 @@ export const INTEREST_OPTIONS = [
   { value: 'yoga', emoji: '🧘' },
   { value: 'randonnée', emoji: '🥾' },
   { value: 'restaurants', emoji: '🍽️' },
-  { value: 'enfants', emoji: '👶' },
   { value: 'animaux', emoji: '🐾' },
 ] as const;
 
