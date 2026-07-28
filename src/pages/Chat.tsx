@@ -3,9 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
-import { ArrowLeft, Send, MoreVertical, Check, CheckCheck, Mic, Square, SmilePlus, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Send, MoreVertical, Check, CheckCheck, Eye, Mic, Square, SmilePlus, Image as ImageIcon } from 'lucide-react';
 import { AdminBadge } from '@/components/ProfileCard';
-import { avatarFallbackInitial, formatLastSeen, formatMessageTime } from '@/lib/constants';
+import { avatarFallbackInitial, formatLastSeen, formatMessageTime, formatReadAt } from '@/lib/constants';
 import { useTimeTick } from '@/lib/useTimeTick';
 import { ReportModal, ReportButton } from '@/components/ReportModal';
 import ConfirmDialog from '@/components/ConfirmDialog';
@@ -22,6 +22,7 @@ interface Message {
   content: string;
   created_at: string;
   read?: boolean;
+  read_at?: string | null;
   attachment_url?: string | null;
   attachment_type?: 'audio' | 'image' | null;
 }
@@ -91,7 +92,7 @@ export default function Chat() {
     // Marque comme lus tous les messages reçus de ce contact
     await supabase
       .from('messages')
-      .update({ read: true })
+      .update({ read: true, read_at: new Date().toISOString() })
       .eq('sender_id', partnerId)
       .eq('receiver_id', user.id)
       .eq('read', false);
@@ -114,14 +115,14 @@ export default function Chat() {
         if ((m.sender_id === user.id && m.receiver_id === partnerId) || (m.sender_id === partnerId && m.receiver_id === user.id)) {
           setMessages(prev => [...prev, m]);
           if (m.sender_id === partnerId && m.receiver_id === user.id) {
-            supabase.from('messages').update({ read: true }).eq('id', m.id).then();
+            supabase.from('messages').update({ read: true, read_at: new Date().toISOString() }).eq('id', m.id).then();
           }
         }
       })
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'messages' }, (payload) => {
         const m = payload.new as Message;
         if (m.sender_id === user.id && m.receiver_id === partnerId) {
-          setMessages(prev => prev.map(msg => msg.id === m.id ? { ...msg, read: m.read } : msg));
+          setMessages(prev => prev.map(msg => msg.id === m.id ? { ...msg, read: m.read, read_at: m.read_at } : msg));
         }
       })
       .on('broadcast', { event: 'typing' }, ({ payload }) => {
@@ -436,6 +437,21 @@ export default function Chat() {
                 </div>
               );
             })}
+            {(() => {
+              // Légende "Vu il y a ..." sous le dernier message envoyé, une
+              // fois lu (façon Instagram) — en plus des coches par message,
+              // qui restent le seul indicateur tant qu'il n'est pas encore lu.
+              const lastMessage = messages[messages.length - 1];
+              if (!lastMessage || lastMessage.sender_id !== user?.id || !lastMessage.read || !lastMessage.read_at) return null;
+              return (
+                <div className="flex items-center justify-end gap-1 mr-1">
+                  <Eye className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                  <span className="text-[10px] text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>
+                    {formatReadAt(lastMessage.read_at, t)}
+                  </span>
+                </div>
+              );
+            })()}
             {partnerTyping && (
               <div className="flex justify-start">
                 <div className="bg-secondary rounded-2xl px-4 py-2.5 flex items-center gap-1">

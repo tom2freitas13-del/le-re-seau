@@ -70,6 +70,7 @@ export interface Database {
           receiver_id: string;
           content: string;
           read: boolean;
+          read_at: string | null;
           attachment_url: string | null;
           attachment_type: 'audio' | 'image' | null;
           created_at: string;
@@ -80,6 +81,7 @@ export interface Database {
           receiver_id: string;
           content: string;
           read?: boolean;
+          read_at?: string | null;
           attachment_url?: string | null;
           attachment_type?: 'audio' | 'image' | null;
           created_at?: string;

@@ -122,8 +122,10 @@ export function avatarFallbackInitial(name: string | null | undefined): string {
 
 type TFunc = (key: string, options?: Record<string, unknown>) => string;
 
-// Formate "vu il y a Xmin/Xh" ou une heure/date pour l'affichage hors-ligne.
-// Prend `t` en paramètre (plutôt qu'un hook) car utilisé hors composants React.
+// Formate "en ligne il y a Xmin/Xh" ou une heure/date pour l'affichage
+// hors-ligne (présence). Prend `t` en paramètre (plutôt qu'un hook) car
+// utilisé hors composants React. Distinct de formatReadAt ci-dessous, qui
+// porte sur la lecture d'un message et non la présence.
 export function formatLastSeen(lastSeen: string | null | undefined, t: TFunc): string {
   if (!lastSeen) return t('common.offline');
   const diffMs = Date.now() - new Date(lastSeen).getTime();
@@ -136,6 +138,24 @@ export function formatLastSeen(lastSeen: string | null | undefined, t: TFunc): s
   if (diffDays === 1) return t('common.lastSeenYesterday');
   if (diffDays < 7) return t('common.lastSeenDaysAgo', { count: diffDays });
   return t('common.lastSeenOnDate', { date: new Date(lastSeen).toLocaleDateString() });
+}
+
+// Formate "vu il y a Xmin/Xh" pour l'horodatage de lecture d'un message
+// (chat.seen* — sous le dernier message lu, façon Instagram). Même
+// découpage temporel que formatLastSeen mais des clés dédiées, pour garder
+// "vu" réservé à la lecture d'un message plutôt qu'à la présence en ligne.
+export function formatReadAt(readAt: string | null | undefined, t: TFunc): string {
+  if (!readAt) return '';
+  const diffMs = Date.now() - new Date(readAt).getTime();
+  const diffMin = Math.floor(diffMs / 60_000);
+  if (diffMin < 1) return t('chat.seenJustNow');
+  if (diffMin < 60) return t('chat.seenMinAgo', { count: diffMin });
+  const diffH = Math.floor(diffMin / 60);
+  if (diffH < 24) return t('chat.seenHoursAgo', { count: diffH });
+  const diffDays = Math.floor(diffH / 24);
+  if (diffDays === 1) return t('chat.seenYesterday');
+  if (diffDays < 7) return t('chat.seenDaysAgo', { count: diffDays });
+  return t('chat.seenOnDate', { date: new Date(readAt).toLocaleDateString() });
 }
 
 function pad2(n: number): string {
