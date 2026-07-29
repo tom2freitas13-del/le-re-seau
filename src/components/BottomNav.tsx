@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/auth-context';
 import { useUnreadMessages } from '@/lib/unread-context';
+import { useNotificationsCount } from '@/lib/useNotificationsCount';
 import { getPushPermissionState, isPushSupported, subscribeToPush } from '@/lib/push-notifications';
 
 const navItems = [
@@ -13,6 +14,7 @@ const navItems = [
   { icon: Map, labelKey: 'nav.map', path: '/map' },
   { icon: MessageCircle, labelKey: 'nav.discussions', path: '/discussions' },
   { icon: Calendar, labelKey: 'nav.activities', path: '/activities' },
+  { icon: Bell, labelKey: 'nav.notifications', path: '/notifications' },
   { icon: User, labelKey: 'nav.profile', path: '/profile' },
 ];
 
@@ -21,6 +23,7 @@ export default function BottomNav() {
   const location = useLocation();
   const { user } = useAuth();
   const { unreadTotal } = useUnreadMessages();
+  const unreadNotifications = useNotificationsCount();
   const [showPrompt, setShowPrompt] = useState(false);
 
   useEffect(() => {
@@ -91,6 +94,11 @@ export default function BottomNav() {
                   {path === '/discussions' && unreadTotal > 0 && (
                     <span className="absolute -top-0.5 -right-0.5 h-4 min-w-[16px] px-1 rounded-full bg-red-500 text-white text-[9px] font-semibold flex items-center justify-center">
                       {unreadTotal > 9 ? '9+' : unreadTotal}
+                    </span>
+                  )}
+                  {path === '/notifications' && unreadNotifications > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 h-4 min-w-[16px] px-1 rounded-full bg-red-500 text-white text-[9px] font-semibold flex items-center justify-center">
+                      {unreadNotifications > 9 ? '9+' : unreadNotifications}
                     </span>
                   )}
                 </div>

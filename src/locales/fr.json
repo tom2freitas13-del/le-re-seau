@@ -107,9 +107,16 @@
     "map": "Carte",
     "discussions": "Discuss.",
     "activities": "Activités",
+    "notifications": "Notifs",
     "profile": "Profil",
     "enableNotifications": "Active les notifications pour ne rater aucun message",
     "enable": "Activer"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Tout marquer comme lu",
+    "emptyTitle": "Rien de nouveau",
+    "emptyDesc": "Les nouveaux messages, publications et réactions apparaîtront ici."
   },
   "auth": {
     "welcomeBack": "Bon retour sur l'île 🌊",
@@ -1008,6 +1015,10 @@
     "languageDesc": "Choisissez la langue d'affichage du site.",
     "french": "Français",
     "english": "Anglais",
+    "theme": "Thème",
+    "themeDesc": "Choisissez l'apparence de l'application.",
+    "themeLight": "Clair",
+    "themeDark": "Sombre",
     "loadingPhoto": "Chargement...",
     "completionTitle": "Profil complété",
     "completionName": "Prénom",

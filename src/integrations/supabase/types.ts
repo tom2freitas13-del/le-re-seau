@@ -9,6 +9,30 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
+      notifications: {
+        Row: {
+          id: string;
+          user_id: string;
+          type: 'new_message' | 'new_group_message' | 'new_post' | 'post_liked' | 'post_commented';
+          title: string;
+          body: string | null;
+          link: string;
+          read: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          type: 'new_message' | 'new_group_message' | 'new_post' | 'post_liked' | 'post_commented';
+          title: string;
+          body?: string | null;
+          link: string;
+          read?: boolean;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['notifications']['Insert']>;
+        Relationships: [];
+      };
       profiles: {
         Row: {
           id: string;

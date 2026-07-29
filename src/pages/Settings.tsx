@@ -4,13 +4,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, LogOut, Info, ShieldCheck, Bell, BellOff, Share, Languages, KeyRound, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, LogOut, Info, ShieldCheck, Bell, BellOff, Share, Languages, KeyRound, Eye, EyeOff, Sun, Moon } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import { cn } from '@/lib/utils';
 import DeleteAccountButton from '@/components/DeleteAccountButton';
 import ReferralCard from '@/components/ReferralCard';
 import { isPushSupported, getPushPermissionState, subscribeToPush, unsubscribeFromPush, isIosSafari, isStandalonePwa } from '@/lib/push-notifications';
 import { setLanguage } from '@/lib/i18n';
+import { getTheme, setTheme, type Theme } from '@/lib/theme';
 import { translateAuthError } from '@/lib/authErrors';
 import { usePendingReportsCount } from '@/lib/usePendingReportsCount';
 
@@ -33,6 +34,7 @@ export default function Settings() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPwd, setShowPwd] = useState(false);
   const [pwdSaving, setPwdSaving] = useState(false);
+  const [theme, setThemeState] = useState<Theme>(getTheme());
 
   // Un compte connecté uniquement via Google n'a pas de mot de passe à gérer.
   const providers = (user?.app_metadata?.providers as string[] | undefined) ?? [];
@@ -101,6 +103,11 @@ export default function Settings() {
     if (user) {
       await supabase.from('profiles').update({ language: lang }).eq('user_id', user.id);
     }
+  };
+
+  const handleThemeChange = (t: Theme) => {
+    setTheme(t);
+    setThemeState(t);
   };
 
   return (
@@ -208,6 +215,29 @@ export default function Settings() {
                 style={{ fontFamily: 'Jost, sans-serif' }}>
                 <Languages className="h-3.5 w-3.5" />
                 {lang === 'fr' ? t('profile.french') : t('profile.english')}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Thème */}
+        <div className="card-premium p-5">
+          <SectionTitle>{t('profile.theme')}</SectionTitle>
+          <p className="text-xs text-muted-foreground mb-3" style={{ fontFamily: 'Jost, sans-serif' }}>
+            {t('profile.themeDesc')}
+          </p>
+          <div className="flex gap-2">
+            {([{ value: 'light', icon: Sun, labelKey: 'profile.themeLight' }, { value: 'dark', icon: Moon, labelKey: 'profile.themeDark' }] as const).map(opt => (
+              <button key={opt.value} onClick={() => handleThemeChange(opt.value)}
+                className={cn(
+                  'flex-1 rounded-full py-2.5 text-sm font-medium transition-all duration-200 border flex items-center justify-center gap-1.5',
+                  theme === opt.value
+                    ? 'border-primary bg-primary text-white shadow-md shadow-primary/20'
+                    : 'border-border bg-background hover:bg-secondary text-foreground'
+                )}
+                style={{ fontFamily: 'Jost, sans-serif' }}>
+                <opt.icon className="h-3.5 w-3.5" />
+                {t(opt.labelKey)}
               </button>
             ))}
           </div>

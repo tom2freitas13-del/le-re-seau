@@ -38,6 +38,7 @@ const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const LegalNotice = lazy(() => import("./pages/LegalNotice"));
 const Admin = lazy(() => import("./pages/Admin"));
 const CityPage = lazy(() => import("./pages/CityPage"));
+const Notifications = lazy(() => import("./pages/Notifications"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 function RouteLoading() {
@@ -99,6 +100,7 @@ function AppRoutes() {
           <Route path="/discussions" element={<Discussions />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/ile-de-re/:city" element={<CityPage />} />
+          <Route path="/notifications" element={<Notifications />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>

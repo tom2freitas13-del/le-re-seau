@@ -107,9 +107,16 @@
     "map": "Map",
     "discussions": "Chats",
     "activities": "Activities",
+    "notifications": "Notifs",
     "profile": "Profile",
     "enableNotifications": "Turn on notifications so you never miss a message",
     "enable": "Enable"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark all as read",
+    "emptyTitle": "Nothing new",
+    "emptyDesc": "New messages, posts and reactions will show up here."
   },
   "auth": {
     "welcomeBack": "Welcome back to the island 🌊",
@@ -1008,6 +1015,10 @@
     "languageDesc": "Choose the site's display language.",
     "french": "French",
     "english": "English",
+    "theme": "Theme",
+    "themeDesc": "Choose the app's appearance.",
+    "themeLight": "Light",
+    "themeDark": "Dark",
     "loadingPhoto": "Loading...",
     "completionTitle": "Profile completion",
     "completionName": "First name",

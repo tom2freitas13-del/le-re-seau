@@ -3,6 +3,7 @@ import * as Sentry from '@sentry/react';
 import App from './App.tsx';
 import ErrorBoundary from './components/ErrorBoundary.tsx';
 import './lib/i18n';
+import './lib/theme';
 import './index.css';
 
 // Suivi d'erreurs en production — permet d'être alerté quand quelque chose
