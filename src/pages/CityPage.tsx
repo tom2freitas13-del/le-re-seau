@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/integrations/supabase/client';
 import { useSeo } from '@/lib/useSeo';
 import { findCityBySlug, CITY_CONTENT } from '@/lib/cityContent';
+import { localizedPoiDescription } from '@/lib/constants';
 import BottomNav from '@/components/BottomNav';
 import NotFound from '@/pages/NotFound';
 
@@ -14,6 +15,7 @@ interface NearbyPoi {
   name: string;
   category: string;
   description: string;
+  description_en: string | null;
 }
 
 const CATEGORY_EMOJI: Record<string, string> = {
@@ -22,7 +24,7 @@ const CATEGORY_EMOJI: Record<string, string> = {
 
 export default function CityPage() {
   const { city } = useParams<{ city: string }>();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
   const cityData = city ? findCityBySlug(city) : undefined;
@@ -33,7 +35,7 @@ export default function CityPage() {
     if (!cityData) return;
     supabase.from('city_member_counts').select('member_count').eq('city', cityData.name).maybeSingle()
       .then(({ data }) => setMemberCount(data?.member_count || 0));
-    supabase.from('points_of_interest').select('id, name, category, description')
+    supabase.from('points_of_interest').select('id, name, category, description, description_en')
       .ilike('address', `%${cityData.name}%`).limit(4)
       .then(({ data }) => setPois(data || []));
   }, [cityData]);
@@ -100,7 +102,7 @@ export default function CityPage() {
                   <div>
                     <h4 className="font-medium text-sm mb-0.5">{poi.name}</h4>
                     <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif', lineHeight: 1.5 }}>
-                      {poi.description}
+                      {localizedPoiDescription(poi.description, poi.description_en, i18n.language)}
                     </p>
                   </div>
                 </div>

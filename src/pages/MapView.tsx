@@ -33,6 +33,7 @@ interface Poi {
   name: string;
   category: string;
   description: string;
+  description_en: string | null;
   address: string;
   latitude: number;
   longitude: number;

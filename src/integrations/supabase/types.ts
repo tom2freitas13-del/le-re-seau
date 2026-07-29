@@ -255,6 +255,7 @@ export interface Database {
           name: string;
           category: string;
           description: string;
+          description_en: string | null;
           address: string;
           latitude: number;
           longitude: number;
@@ -268,6 +269,7 @@ export interface Database {
           name: string;
           category: string;
           description: string;
+          description_en?: string | null;
           address: string;
           latitude: number;
           longitude: number;

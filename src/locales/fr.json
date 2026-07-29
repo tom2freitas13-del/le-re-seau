@@ -235,6 +235,9 @@
     "featureDiscussionsDesc": "Des salons thématiques et un forum pour s'entraider et partager.",
     "featureJobsTitle": "Services locaux",
     "featureJobsDesc": "Trouver ou proposer des coups de main et petits boulots sur l'île.",
+    "referralBannerTitle": "Invite un ami sur l'île 🏝️",
+    "referralBannerSubtitle": "Il rejoint Le Ré-seau grâce à toi ? +15 points direct !",
+    "referralBannerCta": "Partager",
     "islandPhotosTitle": "L'île en images",
     "islandPhotoLabel": "Lieu {{n}}",
     "ctaFinalTitle": "Rejoignez l'aventure",
@@ -806,7 +809,8 @@
   "leaderboard": {
     "title": "Les plus utiles cette semaine",
     "points_one": "{{count}} pt",
-    "points_other": "{{count}} pts"
+    "points_other": "{{count}} pts",
+    "you": "Toi"
   },
   "gamificationInfo": {
     "linkLabel": "Comment gagner des points et monter de rang ?",
@@ -814,6 +818,8 @@
     "howToEarnTitle": "Comment gagner des points",
     "ranksTitle": "Les rangs",
     "fromPoints": "dès {{count}} pts",
+    "pointsToast": "🎉 +{{points}} points !",
+    "levelUpToast": "🎉 +{{points}} points ! Tu passes {{emoji}} {{level}}",
     "actions": {
       "activity_created": "Créer une activité",
       "activity_first_participant": "Un membre rejoint ton activité pour la première fois",

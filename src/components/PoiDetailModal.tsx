@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import { toast } from 'sonner';
-import { avatarFallbackInitial } from '@/lib/constants';
+import { avatarFallbackInitial, localizedPoiDescription } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import ConfirmDialog from '@/components/ConfirmDialog';
 
@@ -13,6 +13,7 @@ interface Poi {
   name: string;
   category: string;
   description: string;
+  description_en: string | null;
   address: string;
   image_url: string | null;
   website_url: string | null;
@@ -64,7 +65,7 @@ function StarRow({ rating, size = 'h-3.5 w-3.5' }: { rating: number; size?: stri
 }
 
 export default function PoiDetailModal({ poi, onClose }: PoiDetailModalProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user, isAdmin } = useAuth();
   const [reviews, setReviews] = useState<Review[] | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -153,7 +154,7 @@ export default function PoiDetailModal({ poi, onClose }: PoiDetailModalProps) {
           )}
 
           <p className="text-sm text-foreground" style={{ fontFamily: 'Jost, sans-serif', lineHeight: 1.6 }}>
-            {poi.description}
+            {localizedPoiDescription(poi.description, poi.description_en, i18n.language)}
           </p>
 
           <div className="flex items-start gap-2 text-sm text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>

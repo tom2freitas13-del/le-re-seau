@@ -235,6 +235,9 @@
     "featureDiscussionsDesc": "Themed chat rooms and a forum to help each other and share.",
     "featureJobsTitle": "Local services",
     "featureJobsDesc": "Find or offer a helping hand and small jobs on the island.",
+    "referralBannerTitle": "Invite a friend to the island 🏝️",
+    "referralBannerSubtitle": "They join Le Ré-seau thanks to you? +15 points instantly!",
+    "referralBannerCta": "Share",
     "islandPhotosTitle": "The island in pictures",
     "islandPhotoLabel": "Place {{n}}",
     "ctaFinalTitle": "Join the adventure",
@@ -806,7 +809,8 @@
   "leaderboard": {
     "title": "Most helpful this week",
     "points_one": "{{count}} pt",
-    "points_other": "{{count}} pts"
+    "points_other": "{{count}} pts",
+    "you": "You"
   },
   "gamificationInfo": {
     "linkLabel": "How do I earn points and level up?",
@@ -814,6 +818,8 @@
     "howToEarnTitle": "How to earn points",
     "ranksTitle": "The ranks",
     "fromPoints": "from {{count}} pts",
+    "pointsToast": "🎉 +{{points}} points!",
+    "levelUpToast": "🎉 +{{points}} points! You're now {{emoji}} {{level}}",
     "actions": {
       "activity_created": "Create an activity",
       "activity_first_participant": "A member joins your activity for the first time",

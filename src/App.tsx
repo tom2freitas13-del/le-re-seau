@@ -10,6 +10,7 @@ import { UnreadProvider } from "@/lib/unread-context";
 import BannedScreen from "@/components/BannedScreen";
 import InstallBanner from "@/components/InstallBanner";
 import { useGlobalMessageNotifications } from "@/lib/useGlobalMessageNotifications";
+import { useGlobalPointsNotifications } from "@/lib/useGlobalPointsNotifications";
 import { captureReferralFromUrl } from "@/lib/referral";
 
 // Chargées à la demande par route plutôt que toutes d'un bloc au premier
@@ -57,6 +58,7 @@ function AppRoutes() {
   const { isBanned, loading } = useAuth();
   const location = useLocation();
   useGlobalMessageNotifications();
+  useGlobalPointsNotifications();
   useEffect(() => { captureReferralFromUrl(location.search); }, [location.search]);
 
   // BUG FIX / sécurité : un compte banni voit un écran de blocage à la place

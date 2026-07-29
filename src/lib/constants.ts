@@ -122,6 +122,13 @@ export function avatarFallbackInitial(name: string | null | undefined): string {
 
 type TFunc = (key: string, options?: Record<string, unknown>) => string;
 
+// Les descriptions de points d'intérêt (villages, carte, fiche POI) sont du
+// texte libre en base plutôt que des clés i18n fixes — repli sur le
+// français si la traduction anglaise n'a pas encore été renseignée pour un POI.
+export function localizedPoiDescription(description: string, descriptionEn: string | null | undefined, language: string): string {
+  return language === 'en' && descriptionEn ? descriptionEn : description;
+}
+
 // Formate "en ligne il y a Xmin/Xh" ou une heure/date pour l'affichage
 // hors-ligne (présence). Prend `t` en paramètre (plutôt qu'un hook) car
 // utilisé hors composants React. Distinct de formatReadAt ci-dessous, qui

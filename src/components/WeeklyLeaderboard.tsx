@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Trophy } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/lib/auth-context';
 import { avatarFallbackInitial } from '@/lib/constants';
 import CommunityLevelBadge from '@/components/CommunityLevelBadge';
 
@@ -14,37 +15,46 @@ interface LeaderboardEntry {
 }
 
 const RANK_EMOJI = ['🥇', '🥈', '🥉'];
+const TOP_SIZE = 5;
 
 // Composant autonome (charge ses propres données) — affiché sur Communauté,
 // classement "membres les plus utiles de la semaine" basé sur user_points_summary
-// (vue agrégée alimentée par les triggers de la migration 059).
+// (vue agrégée alimentée par les triggers de la migration 059). En plus du
+// top 5, affiche le rang personnel de l'utilisateur connecté s'il a des
+// points cette semaine et n'est pas déjà visible dans le top 5.
 export default function WeeklyLeaderboard() {
   const { t } = useTranslation();
-  const [entries, setEntries] = useState<LeaderboardEntry[] | null>(null);
+  const { user } = useAuth();
+  const [ranked, setRanked] = useState<LeaderboardEntry[] | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      // Classement complet (pas de limit) pour pouvoir calculer le rang
+      // personnel même hors du top 5 — la table reste petite pour l'instant.
       const { data: summary } = await supabase
         .from('user_points_summary')
         .select('user_id, points_this_week, total_points')
         .gt('points_this_week', 0)
-        .order('points_this_week', { ascending: false })
-        .limit(5);
-      if (!summary || summary.length === 0) { if (!cancelled) setEntries([]); return; }
+        .order('points_this_week', { ascending: false });
+      if (!summary || summary.length === 0) { if (!cancelled) setRanked([]); return; }
       const { data: profiles } = await supabase
         .from('profiles')
         .select('user_id, name, photo_url')
         .in('user_id', summary.map(s => s.user_id));
       const map = new Map((profiles || []).map(p => [p.user_id, p]));
       if (!cancelled) {
-        setEntries(summary.map(s => ({ ...s, name: map.get(s.user_id)?.name || null, photo_url: map.get(s.user_id)?.photo_url || null })));
+        setRanked(summary.map(s => ({ ...s, name: map.get(s.user_id)?.name || null, photo_url: map.get(s.user_id)?.photo_url || null })));
       }
     })();
     return () => { cancelled = true; };
   }, []);
 
-  if (!entries || entries.length === 0) return null;
+  if (!ranked || ranked.length === 0) return null;
+
+  const entries = ranked.slice(0, TOP_SIZE);
+  const myIndex = user ? ranked.findIndex(e => e.user_id === user.id) : -1;
+  const myEntry = myIndex >= TOP_SIZE ? ranked[myIndex] : null;
 
   return (
     <div className="card-premium p-4 mb-4">
@@ -72,6 +82,25 @@ export default function WeeklyLeaderboard() {
             </span>
           </div>
         ))}
+        {myEntry && (
+          <div className="flex items-center gap-2.5 pt-2 mt-1 border-t border-border/50">
+            <span className="w-5 text-center text-xs font-medium text-primary flex-shrink-0">#{myIndex + 1}</span>
+            <div className="h-8 w-8 rounded-full bg-ocean-light flex items-center justify-center flex-shrink-0 overflow-hidden">
+              {myEntry.photo_url ? (
+                <img src={myEntry.photo_url} alt="" className="h-full w-full object-cover" />
+              ) : (
+                <span className="text-xs font-semibold text-primary">{avatarFallbackInitial(myEntry.name)}</span>
+              )}
+            </div>
+            <span className="text-sm font-medium truncate flex-1 text-primary" style={{ fontFamily: 'Jost, sans-serif' }}>
+              {t('leaderboard.you')}
+            </span>
+            <CommunityLevelBadge totalPoints={myEntry.total_points} compact />
+            <span className="text-xs text-muted-foreground flex-shrink-0" style={{ fontFamily: 'Jost, sans-serif' }}>
+              {t('leaderboard.points', { count: myEntry.points_this_week })}
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );
