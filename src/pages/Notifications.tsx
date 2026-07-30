@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Bell, MessageCircle, Image as ImageIcon, Heart, MessageSquare, CheckCheck } from 'lucide-react';
+import { ArrowLeft, Bell, MessageCircle, Image as ImageIcon, Heart, MessageSquare, CheckCheck } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import { formatMessageTime } from '@/lib/constants';
@@ -83,7 +83,11 @@ export default function Notifications() {
       <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-md border-b border-border/50">
         <div className="max-w-lg mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-2xl bg-ocean-light flex items-center justify-center">
+            <button onClick={() => (window.history.length > 1 ? navigate(-1) : navigate('/'))}
+              className="min-h-10 min-w-10 -ml-2 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors flex-shrink-0">
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <div className="h-10 w-10 rounded-2xl bg-ocean-light flex items-center justify-center flex-shrink-0">
               <Bell className="h-5 w-5 text-primary" strokeWidth={1.5} />
             </div>
             <h1 className="font-display text-2xl font-semibold">{t('notifications.title')}</h1>
