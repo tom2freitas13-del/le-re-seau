@@ -81,7 +81,7 @@ export default function NewActivity() {
         photo_url = publicUrl;
       }
 
-      const { error } = await supabase.from('activities').insert({
+      const { data: newActivity, error } = await supabase.from('activities').insert({
         title: title.trim(),
         description: description.trim() || null,
         category,
@@ -94,8 +94,14 @@ export default function NewActivity() {
         max_participants: maxParticipants ? parseInt(maxParticipants, 10) : null,
         photo_url,
         author_id: user.id,
-      });
+      }).select('id').single();
       if (error) throw error;
+
+      // BUG FIX : l'organisateur n'était jamais ajouté comme participant —
+      // la carte affichait "0/5" alors qu'il y a forcément au moins lui.
+      if (newActivity) {
+        await supabase.from('activity_participants').insert({ activity_id: newActivity.id, user_id: user.id });
+      }
 
       toast.success(t('newActivity.createdSuccess'));
       navigate('/activities');

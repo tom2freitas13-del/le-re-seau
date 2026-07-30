@@ -4,7 +4,8 @@ import { useAuth } from '@/lib/auth-context';
 import BottomNav from '@/components/BottomNav';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { MessageCircle, Send, ArrowLeft, Heart, MessageSquare, Mail, Mic, Square, Image as ImageIcon, X, Plus, Users, Check, Briefcase, Search, Sparkles, Trash2 } from 'lucide-react';
+import { MessageCircle, Send, ArrowLeft, Heart, MessageSquare, Mail, Mic, Square, Image as ImageIcon, X, Plus, Users, Check, Briefcase, Search, Sparkles, Trash2, Bell } from 'lucide-react';
+import { useNotificationsCount } from '@/lib/useNotificationsCount';
 import { computeMatchScore } from '@/lib/matchScore';
 import { SALONS } from '@/lib/constants';
 import { toast } from 'sonner';
@@ -81,6 +82,7 @@ export default function Discussions() {
   const [activeSalon, setActiveSalon] = useState<string | null>(null);
   const { onlineCount } = usePresence();
   const { unreadTotal } = useUnreadMessages();
+  const unreadNotifications = useNotificationsCount();
   const [salonUnread, setSalonUnread] = useState<Record<string, number>>({});
   const [forumUnread, setForumUnread] = useState(0);
 
@@ -155,7 +157,7 @@ export default function Discussions() {
           <div className="h-10 w-10 rounded-2xl bg-ocean-light flex items-center justify-center">
             <MessageCircle className="h-5 w-5 text-primary" strokeWidth={1.5} />
           </div>
-          <div>
+          <div className="flex-1">
             <h1 className="font-display text-2xl font-semibold">{t('discussions.title')}</h1>
             {onlineCount > 0 && (
               <p className="text-xs text-muted-foreground flex items-center gap-1.5" style={{ fontFamily: 'Jost, sans-serif' }}>
@@ -164,6 +166,18 @@ export default function Discussions() {
               </p>
             )}
           </div>
+          {/* Cloche notifications — pas dans BottomNav pour ne pas la
+              surcharger (déjà 6 icônes), placée ici plutôt que sur l'accueil
+              car cette page concerne déjà les messages/interactions. */}
+          <button onClick={() => navigate('/notifications')} title={t('notifications.title')}
+            className="relative h-10 w-10 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors flex-shrink-0">
+            <Bell className="h-5 w-5" />
+            {unreadNotifications > 0 && (
+              <span className="absolute top-1 right-1 h-4 min-w-[16px] px-1 rounded-full bg-red-500 text-white text-[9px] font-semibold flex items-center justify-center">
+                {unreadNotifications > 9 ? '9+' : unreadNotifications}
+              </span>
+            )}
+          </button>
         </div>
       </div>
 

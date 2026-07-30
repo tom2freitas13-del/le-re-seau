@@ -60,6 +60,7 @@ export default function Activities() {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [participantCounts, setParticipantCounts] = useState<Record<string, number>>({});
   const [participantsByActivity, setParticipantsByActivity] = useState<Record<string, Participant[]>>({});
+  const [authorNames, setAuthorNames] = useState<Record<string, string | null>>({});
   const [myParticipations, setMyParticipations] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -89,6 +90,13 @@ export default function Activities() {
     const { data } = await supabase.from('activities').select('*').order('activity_date', { ascending: true });
     if (data) {
       setActivities(data);
+
+      const authorIds = Array.from(new Set(data.map(a => a.author_id)));
+      if (authorIds.length) {
+        const { data: authorProfiles } = await supabase.from('profiles').select('user_id, name').in('user_id', authorIds);
+        setAuthorNames(Object.fromEntries((authorProfiles || []).map(p => [p.user_id, p.name])));
+      }
+
       const { data: parts } = await supabase.from('activity_participants').select('activity_id, user_id');
       if (parts) {
         const counts: Record<string, number> = {};
@@ -389,7 +397,12 @@ export default function Activities() {
                     </div>
                   </div>
                   <div className="p-5 space-y-3">
-                    <h3 className="font-display text-xl font-semibold">{activity.title}</h3>
+                    <div>
+                      <h3 className="font-display text-xl font-semibold">{activity.title}</h3>
+                      <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>
+                        {t('activities.organizedBy', { name: authorNames[activity.author_id] || t('activities.someone') })}
+                      </p>
+                    </div>
                     {activity.description && (
                       <p className="text-sm text-muted-foreground line-clamp-2" style={{ fontFamily: 'Jost, sans-serif', lineHeight: 1.6 }}>
                         {activity.description}

@@ -107,7 +107,6 @@
     "map": "Carte",
     "discussions": "Discuss.",
     "activities": "Activités",
-    "notifications": "Notifs",
     "profile": "Profil",
     "enableNotifications": "Active les notifications pour ne rater aucun message",
     "enable": "Activer"
@@ -902,6 +901,7 @@
     "shareMessageNoDate": "bientôt",
     "minAge": "{{age}}+ ans",
     "itsYours": "C'est votre activité",
+    "organizedBy": "Organisé par {{name}}",
     "discuss": "Discuter",
     "leave": "Se désinscrire",
     "join": "Participer",

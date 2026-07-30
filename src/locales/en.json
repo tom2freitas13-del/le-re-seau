@@ -107,7 +107,6 @@
     "map": "Map",
     "discussions": "Chats",
     "activities": "Activities",
-    "notifications": "Notifs",
     "profile": "Profile",
     "enableNotifications": "Turn on notifications so you never miss a message",
     "enable": "Enable"
@@ -902,6 +901,7 @@
     "shareMessageNoDate": "soon",
     "minAge": "{{age}}+ years",
     "itsYours": "This is your activity",
+    "organizedBy": "Organized by {{name}}",
     "discuss": "Chat",
     "leave": "Leave",
     "join": "Join",
