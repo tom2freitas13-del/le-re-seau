@@ -43,7 +43,14 @@ interface PoiHighlight {
   description_en: string | null;
   address: string;
   image_url: string | null;
+  created_at: string;
 }
+
+// Marque de dernière visite de l'onglet "Incontournables" (localStorage,
+// façon push-prompt-dismissed) — sert uniquement à afficher un badge "X
+// nouveaux" tant qu'on n'a jamais ouvert l'onglet ou que des POI ont été
+// ajoutés depuis la dernière visite ; pas un vrai suivi de lecture par POI.
+const HIGHLIGHTS_SEEN_KEY = 'highlights-last-seen';
 
 // Incontournables de l'île (points_of_interest) — spots permanents (plage,
 // vélo, surf, apéro, sport) + rendez-vous saisonniers (marchés nocturnes,
@@ -102,6 +109,7 @@ export default function Activities() {
   const showPast = view === 'past';
   const [pois, setPois] = useState<PoiHighlight[]>([]);
   const [poiCategoryFilter, setPoiCategoryFilter] = useState<string | null>(null);
+  const [newPoiCount, setNewPoiCount] = useState(0);
   const isPast = useCallback((a: Activity) => {
     if (!a.activity_date) return false;
     const today = new Date().toISOString().slice(0, 10);
@@ -178,9 +186,21 @@ export default function Activities() {
   // Incontournables de l'île — donnée publique, indépendante des activités
   // créées par les membres, chargée une seule fois.
   useEffect(() => {
-    supabase.from('points_of_interest').select('id, name, category, description, description_en, address, image_url')
-      .then(({ data }) => setPois(data || []));
+    supabase.from('points_of_interest').select('id, name, category, description, description_en, address, image_url, created_at')
+      .then(({ data }) => {
+        setPois(data || []);
+        const lastSeen = localStorage.getItem(HIGHLIGHTS_SEEN_KEY);
+        setNewPoiCount(lastSeen ? (data || []).filter(p => p.created_at > lastSeen).length : (data || []).length);
+      });
   }, []);
+
+  // Marque l'onglet comme vu : le badge "X nouveaux" ne réapparaît que si
+  // d'autres points d'intérêt sont ajoutés après cette visite.
+  const openHighlights = () => {
+    setView('highlights');
+    localStorage.setItem(HIGHLIGHTS_SEEN_KEY, new Date().toISOString());
+    setNewPoiCount(0);
+  };
 
   // Lien partagé (WhatsApp, etc.) vers une activité précise : une fois la
   // liste chargée, on la fait défiler jusqu'à cette carte et on la surligne
@@ -361,15 +381,20 @@ export default function Activities() {
               style={{ fontFamily: 'Jost, sans-serif' }}>
               {t('activities.pastTab')}
             </button>
-            <button onClick={() => setView('highlights')}
+            <button onClick={openHighlights}
               className={cn(
-                'flex-1 rounded-full py-2.5 text-sm font-medium transition-all duration-200 border',
+                'relative flex-1 rounded-full py-2.5 text-sm font-medium transition-all duration-200 border',
                 view === 'highlights'
                   ? 'border-primary bg-primary text-white shadow-md shadow-primary/20'
                   : 'border-border bg-background hover:bg-secondary text-foreground'
               )}
               style={{ fontFamily: 'Jost, sans-serif' }}>
               {t('activities.highlightsTab')}
+              {newPoiCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 h-4 min-w-[16px] px-1 rounded-full bg-red-500 text-white text-[9px] font-semibold flex items-center justify-center">
+                  {newPoiCount > 9 ? '9+' : newPoiCount}
+                </span>
+              )}
             </button>
           </div>
         )}
