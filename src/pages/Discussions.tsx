@@ -150,11 +150,16 @@ export default function Discussions() {
     return <MessagesView onBack={() => setView('list')} />;
   }
 
+  const handleBack = () => (window.history.length > 1 ? navigate(-1) : navigate('/'));
+
   return (
     <div className="min-h-screen pb-28 bg-background">
       <div className="sticky top-0 z-40 bg-background/90 backdrop-blur-md border-b border-border/50">
         <div className="max-w-lg mx-auto px-4 py-4 flex items-center gap-3">
-          <div className="h-10 w-10 rounded-2xl bg-ocean-light flex items-center justify-center">
+          <button onClick={handleBack} className="min-h-10 min-w-10 -ml-2 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors flex-shrink-0">
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <div className="h-10 w-10 rounded-2xl bg-ocean-light flex items-center justify-center flex-shrink-0">
             <MessageCircle className="h-5 w-5 text-primary" strokeWidth={1.5} />
           </div>
           <div className="flex-1">
