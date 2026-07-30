@@ -91,7 +91,9 @@
     "bateau": "Boating",
     "randonnee": "Hiking",
     "sport": "Sport",
-    "autre": "Other"
+    "autre": "Other",
+    "marche": "Night market",
+    "festival": "Festival"
   },
   "reportReasons": {
     "spam": "Spam or advertising",
@@ -890,6 +892,8 @@
     "create": "Create",
     "upcomingTab": "Upcoming",
     "pastTab": "Past",
+    "highlightsTab": "Highlights",
+    "noHighlights": "No highlights yet.",
     "noPastActivities": "No past activities",
     "noneScheduled": "No activity planned",
     "beFirst": "Be the first to suggest one!",

@@ -4,7 +4,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import BottomNav from '@/components/BottomNav';
 import ErrorBoundary from '@/components/ErrorBoundary';
@@ -51,6 +51,8 @@ const CATEGORY_COLOR: Record<string, string> = {
   bateau: '#2b8fb3',
   randonnee: '#3f7a5c',
   sport: '#b3863f',
+  marche: '#8a5cb3',
+  festival: '#c2477a',
   autre: '#6b7280',
 };
 
@@ -60,6 +62,8 @@ const POI_EMOJI: Record<string, string> = {
   sport: '🎾',
   plage: '🏖️',
   velo: '🚴',
+  marche: '🌙',
+  festival: '🎷',
 };
 
 function createMarkerIcon(category: string | null) {
@@ -139,6 +143,7 @@ export default function MapView() {
   const { t, i18n } = useTranslation();
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [activities, setActivities] = useState<MapActivity[]>([]);
   const [pois, setPois] = useState<Poi[]>([]);
   const [showPois, setShowPois] = useState(true);
@@ -164,6 +169,16 @@ export default function MapView() {
     setSelectedPoi(p);
     setActiveRoute(p.category === 'velo' && p.route_waypoints ? p.route_waypoints : null);
   };
+
+  // Lien "Voir sur la carte" depuis l'onglet Incontournables d'Activités
+  // (/map?poi=<id>) : ouvre directement la fiche du point d'intérêt visé.
+  useEffect(() => {
+    const poiId = searchParams.get('poi');
+    if (!poiId || pois.length === 0) return;
+    const target = pois.find(p => p.id === poiId);
+    if (target) handleSelectPoi(target);
+    setSearchParams(prev => { prev.delete('poi'); return prev; }, { replace: true });
+  }, [pois, searchParams, setSearchParams]);
 
   const loadActivities = async () => {
     setLoading(true);

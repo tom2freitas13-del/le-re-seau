@@ -40,6 +40,8 @@ const CATEGORY_EMOJI: Record<string, string> = {
   sport: '🎾',
   plage: '🏖️',
   velo: '🚴',
+  marche: '🌙',
+  festival: '🎷',
 };
 
 function StarPicker({ value, onChange }: { value: number; onChange: (v: number) => void }) {

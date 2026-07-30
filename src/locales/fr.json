@@ -91,7 +91,9 @@
     "bateau": "Nautisme",
     "randonnee": "Randonnée",
     "sport": "Sport",
-    "autre": "Autre"
+    "autre": "Autre",
+    "marche": "Marché nocturne",
+    "festival": "Festival"
   },
   "reportReasons": {
     "spam": "Spam ou publicité",
@@ -890,6 +892,8 @@
     "create": "Créer",
     "upcomingTab": "À venir",
     "pastTab": "Passées",
+    "highlightsTab": "Incontournables",
+    "noHighlights": "Aucun incontournable pour l'instant.",
     "noPastActivities": "Aucune activité passée",
     "noneScheduled": "Aucune activité prévue",
     "beFirst": "Soyez le premier à en proposer une !",

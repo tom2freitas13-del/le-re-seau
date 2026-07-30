@@ -6,7 +6,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Plus, Calendar, MapPin, Users, Trash2, Map as MapIcon, MessageCircle, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { ACTIVITY_CATEGORIES, avatarFallbackInitial } from '@/lib/constants';
+import { ACTIVITY_CATEGORIES, avatarFallbackInitial, localizedPoiDescription } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import LocalImage from '@/components/LocalImage';
 import { shareToWhatsApp } from '@/lib/share';
@@ -34,6 +34,31 @@ interface Activity {
   photo_url: string | null;
   group_id: string | null;
 }
+
+interface PoiHighlight {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+  description_en: string | null;
+  address: string;
+  image_url: string | null;
+}
+
+// Incontournables de l'île (points_of_interest) — spots permanents (plage,
+// vélo, surf, apéro, sport) + rendez-vous saisonniers (marchés nocturnes,
+// festivals), déjà présents sur la carte mais invisibles depuis "Activités"
+// avant ce correctif (retour utilisateur).
+const POI_CARD_STYLE: Record<string, { bg: string; emoji: string }> = {
+  plage: { bg: 'bg-ocean-light', emoji: '🏖️' },
+  velo: { bg: 'bg-pine-light', emoji: '🚲' },
+  surf: { bg: 'bg-ocean-light', emoji: '🏄' },
+  apero: { bg: 'bg-sand-light', emoji: '🍹' },
+  sport: { bg: 'bg-sand-light', emoji: '🎾' },
+  marche: { bg: 'bg-pine-light', emoji: '🌙' },
+  festival: { bg: 'bg-sand-light', emoji: '🎷' },
+};
+const POI_CATEGORY_ORDER = ['plage', 'velo', 'surf', 'apero', 'sport', 'marche', 'festival'];
 
 // BUG FIX : l'ancien fallback utilisait de fausses photos stock (dont un portrait
 // de visage affiché comme "photo plage"). Priorité d'affichage pour chaque activité :
@@ -71,8 +96,12 @@ export default function Activities() {
   // par date croissante — au bout de quelques mois, les activités passées
   // s'accumulaient en haut de la liste, avant celles à venir. On sépare
   // maintenant à venir / passées avec un bascule, comme Jobs et Social ont
-  // déjà une recherche/filtre.
-  const [showPast, setShowPast] = useState(false);
+  // déjà une recherche/filtre. Troisième onglet "Incontournables" ajouté
+  // ensuite pour les points d'intérêt de la carte (voir POI_CARD_STYLE).
+  const [view, setView] = useState<'upcoming' | 'past' | 'highlights'>('upcoming');
+  const showPast = view === 'past';
+  const [pois, setPois] = useState<PoiHighlight[]>([]);
+  const [poiCategoryFilter, setPoiCategoryFilter] = useState<string | null>(null);
   const isPast = useCallback((a: Activity) => {
     if (!a.activity_date) return false;
     const today = new Date().toISOString().slice(0, 10);
@@ -84,6 +113,10 @@ export default function Activities() {
     // tri de la requête) ; on inverse pour voir la plus récente d'abord.
     return showPast ? [...filtered].reverse() : filtered;
   }, [activities, showPast, isPast, isBlocked]);
+  const visiblePois = useMemo(
+    () => poiCategoryFilter ? pois.filter(p => p.category === poiCategoryFilter) : pois,
+    [pois, poiCategoryFilter]
+  );
 
   const loadActivities = useCallback(async () => {
     setLoading(true);
@@ -142,6 +175,13 @@ export default function Activities() {
     loadActivities();
   }, [user, navigate, loadActivities, sharedActivityId]);
 
+  // Incontournables de l'île — donnée publique, indépendante des activités
+  // créées par les membres, chargée une seule fois.
+  useEffect(() => {
+    supabase.from('points_of_interest').select('id, name, category, description, description_en, address, image_url')
+      .then(({ data }) => setPois(data || []));
+  }, []);
+
   // Lien partagé (WhatsApp, etc.) vers une activité précise : une fois la
   // liste chargée, on la fait défiler jusqu'à cette carte et on la surligne
   // brièvement pour que la personne repère tout de suite laquelle c'est.
@@ -155,13 +195,13 @@ export default function Activities() {
     }
     // Un lien partagé peut pointer vers une activité désormais passée —
     // on bascule l'onglet plutôt que de dire "introuvable" à tort.
-    if (isPast(target) !== showPast) { setShowPast(isPast(target)); return; }
+    if (view !== 'highlights' && isPast(target) !== showPast) { setView(isPast(target) ? 'past' : 'upcoming'); return; }
     const el = document.getElementById(`activity-${sharedActivityId}`);
     el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     setHighlightedId(sharedActivityId);
     const timeout = setTimeout(() => setHighlightedId(null), 3000);
     return () => clearTimeout(timeout);
-  }, [loading, sharedActivityId, activities, navigate, t, isPast, showPast]);
+  }, [loading, sharedActivityId, activities, navigate, t, isPast, showPast, view]);
 
   const loadGroupUnread = useCallback(async () => {
     if (!user) return;
@@ -301,29 +341,95 @@ export default function Activities() {
       <div className="max-w-lg mx-auto px-4 pt-6">
         {!loading && (
           <div className="flex gap-2 mb-5">
-            <button onClick={() => setShowPast(false)}
+            <button onClick={() => setView('upcoming')}
               className={cn(
                 'flex-1 rounded-full py-2.5 text-sm font-medium transition-all duration-200 border',
-                !showPast
+                view === 'upcoming'
                   ? 'border-primary bg-primary text-white shadow-md shadow-primary/20'
                   : 'border-border bg-background hover:bg-secondary text-foreground'
               )}
               style={{ fontFamily: 'Jost, sans-serif' }}>
               {t('activities.upcomingTab')}
             </button>
-            <button onClick={() => setShowPast(true)}
+            <button onClick={() => setView('past')}
               className={cn(
                 'flex-1 rounded-full py-2.5 text-sm font-medium transition-all duration-200 border',
-                showPast
+                view === 'past'
                   ? 'border-primary bg-primary text-white shadow-md shadow-primary/20'
                   : 'border-border bg-background hover:bg-secondary text-foreground'
               )}
               style={{ fontFamily: 'Jost, sans-serif' }}>
               {t('activities.pastTab')}
             </button>
+            <button onClick={() => setView('highlights')}
+              className={cn(
+                'flex-1 rounded-full py-2.5 text-sm font-medium transition-all duration-200 border',
+                view === 'highlights'
+                  ? 'border-primary bg-primary text-white shadow-md shadow-primary/20'
+                  : 'border-border bg-background hover:bg-secondary text-foreground'
+              )}
+              style={{ fontFamily: 'Jost, sans-serif' }}>
+              {t('activities.highlightsTab')}
+            </button>
           </div>
         )}
-        {loading ? (
+        {view === 'highlights' ? (
+          <>
+            <div className="flex gap-2 overflow-x-auto pb-1 mb-4 -mx-4 px-4">
+              <button onClick={() => setPoiCategoryFilter(null)}
+                className={cn('rounded-full px-3.5 py-1.5 text-xs font-medium transition-all flex-shrink-0',
+                  !poiCategoryFilter ? 'bg-primary text-white' : 'bg-secondary text-muted-foreground')}
+                style={{ fontFamily: 'Jost, sans-serif' }}>
+                {t('mapView.all')}
+              </button>
+              {POI_CATEGORY_ORDER.map(cat => (
+                <button key={cat} onClick={() => setPoiCategoryFilter(poiCategoryFilter === cat ? null : cat)}
+                  className={cn('rounded-full px-3.5 py-1.5 text-xs font-medium transition-all flex-shrink-0',
+                    poiCategoryFilter === cat ? 'bg-primary text-white' : 'bg-secondary text-muted-foreground')}
+                  style={{ fontFamily: 'Jost, sans-serif' }}>
+                  {POI_CARD_STYLE[cat]?.emoji} {t(`activityCategories.${cat}`)}
+                </button>
+              ))}
+            </div>
+            {visiblePois.length === 0 ? (
+              <div className="text-center py-16">
+                <div className="text-5xl mb-4">🧭</div>
+                <p className="text-sm text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>{t('activities.noHighlights')}</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-3">
+                {visiblePois.map(poi => {
+                  const style = POI_CARD_STYLE[poi.category] || { bg: 'bg-muted', emoji: '📍' };
+                  const description = localizedPoiDescription(poi.description, poi.description_en, i18n.language);
+                  return (
+                    <div key={poi.id} className="card-premium overflow-hidden flex flex-col">
+                      <div className={`relative aspect-[4/3] flex items-center justify-center ${style.bg}`}>
+                        {poi.image_url ? (
+                          <img src={poi.image_url} alt={poi.name} className="h-full w-full object-cover" />
+                        ) : (
+                          <span className="text-4xl">{style.emoji}</span>
+                        )}
+                      </div>
+                      <div className="p-3 space-y-1.5 flex-1 flex flex-col">
+                        <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide" style={{ fontFamily: 'Jost, sans-serif' }}>
+                          {style.emoji} {t(`activityCategories.${poi.category}`)}
+                        </p>
+                        <h3 className="font-display text-base font-semibold leading-tight">{poi.name}</h3>
+                        <p className="text-xs text-muted-foreground line-clamp-3 flex-1" style={{ fontFamily: 'Jost, sans-serif', lineHeight: 1.5 }}>
+                          {description}
+                        </p>
+                        <button onClick={() => navigate(`/map?poi=${poi.id}`)}
+                          className="btn-ghost w-full py-2 text-xs mt-1 flex items-center justify-center gap-1.5">
+                          <MapIcon className="h-3 w-3" /> {t('activities.viewOnMap')}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </>
+        ) : loading ? (
           <div className="space-y-3">
             {[1,2,3].map(i => <div key={i} className="h-44 rounded-2xl bg-muted animate-pulse" />)}
           </div>
