@@ -64,8 +64,9 @@ const POI_CARD_STYLE: Record<string, { bg: string; emoji: string }> = {
   sport: { bg: 'bg-sand-light', emoji: '🎾' },
   marche: { bg: 'bg-pine-light', emoji: '🌙' },
   festival: { bg: 'bg-sand-light', emoji: '🎷' },
+  bateau: { bg: 'bg-ocean-light', emoji: '⛵' },
 };
-const POI_CATEGORY_ORDER = ['plage', 'velo', 'surf', 'apero', 'sport', 'marche', 'festival'];
+const POI_CATEGORY_ORDER = ['plage', 'velo', 'surf', 'apero', 'sport', 'bateau', 'marche', 'festival'];
 
 // BUG FIX : l'ancien fallback utilisait de fausses photos stock (dont un portrait
 // de visage affiché comme "photo plage"). Priorité d'affichage pour chaque activité :

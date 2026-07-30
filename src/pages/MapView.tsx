@@ -64,6 +64,7 @@ const POI_EMOJI: Record<string, string> = {
   velo: '🚴',
   marche: '🌙',
   festival: '🎷',
+  bateau: '⛵',
 };
 
 function createMarkerIcon(category: string | null) {

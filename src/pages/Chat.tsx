@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import { ArrowLeft, Send, MoreVertical, Check, CheckCheck, Eye, Mic, Square, SmilePlus, Image as ImageIcon } from 'lucide-react';
-import { AdminBadge } from '@/components/ProfileCard';
+import { AdminBadge, ProfileCardProfile } from '@/components/ProfileCard';
+import ProfileDetailModal from '@/components/ProfileDetailModal';
 import { avatarFallbackInitial, formatLastSeen, formatMessageTime, formatReadAt } from '@/lib/constants';
 import { useTimeTick } from '@/lib/useTimeTick';
 import { ReportModal, ReportButton } from '@/components/ReportModal';
@@ -42,11 +43,12 @@ export default function Chat() {
   const navigate = useNavigate();
   useTimeTick();
   const [messages, setMessages] = useState<Message[]>([]);
-  const [partner, setPartner] = useState<{ name: string | null; photo_url: string | null; last_seen: string | null; is_admin?: boolean | null } | null>(null);
+  const [partner, setPartner] = useState<(ProfileCardProfile & { last_seen: string | null }) | null>(null);
   const [content, setContent] = useState('');
   const [sending, setSending] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
+  const [detailOpen, setDetailOpen] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const { isBlocked, blockUser, unblockUser } = useBlockedUsers();
   const bindLongPress = useLongPress();
@@ -68,7 +70,7 @@ export default function Chat() {
 
   const loadPartner = useCallback(async () => {
     if (!partnerId) return;
-    const { data } = await supabase.from('profiles').select('name, photo_url, last_seen, is_admin').eq('user_id', partnerId).single();
+    const { data } = await supabase.from('profiles').select('*').eq('user_id', partnerId).single();
     if (data) setPartner(data);
   }, [partnerId]);
 
@@ -290,27 +292,29 @@ export default function Chat() {
           <button onClick={handleBack} className="min-h-10 min-w-10 -ml-2 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="h-5 w-5" />
           </button>
-          <div className="relative flex-shrink-0">
-            <div className="h-9 w-9 rounded-full overflow-hidden bg-ocean-light flex items-center justify-center">
-              {partner?.photo_url ? (
-                <img src={partner.photo_url} alt="" className="h-full w-full object-cover" />
-              ) : (
-                <span className="font-display text-sm text-primary/60">{avatarFallbackInitial(partner?.name)}</span>
+          <button onClick={() => partner && setDetailOpen(true)} disabled={!partner} className="flex items-center gap-3 flex-1 min-w-0 text-left">
+            <div className="relative flex-shrink-0">
+              <div className="h-9 w-9 rounded-full overflow-hidden bg-ocean-light flex items-center justify-center">
+                {partner?.photo_url ? (
+                  <img src={partner.photo_url} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <span className="font-display text-sm text-primary/60">{avatarFallbackInitial(partner?.name)}</span>
+                )}
+              </div>
+              {partnerOnline && (
+                <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-green-400 ring-2 ring-background" title={t('common.online')} />
               )}
             </div>
-            {partnerOnline && (
-              <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-green-400 ring-2 ring-background" title={t('common.online')} />
-            )}
-          </div>
-          <div className="flex-1 min-w-0">
-            <h1 className="font-display text-lg font-semibold flex items-center gap-1.5 min-w-0">
-              <span className="truncate">{partner?.name || t('chat.conversation')}</span>
-              {partner?.is_admin && <AdminBadge />}
-            </h1>
-            <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>
-              {partnerOnline ? t('common.online') : formatLastSeen(partner?.last_seen, t)}
-            </p>
-          </div>
+            <div className="flex-1 min-w-0">
+              <h1 className="font-display text-lg font-semibold flex items-center gap-1.5 min-w-0">
+                <span className="truncate">{partner?.name || t('chat.conversation')}</span>
+                {partner?.is_admin && <AdminBadge />}
+              </h1>
+              <p className="text-xs text-muted-foreground" style={{ fontFamily: 'Jost, sans-serif' }}>
+                {partnerOnline ? t('common.online') : formatLastSeen(partner?.last_seen, t)}
+              </p>
+            </div>
+          </button>
 
           <div className="relative">
             <button onClick={() => setMenuOpen(!menuOpen)} className="min-h-10 min-w-10 flex items-center justify-center text-muted-foreground hover:text-foreground">
@@ -335,6 +339,10 @@ export default function Chat() {
           </div>
         </div>
       </div>
+
+      {detailOpen && partner && (
+        <ProfileDetailModal profile={partner} onClose={() => setDetailOpen(false)} />
+      )}
 
       {reportOpen && partnerId && (
         <ReportModal targetType="profile" targetId={partnerId} targetUserId={partnerId} onClose={() => setReportOpen(false)} />

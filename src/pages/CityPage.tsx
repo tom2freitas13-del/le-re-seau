@@ -19,7 +19,7 @@ interface NearbyPoi {
 }
 
 const CATEGORY_EMOJI: Record<string, string> = {
-  surf: '🏄', apero: '🍹', sport: '🎾', plage: '🏖️', velo: '🚴', marche: '🌙', festival: '🎷',
+  surf: '🏄', apero: '🍹', sport: '🎾', plage: '🏖️', velo: '🚴', marche: '🌙', festival: '🎷', bateau: '⛵',
 };
 
 export default function CityPage() {
