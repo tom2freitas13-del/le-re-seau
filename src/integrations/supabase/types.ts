@@ -13,7 +13,7 @@ export interface Database {
         Row: {
           id: string;
           user_id: string;
-          type: 'new_message' | 'new_group_message' | 'new_post' | 'post_liked' | 'post_commented';
+          type: 'new_message' | 'new_group_message' | 'new_post' | 'post_liked' | 'post_commented' | 'report_resolved';
           title: string;
           body: string | null;
           link: string;
@@ -23,7 +23,7 @@ export interface Database {
         Insert: {
           id?: string;
           user_id: string;
-          type: 'new_message' | 'new_group_message' | 'new_post' | 'post_liked' | 'post_commented';
+          type: 'new_message' | 'new_group_message' | 'new_post' | 'post_liked' | 'post_commented' | 'report_resolved';
           title: string;
           body?: string | null;
           link: string;
