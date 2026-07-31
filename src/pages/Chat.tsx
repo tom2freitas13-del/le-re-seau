@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
@@ -41,6 +41,7 @@ export default function Chat() {
   const { partnerId } = useParams<{ partnerId: string }>();
   const { user, isAdmin, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   useTimeTick();
   const [messages, setMessages] = useState<Message[]>([]);
   const [partner, setPartner] = useState<(ProfileCardProfile & { last_seen: string | null }) | null>(null);
@@ -149,6 +150,15 @@ export default function Chat() {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Réponse à une annonce Services locaux (?about=<titre>) : préremplit le
+  // message pour garder le contexte, sans écraser une saisie en cours.
+  useEffect(() => {
+    const about = searchParams.get('about');
+    if (!about) return;
+    setContent(prev => prev || t('chat.jobPrefill', { title: about }));
+    setSearchParams(prev => { prev.delete('about'); return prev; }, { replace: true });
+  }, [searchParams, setSearchParams, t]);
 
   const sendTyping = (typing: boolean) => {
     channelRef.current?.send({ type: 'broadcast', event: 'typing', payload: { userId: user?.id, typing } });

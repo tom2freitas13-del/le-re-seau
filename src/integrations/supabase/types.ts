@@ -13,7 +13,7 @@ export interface Database {
         Row: {
           id: string;
           user_id: string;
-          type: 'new_message' | 'new_group_message' | 'new_post' | 'post_liked' | 'post_commented' | 'report_resolved';
+          type: 'new_message' | 'new_group_message' | 'new_post' | 'post_liked' | 'post_commented' | 'report_resolved' | 'activity_joined';
           title: string;
           body: string | null;
           link: string;
@@ -23,7 +23,7 @@ export interface Database {
         Insert: {
           id?: string;
           user_id: string;
-          type: 'new_message' | 'new_group_message' | 'new_post' | 'post_liked' | 'post_commented' | 'report_resolved';
+          type: 'new_message' | 'new_group_message' | 'new_post' | 'post_liked' | 'post_commented' | 'report_resolved' | 'activity_joined';
           title: string;
           body?: string | null;
           link: string;
@@ -548,6 +548,7 @@ export interface Database {
           needed_date: string | null;
           pay: string | null;
           category: string | null;
+          fulfilled: boolean;
           created_at: string;
         };
         Insert: {
@@ -560,6 +561,7 @@ export interface Database {
           needed_date?: string | null;
           pay?: string | null;
           category?: string | null;
+          fulfilled?: boolean;
           created_at?: string;
         };
         Update: Partial<Database['public']['Tables']['job_offers']['Insert']>;
@@ -573,6 +575,7 @@ export interface Database {
           description: string | null;
           availability: string | null;
           category: string | null;
+          fulfilled: boolean;
           created_at: string;
         };
         Insert: {
@@ -582,6 +585,7 @@ export interface Database {
           description?: string | null;
           availability?: string | null;
           category?: string | null;
+          fulfilled?: boolean;
           created_at?: string;
         };
         Update: Partial<Database['public']['Tables']['job_requests']['Insert']>;

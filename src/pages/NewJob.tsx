@@ -8,6 +8,7 @@ import { ArrowLeft, Briefcase } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import { cn } from '@/lib/utils';
 import LocationPicker from '@/components/LocationPicker';
+import { JOB_CATEGORIES } from '@/lib/constants';
 
 export default function NewJob() {
   const { t } = useTranslation();
@@ -16,6 +17,7 @@ export default function NewJob() {
   const [tab, setTab] = useState('offer');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [category, setCategory] = useState('');
   const [location, setLocation] = useState('');
   const [neededDate, setNeededDate] = useState('');
   const [pay, setPay] = useState('');
@@ -35,13 +37,13 @@ export default function NewJob() {
         const { error } = await supabase.from('job_offers').insert({
           title: title.trim(), description: description.trim() || null,
           location: location.trim() || null, needed_date: neededDate || null,
-          pay: pay.trim() || null, author_id: user.id,
+          pay: pay.trim() || null, category: category || null, author_id: user.id,
         });
         if (error) throw error;
       } else {
         const { error } = await supabase.from('job_requests').insert({
           title: title.trim(), description: description.trim() || null,
-          availability: availability.trim() || null, author_id: user.id,
+          availability: availability.trim() || null, category: category || null, author_id: user.id,
         });
         if (error) throw error;
       }
@@ -100,6 +102,21 @@ export default function NewJob() {
               <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 block" style={{ fontFamily: 'Jost, sans-serif' }}>{t('newJob.descriptionLabel')}</label>
               <textarea className={`${inputClass} resize-none`} style={{ fontFamily: 'Jost, sans-serif' }} maxLength={1000}
                 placeholder={t('newJob.descriptionPlaceholder')} rows={4} value={description} onChange={e => setDescription(e.target.value)} />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 block" style={{ fontFamily: 'Jost, sans-serif' }}>{t('newJob.categoryLabel')}</label>
+              <div className="flex flex-wrap gap-2">
+                {JOB_CATEGORIES.filter(c => c.value).map(c => (
+                  <button key={c.value} type="button" onClick={() => setCategory(category === c.value ? '' : c.value)}
+                    className={cn(
+                      'rounded-full px-3.5 py-2 text-sm font-medium transition-all border',
+                      category === c.value ? 'border-primary bg-ocean-light text-primary' : 'border-border bg-background hover:bg-secondary'
+                    )}
+                    style={{ fontFamily: 'Jost, sans-serif' }}>
+                    {c.emoji} {t(`jobCategories.${c.value}`)}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 

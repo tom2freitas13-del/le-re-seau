@@ -4,11 +4,12 @@ import { useAuth } from '@/lib/auth-context';
 import BottomNav from '@/components/BottomNav';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Plus, MapPin, Clock, Euro, MessageCircle, Briefcase, Search, Trash2 } from 'lucide-react';
+import { Plus, MapPin, Clock, Euro, MessageCircle, Briefcase, Search, Trash2, CheckCircle2, Undo2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useBlockedUsers } from '@/lib/useBlockedUsers';
 import { ReportButton } from '@/components/ReportModal';
+import { JOB_CATEGORIES } from '@/lib/constants';
 
 interface JobItem {
   id: string;
@@ -20,6 +21,8 @@ interface JobItem {
   needed_date?: string | null;
   availability?: string | null;
   pay?: string | null;
+  category?: string | null;
+  fulfilled: boolean;
   created_at: string;
 }
 
@@ -38,7 +41,10 @@ export default function Jobs() {
   const [requests, setRequests] = useState<JobItem[]>([]);
   const [activeTab, setActiveTab] = useState<'offers' | 'requests'>('offers');
   const [search, setSearch] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('');
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [authorNames, setAuthorNames] = useState<Record<string, string | null>>({});
+  const [togglingFulfilledId, setTogglingFulfilledId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) { navigate('/auth'); return; }
@@ -52,6 +58,23 @@ export default function Jobs() {
     ]);
     if (o.data) setOffers(o.data);
     if (r.data) setRequests(r.data);
+
+    const authorIds = Array.from(new Set([...(o.data || []), ...(r.data || [])].map(item => item.author_id)));
+    if (authorIds.length) {
+      const { data: profiles } = await supabase.from('profiles').select('user_id, name').in('user_id', authorIds);
+      setAuthorNames(Object.fromEntries((profiles || []).map(p => [p.user_id, p.name])));
+    }
+  };
+
+  const toggleFulfilled = async (item: JobItem, table: 'job_offers' | 'job_requests') => {
+    if (!user) return;
+    setTogglingFulfilledId(item.id);
+    const nextFulfilled = !item.fulfilled;
+    const { error } = await supabase.from(table).update({ fulfilled: nextFulfilled }).eq('id', item.id).eq('author_id', user.id);
+    setTogglingFulfilledId(null);
+    if (error) { toast.error(t('jobs.updateError')); return; }
+    const updater = (prev: JobItem[]) => prev.map(x => x.id === item.id ? { ...x, fulfilled: nextFulfilled } : x);
+    if (table === 'job_offers') setOffers(updater); else setRequests(updater);
   };
 
   // BUG FIX (#7) : suppression de ses propres annonces, désormais possible.
@@ -74,6 +97,7 @@ export default function Jobs() {
 
   const currentList = (activeTab === 'offers' ? offers : requests)
     .filter(item => !isBlocked(item.author_id))
+    .filter(item => !categoryFilter || item.category === categoryFilter)
     .filter(item => !search || item.title?.toLowerCase().includes(search.toLowerCase()) || item.description?.toLowerCase().includes(search.toLowerCase()));
 
   // Offre : expirée si sa date précise est passée. Demande : pas de date
@@ -134,6 +158,22 @@ export default function Jobs() {
               {t('jobs.requests', { count: requests.length })}
             </button>
           </div>
+
+          {/* Filtre par catégorie */}
+          <div className="flex gap-1.5 overflow-x-auto pb-1 mt-3 -mx-4 px-4">
+            {JOB_CATEGORIES.map(c => (
+              <button key={c.value} onClick={() => setCategoryFilter(categoryFilter === c.value ? '' : c.value)}
+                className={cn(
+                  'flex-shrink-0 rounded-full px-3 py-1.5 text-xs font-medium border transition-all duration-200',
+                  categoryFilter === c.value
+                    ? 'border-primary bg-ocean-light text-primary shadow-sm'
+                    : 'border-border bg-background text-muted-foreground hover:bg-secondary'
+                )}
+                style={{ fontFamily: 'Jost, sans-serif' }}>
+                {c.emoji} {c.value ? t(`jobCategories.${c.value}`) : t('mapView.all')}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -159,11 +199,15 @@ export default function Jobs() {
               const isMine = item.author_id === user?.id;
               const table = activeTab === 'offers' ? 'job_offers' : 'job_requests';
               const expired = isExpired(item, activeTab);
+              const cat = JOB_CATEGORIES.find(c => c.value === item.category);
               return (
-                <div key={item.id} className={cn('card-premium p-5 space-y-3', expired && 'opacity-60')}>
+                <div key={item.id} className={cn('card-premium p-5 space-y-3', (expired || item.fulfilled) && 'opacity-60')}>
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1">
                       <h3 className="font-display text-lg font-semibold mb-1">{item.title}</h3>
+                      <p className="text-xs text-muted-foreground mb-1" style={{ fontFamily: 'Jost, sans-serif' }}>
+                        {t(activeTab === 'offers' ? 'jobs.offeredBy' : 'jobs.requestedBy', { name: authorNames[item.author_id] || t('activities.someone') })}
+                      </p>
                       {item.description && (
                         <p className="text-sm text-muted-foreground line-clamp-2" style={{ fontFamily: 'Jost, sans-serif', lineHeight: 1.6 }}>
                           {item.description}
@@ -189,11 +233,19 @@ export default function Jobs() {
                   </div>
 
                   <div className="flex flex-wrap gap-2">
-                    {expired && (
+                    {item.fulfilled && (
+                      <span className="pill bg-pine-light text-pine font-semibold flex items-center gap-1">
+                        <CheckCircle2 className="h-3 w-3" /> {t('jobs.fulfilled')}
+                      </span>
+                    )}
+                    {expired && !item.fulfilled && (
                       <span className="pill bg-destructive/10 text-destructive font-semibold">{t('jobs.expired')}</span>
                     )}
                     {isMine && (
-                      <span className="pill bg-pine-light text-pine">{t('jobs.yourAd')}</span>
+                      <span className="pill bg-sand-light text-sand-dark">{t('jobs.yourAd')}</span>
+                    )}
+                    {cat && (
+                      <span className="pill bg-secondary text-secondary-foreground">{cat.emoji} {t(`jobCategories.${cat.value}`)}</span>
                     )}
                     {item.location && (
                       <span className="pill bg-ocean-light text-primary flex items-center gap-1">
@@ -212,9 +264,17 @@ export default function Jobs() {
                     )}
                   </div>
 
-                  {!isMine && (
+                  {isMine ? (
                     <button
-                      onClick={() => navigate(`/chat/${item.author_id}`)}
+                      onClick={() => toggleFulfilled(item, table)}
+                      disabled={togglingFulfilledId === item.id}
+                      className="btn-ghost w-full flex items-center justify-center gap-2 py-2.5 disabled:opacity-50">
+                      {item.fulfilled ? <Undo2 className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
+                      {item.fulfilled ? t('jobs.markAvailable') : t('jobs.markFulfilled')}
+                    </button>
+                  ) : !item.fulfilled && (
+                    <button
+                      onClick={() => navigate(`/chat/${item.author_id}?about=${encodeURIComponent(item.title)}`)}
                       className="btn-ghost w-full flex items-center justify-center gap-2 py-2.5">
                       <MessageCircle className="h-4 w-4" />
                       {activeTab === 'offers' ? t('jobs.replyToOffer') : t('jobs.contact')}

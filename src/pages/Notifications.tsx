@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ArrowLeft, Bell, MessageCircle, Image as ImageIcon, Heart, MessageSquare, CheckCheck, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Bell, MessageCircle, Image as ImageIcon, Heart, MessageSquare, CheckCheck, ShieldCheck, Calendar } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import { formatMessageTime } from '@/lib/constants';
@@ -9,7 +9,7 @@ import BottomNav from '@/components/BottomNav';
 
 interface Notification {
   id: string;
-  type: 'new_message' | 'new_group_message' | 'new_post' | 'post_liked' | 'post_commented' | 'report_resolved';
+  type: 'new_message' | 'new_group_message' | 'new_post' | 'post_liked' | 'post_commented' | 'report_resolved' | 'activity_joined';
   title: string;
   body: string | null;
   link: string;
@@ -24,6 +24,7 @@ const TYPE_ICON: Record<Notification['type'], typeof Bell> = {
   post_liked: Heart,
   post_commented: MessageSquare,
   report_resolved: ShieldCheck,
+  activity_joined: Calendar,
 };
 
 // Historique persistant, volontairement limité aux interactions directes

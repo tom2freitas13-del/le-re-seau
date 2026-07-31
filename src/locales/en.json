@@ -728,7 +728,8 @@
     "seenHoursAgo": "Seen {{count}}h ago",
     "seenYesterday": "Seen yesterday",
     "seenDaysAgo": "Seen {{count}}d ago",
-    "seenOnDate": "Seen on {{date}}"
+    "seenOnDate": "Seen on {{date}}",
+    "jobPrefill": "Hi, I'm reaching out about your listing \"{{title}}\"."
   },
   "newJob": {
     "title": "Post an ad",
@@ -739,6 +740,7 @@
     "adTitleRequestPlaceholder": "E.g. Looking for moving help",
     "descriptionLabel": "Description",
     "descriptionPlaceholder": "Describe your ad...",
+    "categoryLabel": "Category",
     "locationLabel": "📍 Location",
     "locationPlaceholder": "E.g. Saint-Martin-de-Ré...",
     "availabilityLabel": "🕐 Availability",
@@ -773,7 +775,21 @@
     "replyToOffer": "Reply to offer",
     "contact": "Contact",
     "deleteError": "Couldn't delete this ad.",
-    "deleted": "Ad deleted."
+    "deleted": "Ad deleted.",
+    "offeredBy": "Offered by {{name}}",
+    "requestedBy": "Requested by {{name}}",
+    "fulfilled": "Filled",
+    "markFulfilled": "Mark as filled",
+    "markAvailable": "Mark as available again",
+    "updateError": "Couldn't update this ad."
+  },
+  "jobCategories": {
+    "jardinage": "Gardening",
+    "bricolage": "Handyman",
+    "garde": "Sitting",
+    "livraison": "Delivery",
+    "menage": "Cleaning",
+    "autre": "Other"
   },
   "mapView": {
     "title": "Map",

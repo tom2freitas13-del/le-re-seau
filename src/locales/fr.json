@@ -728,7 +728,8 @@
     "seenHoursAgo": "Vu il y a {{count}} h",
     "seenYesterday": "Vu hier",
     "seenDaysAgo": "Vu il y a {{count}} j",
-    "seenOnDate": "Vu le {{date}}"
+    "seenOnDate": "Vu le {{date}}",
+    "jobPrefill": "Bonjour, je vous contacte au sujet de votre annonce \"{{title}}\"."
   },
   "newJob": {
     "title": "Publier une annonce",
@@ -739,6 +740,7 @@
     "adTitleRequestPlaceholder": "Ex: Cherche aide déménagement",
     "descriptionLabel": "Description",
     "descriptionPlaceholder": "Décrivez votre annonce...",
+    "categoryLabel": "Catégorie",
     "locationLabel": "📍 Lieu",
     "locationPlaceholder": "Ex: Saint-Martin-de-Ré...",
     "availabilityLabel": "🕐 Disponibilité",
@@ -773,7 +775,21 @@
     "replyToOffer": "Répondre à l'offre",
     "contact": "Contacter",
     "deleteError": "Impossible de supprimer cette annonce.",
-    "deleted": "Annonce supprimée."
+    "deleted": "Annonce supprimée.",
+    "offeredBy": "Proposé par {{name}}",
+    "requestedBy": "Demandé par {{name}}",
+    "fulfilled": "Pourvu",
+    "markFulfilled": "Marquer comme pourvu",
+    "markAvailable": "Marquer comme à nouveau disponible",
+    "updateError": "Impossible de mettre à jour cette annonce."
+  },
+  "jobCategories": {
+    "jardinage": "Jardinage",
+    "bricolage": "Bricolage",
+    "garde": "Garde",
+    "livraison": "Livraison",
+    "menage": "Ménage",
+    "autre": "Autre"
   },
   "mapView": {
     "title": "Carte",
