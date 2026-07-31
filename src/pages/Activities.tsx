@@ -431,7 +431,7 @@ export default function Activities() {
                     <div key={poi.id} className="card-premium overflow-hidden flex flex-col">
                       <div className={`relative aspect-[4/3] flex items-center justify-center ${style.bg}`}>
                         {poi.image_url ? (
-                          <img src={poi.image_url} alt={poi.name} className="h-full w-full object-cover" />
+                          <LocalImage src={poi.image_url} alt={poi.name} fallbackEmoji={style.emoji} fallbackBg={style.bg} className="w-full h-full" />
                         ) : (
                           <span className="text-4xl">{style.emoji}</span>
                         )}
