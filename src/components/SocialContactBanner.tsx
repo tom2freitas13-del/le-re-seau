@@ -1,13 +1,17 @@
 import { useTranslation } from 'react-i18next';
 import { Instagram } from 'lucide-react';
 
+// Bannière sous ReferralBanner sur l'accueil : lien vers l'Instagram du
+// Ré-seau + invitation à contacter en cas de question. Même gabarit visuel
+// que ReferralBanner pour rester cohérent (dégradé + texte + bouton blanc),
+// mais pas de logique de partage/auth ici — visible même sans compte.
 const INSTAGRAM_URL = 'https://www.instagram.com/re_seau.idr';
 
 export default function SocialContactBanner() {
   const { t } = useTranslation();
 
   return (
-    
+    <a
       href={INSTAGRAM_URL}
       target="_blank"
       rel="noopener noreferrer"
