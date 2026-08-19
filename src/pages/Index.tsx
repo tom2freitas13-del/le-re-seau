@@ -10,6 +10,7 @@ import BottomNav from '@/components/BottomNav';
 import HomeFeed from '@/components/HomeFeed';
 import TodayOnIsland from '@/components/TodayOnIsland';
 import ReferralBanner from '@/components/ReferralBanner';
+import SocialContactBanner from '@/components/SocialContactBanner';
 import { CITY_CONTENT } from '@/lib/cityContent';
 
 // Photos locales : mets tes fichiers dans public/images/ et ils seront
@@ -163,6 +164,11 @@ export default function Index() {
           <ReferralBanner />
         </div>
       )}
+      
+      {/* ── CONTACT / INSTAGRAM ── */}
+      <div className="px-4 pt-4 max-w-lg mx-auto">
+        <SocialContactBanner />
+      </div>
 
       {/* ── FIL DE LA COMMUNAUTÉ (photos partagées par les membres) ── */}
       <HomeFeed />
