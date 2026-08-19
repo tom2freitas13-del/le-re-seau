@@ -1,0 +1,93 @@
+diff --git a/src/components/SocialContactBanner.tsx b/src/components/SocialContactBanner.tsx
+new file mode 100644
+index 0000000..38377c0
+--- /dev/null
++++ b/src/components/SocialContactBanner.tsx
+@@ -0,0 +1,35 @@
++import { useTranslation } from 'react-i18next';
++import { Instagram } from 'lucide-react';
++
++// Bannière sous ReferralBanner sur l'accueil : lien vers l'Instagram du
++// Ré-seau + invitation à contacter en cas de question. Même gabarit visuel
++// que ReferralBanner pour rester cohérent (dégradé + texte + bouton blanc),
++// mais pas de logique de partage/auth ici — visible même sans compte.
++const INSTAGRAM_URL = 'https://www.instagram.com/re_seau.idr';
++
++export default function SocialContactBanner() {
++  const { t } = useTranslation();
++
++  return (
++    <a
++      href={INSTAGRAM_URL}
++      target="_blank"
++      rel="noopener noreferrer"
++      className="rounded-2xl px-5 py-4 flex items-center gap-3 hover:shadow-lg transition-all"
++      style={{ background: 'linear-gradient(135deg, hsl(196 60% 22%), hsl(200 65% 15%))' }}
++    >
++      <span className="text-2xl flex-shrink-0">📸</span>
++      <div className="flex-1 min-w-0">
++        <p className="text-sm font-semibold text-white" style={{ fontFamily: 'Jost, sans-serif' }}>
++          {t('home.socialContactTitle')}
++        </p>
++        <p className="text-xs text-white/70" style={{ fontFamily: 'Jost, sans-serif' }}>
++          {t('home.socialContactSubtitle')}
++        </p>
++      </div>
++      <span className="bg-white text-primary rounded-full px-4 py-2 text-xs font-semibold flex items-center gap-1.5 flex-shrink-0">
++        <Instagram className="h-3.5 w-3.5" /> {t('home.socialContactCta')}
++      </span>
++    </a>
++  );
++}
+diff --git a/src/locales/en.json b/src/locales/en.json
+index 2c53245..ca161aa 100644
+--- a/src/locales/en.json
++++ b/src/locales/en.json
+@@ -246,6 +246,9 @@
+     "referralBannerTitle": "Invite a friend to the island 🏝️",
+     "referralBannerSubtitle": "They join Le Ré-seau thanks to you? +15 points instantly!",
+     "referralBannerCta": "Share",
++    "socialContactTitle": "Questions? Follow us on Instagram",
++    "socialContactSubtitle": "@re_seau.idr — feel free to reach out, we're happy to help!",
++    "socialContactCta": "Follow",
+     "islandPhotosTitle": "The island in pictures",
+     "islandPhotoLabel": "Place {{n}}",
+     "ctaFinalTitle": "Join the adventure",
+diff --git a/src/locales/fr.json b/src/locales/fr.json
+index 2d262a9..6946166 100644
+--- a/src/locales/fr.json
++++ b/src/locales/fr.json
+@@ -246,6 +246,9 @@
+     "referralBannerTitle": "Invite un ami sur l'île 🏝️",
+     "referralBannerSubtitle": "Il rejoint Le Ré-seau grâce à toi ? +15 points direct !",
+     "referralBannerCta": "Partager",
++    "socialContactTitle": "Des questions ? Suivez-nous sur Instagram",
++    "socialContactSubtitle": "@re_seau.idr — n'hésitez pas à nous contacter, on est là pour vous !",
++    "socialContactCta": "Suivre",
+     "islandPhotosTitle": "L'île en images",
+     "islandPhotoLabel": "Lieu {{n}}",
+     "ctaFinalTitle": "Rejoignez l'aventure",
+diff --git a/src/pages/Index.tsx b/src/pages/Index.tsx
+index ebb8bb9..f25e899 100644
+--- a/src/pages/Index.tsx
++++ b/src/pages/Index.tsx
+@@ -10,6 +10,7 @@ import BottomNav from '@/components/BottomNav';
+ import HomeFeed from '@/components/HomeFeed';
+ import TodayOnIsland from '@/components/TodayOnIsland';
+ import ReferralBanner from '@/components/ReferralBanner';
++import SocialContactBanner from '@/components/SocialContactBanner';
+ import { CITY_CONTENT } from '@/lib/cityContent';
+ 
+ // Photos locales : mets tes fichiers dans public/images/ et ils seront
+@@ -164,6 +165,11 @@ export default function Index() {
+         </div>
+       )}
+ 
++      {/* ── CONTACT / INSTAGRAM (visible pour tous, connecté ou non) ── */}
++      <div className="px-4 pt-4 max-w-lg mx-auto">
++        <SocialContactBanner />
++      </div>
++
+       {/* ── FIL DE LA COMMUNAUTÉ (photos partagées par les membres) ── */}
+       <HomeFeed />
+ 
