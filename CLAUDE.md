@@ -17,9 +17,9 @@ npm run test         # vitest run (single run)
 npm run test:watch   # vitest watch mode
 ```
 
-There is no root ESLint config file checked in (`eslint.config.js` is absent despite the `lint` script and `eslint`/`typescript-eslint` devDependencies) — `npm run lint` may need a config added before it works. No test files currently exist in `src/`, even though Vitest + Testing Library are fully configured as devDependencies.
+`eslint.config.js` (flat config) is checked in; `npm run lint` works. It currently turns `@typescript-eslint/no-unused-vars` off. A handful of unit tests exist (`*.test.ts(x)` next to the code they cover — e.g. `src/lib/constants.test.ts`, `src/components/ErrorBoundary.test.tsx`); most of the app is still untested.
 
-Local dev requires a `.env` (copy from `.env.example`) with `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` pointing at a Supabase project that has run `supabase/migrations/001_init.sql` then `002_unread_messages.sql`.
+Local dev requires a `.env` (copy from `.env.example`) with `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` pointing at a Supabase project that has run every file in `supabase/migrations/` in order (`001_init.sql` … `073_*.sql`). They are designed to replay cleanly from scratch.
 
 ## Architecture
 

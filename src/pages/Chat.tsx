@@ -12,6 +12,7 @@ import { ReportModal, ReportButton } from '@/components/ReportModal';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { useBlockedUsers } from '@/lib/useBlockedUsers';
 import { usePresence } from '@/lib/presence-context';
+import { isUuid } from '@/lib/utils';
 import { toast } from 'sonner';
 import { MAX_PHOTO_SIZE_MB, pickAudioMimeType, uploadVoiceMessage, uploadPhoto } from '@/lib/attachments';
 import { useLongPress } from '@/lib/useLongPress';
@@ -103,7 +104,11 @@ export default function Chat() {
 
   useEffect(() => {
     if (authLoading) return;
-    if (!user || !partnerId) { navigate('/auth'); return; }
+    if (!user) { navigate('/auth'); return; }
+    // partnerId vient de l'URL : on le valide en UUID avant de l'injecter
+    // dans les filtres PostgREST (`.or("and(sender_id.eq.<id>,...)")`), sinon
+    // une valeur contenant `,` ou `)` pourrait altérer le filtre.
+    if (!isUuid(partnerId)) { navigate('/discussions'); return; }
     loadPartner();
     loadMessages();
 
@@ -140,6 +145,13 @@ export default function Chat() {
       .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'message_reactions' }, (payload) => {
         const r = payload.old as Reaction;
         setReactions(rs => rs.filter(x => !(x.message_id === r.message_id && x.user_id === r.user_id && x.emoji === r.emoji)));
+      })
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'messages' }, (payload) => {
+        // Suppression d'un message (par son auteur ou par la modération) :
+        // le retirer de la vue des deux côtés en temps réel. Le payload
+        // DELETE ne porte que la clé primaire.
+        const removed = payload.old as { id: string };
+        setMessages(prev => prev.filter(m => m.id !== removed.id));
       })
       .subscribe();
 

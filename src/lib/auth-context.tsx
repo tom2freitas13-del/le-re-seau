@@ -9,6 +9,9 @@ interface AuthContextType {
   loading: boolean;
   isAdmin: boolean;
   isBanned: boolean;
+  // Exploitant unique du site (profiles.is_owner). Distinct de isAdmin :
+  // seul lui peut consulter toutes les conversations privées pour la modération.
+  isOwner: boolean;
   signOut: () => Promise<void>;
 }
 
@@ -18,6 +21,7 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   isAdmin: false,
   isBanned: false,
+  isOwner: false,
   signOut: async () => {},
 });
 
@@ -29,6 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isBanned, setIsBanned] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -46,14 +51,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Vérifie le statut admin/banni dès qu'un utilisateur est connecté.
-  // C'est ce qui permet d'afficher partout l'écran de blocage si le compte
-  // a été banni, et de débloquer l'accès aux outils de modération pour les admins.
+  // Vérifie le statut admin/banni/propriétaire dès qu'un utilisateur est
+  // connecté, PUIS le re-vérifie quand l'onglet reprend le focus : sans ça,
+  // un bannissement (ou une promotion admin) prononcé en cours de session ne
+  // prenait effet qu'au rechargement complet de la page — l'écran de blocage
+  // ne s'affichait pas tant que la personne gardait l'appli ouverte.
   useEffect(() => {
-    if (!user) { setIsAdmin(false); setIsBanned(false); return; }
-    supabase.from('profiles').select('is_admin, is_banned, language').eq('user_id', user.id).single().then(({ data }) => {
+    if (!user) { setIsAdmin(false); setIsBanned(false); setIsOwner(false); return; }
+
+    let cancelled = false;
+
+    const refreshFlags = async () => {
+      const { data } = await supabase.from('profiles').select('is_admin, is_banned, is_owner').eq('user_id', user.id).single();
+      if (cancelled) return;
       setIsAdmin(!!data?.is_admin);
       setIsBanned(!!data?.is_banned);
+      setIsOwner(!!data?.is_owner);
+    };
+
+    // Premier chargement : les drapeaux + la langue du compte.
+    supabase.from('profiles').select('is_admin, is_banned, is_owner, language').eq('user_id', user.id).single().then(({ data }) => {
+      if (cancelled) return;
+      setIsAdmin(!!data?.is_admin);
+      setIsBanned(!!data?.is_banned);
+      setIsOwner(!!data?.is_owner);
       if (data?.language) {
         const localChoice = localStorage.getItem(LANGUAGE_STORAGE_KEY);
         if (!localChoice) {
@@ -66,6 +87,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
     });
+
+    const onVisible = () => { if (document.visibilityState === 'visible') refreshFlags(); };
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('focus', refreshFlags);
+    return () => {
+      cancelled = true;
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('focus', refreshFlags);
+    };
   }, [user]);
 
   const signOut = async () => {
@@ -73,7 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, isAdmin, isBanned, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, isAdmin, isBanned, isOwner, signOut }}>
       {children}
     </AuthContext.Provider>
   );

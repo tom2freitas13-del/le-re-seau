@@ -33,6 +33,30 @@ export interface Database {
         Update: Partial<Database['public']['Tables']['notifications']['Insert']>;
         Relationships: [];
       };
+      moderation_access_log: {
+        Row: {
+          id: string;
+          accessed_by: string;
+          scope: 'private_conversation' | 'group_conversation' | 'salon';
+          subject_a: string | null;
+          subject_b: string | null;
+          group_id: string | null;
+          salon: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          accessed_by: string;
+          scope: 'private_conversation' | 'group_conversation' | 'salon';
+          subject_a?: string | null;
+          subject_b?: string | null;
+          group_id?: string | null;
+          salon?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['moderation_access_log']['Insert']>;
+        Relationships: [];
+      };
       profiles: {
         Row: {
           id: string;
@@ -49,6 +73,7 @@ export interface Database {
           is_admin: boolean;
           is_banned: boolean;
           is_pro: boolean;
+          is_owner: boolean;
           last_seen: string | null;
           language: 'fr' | 'en';
           referred_by: string | null;
@@ -74,6 +99,7 @@ export interface Database {
           is_admin?: boolean;
           is_banned?: boolean;
           is_pro?: boolean;
+          is_owner?: boolean;
           last_seen?: string | null;
           language?: 'fr' | 'en';
           referred_by?: string | null;
@@ -763,6 +789,20 @@ export interface Database {
       email_exists: {
         Args: { check_email: string };
         Returns: boolean;
+      };
+      is_site_owner: {
+        Args: { uid: string };
+        Returns: boolean;
+      };
+      log_moderation_access: {
+        Args: {
+          p_scope: 'private_conversation' | 'group_conversation' | 'salon';
+          p_subject_a?: string | null;
+          p_subject_b?: string | null;
+          p_group_id?: string | null;
+          p_salon?: string | null;
+        };
+        Returns: undefined;
       };
     };
     Enums: Record<string, never>;

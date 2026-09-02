@@ -44,6 +44,13 @@ export default function PrivacyPolicy() {
         </section>
 
         <section className="space-y-2">
+          <h2 className="font-display text-lg font-semibold">{t('privacy.moderationAccessTitle')}</h2>
+          <p className="text-sm text-foreground/80 leading-relaxed">
+            {t('privacy.moderationAccessBody')}
+          </p>
+        </section>
+
+        <section className="space-y-2">
           <h2 className="font-display text-lg font-semibold">{t('privacy.retentionTitle')}</h2>
           <p className="text-sm text-foreground/80 leading-relaxed">
             {t('privacy.retentionBody')}

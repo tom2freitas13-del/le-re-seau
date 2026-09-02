@@ -6,12 +6,10 @@
 -- le schéma et les policies réels (obtenus directement depuis la prod) pour
 -- que le dépôt reste la source de vérité.
 --
--- NB : comme 009 (trigger) et 032 (contrainte target_type) s'exécutent
--- numériquement avant ce fichier, rejouer 001→050 sur une base neuve
--- échouerait encore à 009. Sans intérêt pratique ici (une seule base de
--- prod, déjà à jour), mais à garder en tête si un jour un environnement
--- de test est provisionné depuis zéro : il faudrait alors renuméroter ce
--- fichier avant 009.
+-- L'ancien problème d'ordre (009 et 032 s'exécutant avant ce fichier sur une
+-- base neuve) est réglé : 009 crée désormais la table de façon idempotente
+-- avant son trigger. Ce fichier reste la description complète et refait la
+-- même (re)déclaration `if not exists` — inoffensif sur une base à jour.
 create table if not exists public.reports (
   id uuid primary key default gen_random_uuid(),
   reporter_id uuid not null references auth.users(id) on delete cascade,

@@ -3,11 +3,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ShieldCheck, ArrowLeft, Check, X, Ban, ShieldOff, Store, Search, BarChart3 } from 'lucide-react';
+import { ShieldCheck, ArrowLeft, Check, X, Ban, ShieldOff, Store, Search, BarChart3, MessagesSquare } from 'lucide-react';
 import { toast } from 'sonner';
 import { REPORT_REASONS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import AdminStatsPanel from '@/components/AdminStatsPanel';
+import AdminConversationsPanel from '@/components/AdminConversationsPanel';
+import ConfirmDialog from '@/components/ConfirmDialog';
 
 interface Report {
   id: string;
@@ -35,7 +37,7 @@ interface ProSearchResult {
  */
 export default function Admin() {
   const { t } = useTranslation();
-  const { user, isAdmin, loading: authLoading } = useAuth();
+  const { user, isAdmin, isOwner, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [reports, setReports] = useState<Report[]>([]);
   const [reporterNames, setReporterNames] = useState<Record<string, string>>({});
@@ -47,11 +49,15 @@ export default function Admin() {
   const [reportedContent, setReportedContent] = useState<Record<string, string>>({});
   const [filter, setFilter] = useState<'pending' | 'reviewed' | 'dismissed' | 'all'>('pending');
   const [loading, setLoading] = useState(true);
-  const [section, setSection] = useState<'reports' | 'pro' | 'stats'>('reports');
+  const [section, setSection] = useState<'reports' | 'pro' | 'stats' | 'conversations'>('reports');
   const [proQuery, setProQuery] = useState('');
   const [proResults, setProResults] = useState<ProSearchResult[]>([]);
   const [proSearching, setProSearching] = useState(false);
   const [proUpdatingId, setProUpdatingId] = useState<string | null>(null);
+  // Bannir est irréversible côté vécu utilisateur (la personne est éjectée) :
+  // on demande une confirmation. Débannir reste direct.
+  const [confirmBanId, setConfirmBanId] = useState<string | null>(null);
+  const [banning, setBanning] = useState(false);
 
   // Récupère un aperçu du contenu signalé, table par table selon target_type.
   // 'profile' n'a pas besoin d'aperçu, le nom de la personne suffit.
@@ -147,12 +153,21 @@ export default function Admin() {
     toast.success(status === 'reviewed' ? t('admin.reportReviewed') : t('admin.reportDismissed'));
   };
 
-  const toggleBan = async (targetUserId: string) => {
+  const doToggleBan = async (targetUserId: string) => {
     const currentlyBanned = bannedStatus[targetUserId];
+    setBanning(true);
     const { error } = await supabase.from('profiles').update({ is_banned: !currentlyBanned }).eq('user_id', targetUserId);
+    setBanning(false);
+    setConfirmBanId(null);
     if (error) { toast.error(t('admin.banStatusError')); return; }
     setBannedStatus(prev => ({ ...prev, [targetUserId]: !currentlyBanned }));
     toast.success(currentlyBanned ? t('admin.userUnbanned') : t('admin.userBanned'));
+  };
+
+  const toggleBan = (targetUserId: string) => {
+    // Débannir : direct. Bannir : passe par la confirmation.
+    if (bannedStatus[targetUserId]) { doToggleBan(targetUserId); return; }
+    setConfirmBanId(targetUserId);
   };
 
   const searchPro = async (query: string) => {
@@ -194,7 +209,7 @@ export default function Admin() {
 
       <div className="max-w-2xl mx-auto px-4 pt-6">
         {/* Sections */}
-        <div className="flex gap-2 mb-6">
+        <div className="flex flex-wrap gap-2 mb-6">
           <button onClick={() => setSection('reports')}
             className={cn('flex-1 rounded-full px-4 py-2.5 text-sm font-medium transition-all',
               section === 'reports' ? 'bg-primary text-white shadow-md shadow-primary/20' : 'bg-secondary text-muted-foreground')}
@@ -213,9 +228,22 @@ export default function Admin() {
             style={{ fontFamily: 'Jost, sans-serif' }}>
             <BarChart3 className="h-3.5 w-3.5" /> {t('admin.statsTitle')}
           </button>
+          {/* Réservé au propriétaire du site (profiles.is_owner). La RLS
+              (migration 072) est la vraie barrière : ce bouton n'est qu'un
+              raccourci d'UI. */}
+          {isOwner && (
+            <button onClick={() => setSection('conversations')}
+              className={cn('flex-1 rounded-full px-4 py-2.5 text-sm font-medium transition-all flex items-center justify-center gap-1.5',
+                section === 'conversations' ? 'bg-primary text-white shadow-md shadow-primary/20' : 'bg-secondary text-muted-foreground')}
+              style={{ fontFamily: 'Jost, sans-serif' }}>
+              <MessagesSquare className="h-3.5 w-3.5" /> {t('admin.convTitle')}
+            </button>
+          )}
         </div>
 
         {section === 'stats' && <AdminStatsPanel />}
+
+        {section === 'conversations' && isOwner && <AdminConversationsPanel />}
 
         {section === 'pro' && (
           <div className="space-y-3">
@@ -359,6 +387,16 @@ export default function Admin() {
         )}
         </>}
       </div>
+
+      {confirmBanId && (
+        <ConfirmDialog
+          message={t('admin.confirmBan', { name: targetNames[confirmBanId] || t('admin.defaultUser') })}
+          confirmLabel={t('admin.ban')}
+          confirming={banning}
+          onCancel={() => setConfirmBanId(null)}
+          onConfirm={() => doToggleBan(confirmBanId)}
+        />
+      )}
     </div>
   );
 }

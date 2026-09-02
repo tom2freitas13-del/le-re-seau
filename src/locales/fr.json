@@ -307,13 +307,13 @@
   "legalNotice": {
     "title": "Mentions légales",
     "back": "Retour",
-    "lastUpdated": "Dernière mise à jour : 7 juillet 2026",
+    "lastUpdated": "Dernière mise à jour : 2 septembre 2026",
     "publisherTitle": "Éditeur du site",
     "publisherBody": "Le site « Le Ré-seau » est édité à titre non-commercial par Hector De Giorgio, Noé Derain et Tom De Freitas, personnes physiques, dans le cadre d'un projet personnel.",
     "publicationDirector": "Directeur de la publication : Hector De Giorgio.",
     "contact": "Contact :",
     "hostingTitle": "Hébergement",
-    "hostingBody": "Le site est hébergé par Netlify, Inc. (2325 3rd Street, Suite 296, San Francisco, California 94107, États-Unis). La base de données, l'authentification et le stockage des fichiers sont assurés par Supabase Inc.",
+    "hostingBody": "Le site est hébergé par Cloudflare, Inc. (101 Townsend Street, San Francisco, California 94107, États-Unis). La base de données, l'authentification et le stockage des fichiers sont assurés par Supabase Inc.",
     "ipTitle": "Propriété intellectuelle",
     "ipBody": "La structure générale, le design et le code du site sont la propriété de leurs auteurs. Toute reproduction non autorisée est interdite. Les contenus publiés par les membres (textes, photos) restent la propriété de leurs auteurs respectifs, qui accordent au Ré-seau le droit de les afficher dans le cadre du fonctionnement du service.",
     "dataTitle": "Données personnelles",
@@ -333,13 +333,13 @@
       "La diffusion d'informations privées de quelqu'un sans son accord."
     ],
     "moderationTitle": "🛡️ Modération",
-    "moderationBody": "Vous pouvez à tout moment signaler un post, un profil ou un message via l'icône drapeau 🚩. L'équipe de modération examinera le signalement et prendra les mesures nécessaires : avertissement, suppression du contenu, ou suspension du compte concerné.",
+    "moderationBody": "Vous pouvez à tout moment signaler un post, un profil ou un message via l'icône drapeau 🚩. L'équipe de modération examinera le signalement et prendra les mesures nécessaires : avertissement, suppression du contenu, ou suspension du compte concerné. Dans le cadre du traitement d'un signalement, l'exploitant du site peut consulter le contenu concerné, y compris des messages privés, afin de vérifier les faits avant de décider d'une sanction.",
     "fullRules": "Pour le détail complet des règles, consultez nos <link>Conditions d'utilisation</link>."
   },
   "terms": {
     "title": "Conditions d'utilisation",
     "back": "Retour",
-    "lastUpdated": "Dernière mise à jour : 7 juillet 2026",
+    "lastUpdated": "Dernière mise à jour : 2 septembre 2026",
     "intro": "En utilisant Le Ré-seau, vous acceptez les règles suivantes. Notre objectif est de garder cette communauté locale, bienveillante et sûre.",
     "s1Title": "1. Objet du service",
     "s1Body": "Le Ré-seau n'est pas une application de rencontre amoureuse ou pour adultes. C'est une application communautaire locale destinée aux habitants et amoureux de l'Île de Ré, pour faire de nouvelles rencontres amicales, se donner rendez-vous entre amis, discuter, s'organiser (activités, covoiturage, petits services entre voisins) et s'entraider. Toute utilisation du service à des fins de rencontre amoureuse, de drague ou à caractère sexuel est contraire à sa vocation et peut entraîner la suspension du compte.",
@@ -357,7 +357,7 @@
       "Diffusion d'informations personnelles d'autrui sans son accord."
     ],
     "s4Title": "4. Modération",
-    "s4Body": "L'équipe Le Ré-seau peut supprimer ou masquer tout contenu contraire à ces règles, et suspendre les comptes contrevenants. Vous pouvez signaler un post, un profil ou un message via le bouton « Signaler ».",
+    "s4Body": "L'équipe Le Ré-seau peut supprimer ou masquer tout contenu contraire à ces règles, et suspendre les comptes contrevenants. Vous pouvez signaler un post, un profil ou un message via le bouton « Signaler ». Pour traiter un signalement et garantir la sécurité de la communauté, l'exploitant du site peut accéder au contenu signalé, y compris à des messages privés ou de groupe. Ces accès sont limités à ce qui est nécessaire à l'examen des faits et sont enregistrés (date, personne ayant consulté). Le détail de ce traitement figure dans la politique de confidentialité.",
     "s5Title": "5. Responsabilité sur les contenus publiés",
     "s5Body1": "Le Ré-seau agit en tant qu'hébergeur technique des contenus publiés par ses membres (messages, posts, annonces, activités, profils) au sens de la loi n° 2004-575 du 21 juin 2004 pour la confiance dans l'économie numérique (LCEN). Nous ne contrôlons pas a priori les contenus publiés par les utilisateurs.",
     "s5Body2": "Chaque utilisateur est seul responsable des propos, images et contenus qu'il publie sur la plateforme, ainsi que de leur conformité à la loi. Le Ré-seau décline toute responsabilité quant aux contenus publiés par ses membres et quant aux conséquences, directes ou indirectes, de leur utilisation ou de rencontres organisées via le service.",
@@ -374,7 +374,7 @@
   "privacy": {
     "title": "Politique de confidentialité",
     "back": "Retour",
-    "lastUpdated": "Dernière mise à jour : 7 juillet 2026",
+    "lastUpdated": "Dernière mise à jour : 2 septembre 2026",
     "intro": "Le Ré-seau (« nous ») respecte votre vie privée. Cette page explique de manière simple quelles données nous collectons, pourquoi, et comment vous pouvez les gérer.",
     "dataTitle": "Données collectées",
     "dataItems": [
@@ -391,10 +391,12 @@
       "Vous envoyer des notifications si vous les avez activées (consentement, révocable à tout moment depuis votre appareil).",
       "Garantir la sécurité du service et lutter contre les abus (signalements, blocage, modération) (intérêt légitime)."
     ],
+    "moderationAccessTitle": "Messages privés et modération",
+    "moderationAccessBody": "Vos messages privés et de groupe ne sont pas lus de façon systématique. Dans le seul cadre du traitement d'un signalement, et pour garantir la sécurité de la communauté (notamment la protection des mineurs), l'exploitant du site peut accéder au contenu concerné, y compris à des conversations privées. Base légale : intérêt légitime (article 6.1.f du RGPD) tenant à la sécurité du service. Ces accès sont limités à ce qui est strictement nécessaire et journalisés (date et identifiant de la personne ayant consulté). Vous pouvez vous opposer à ce traitement en nous écrivant ; nous examinerons votre demande au regard des impératifs de sécurité.",
     "retentionTitle": "Durée de conservation",
-    "retentionBody": "Vos données sont conservées tant que votre compte est actif. En cas de suppression de votre compte, vos données sont effacées définitivement, à l'exception des éléments que nous serions légalement tenus de conserver plus longtemps (par exemple en cas de signalement en cours de traitement).",
+    "retentionBody": "Vos données sont conservées tant que votre compte est actif. En cas de suppression de votre compte, vos données sont effacées définitivement, à l'exception des éléments que nous serions légalement tenus de conserver plus longtemps (par exemple en cas de signalement en cours de traitement). Le journal des accès de modération est conservé au maximum 12 mois.",
     "hostingTitle": "Hébergement et sous-traitants",
-    "hostingBody": "L'application est hébergée sur Netlify et utilise Supabase pour l'authentification, la base de données et le stockage des photos. Aucune donnée n'est revendue à des tiers.",
+    "hostingBody": "L'application est hébergée sur Cloudflare Pages et utilise Supabase pour l'authentification, la base de données et le stockage des photos. Aucune donnée n'est revendue à des tiers.",
     "rightsTitle": "Vos droits (RGPD)",
     "rightsIntro": "Conformément au Règlement Général sur la Protection des Données, vous pouvez à tout moment :",
     "rightsItem1": "Consulter et modifier vos informations depuis la page Profil.",
@@ -964,6 +966,7 @@
     "banStatusError": "Erreur lors de la mise à jour du statut.",
     "userUnbanned": "Utilisateur débanni.",
     "userBanned": "Utilisateur banni.",
+    "confirmBan": "Bannir {{name}} ? La personne sera immédiatement déconnectée de la communauté. C'est réversible depuis cette page.",
     "defaultUser": "Utilisateur",
     "targetType": {
       "profile": "Profil",
@@ -997,7 +1000,23 @@
     "statsSignupTrend": "Nouveaux membres (14 derniers jours)",
     "statsPostsTrend": "Publications (14 derniers jours)",
     "statsReportsTitle": "Signalements",
-    "statsPerDay": "ce jour-là"
+    "statsPerDay": "ce jour-là",
+    "convTitle": "Conversations",
+    "convDisclaimer": "Accès réservé à l'exploitant du site, pour vérifier un comportement signalé avant modération. Chaque ouverture de conversation est enregistrée. Consultez uniquement ce qui est nécessaire au traitement d'un signalement.",
+    "convTabPrivate": "Privés",
+    "convTabGroups": "Groupes",
+    "convTabSalons": "Salons",
+    "convSearchPlaceholder": "Rechercher par nom…",
+    "convNoResults": "Aucune conversation.",
+    "convMsgCount_one": "{{count}} message",
+    "convMsgCount_other": "{{count}} messages",
+    "convEmpty": "Conversation vide.",
+    "convDeleteMessage": "Supprimer ce message",
+    "convConfirmDelete": "Supprimer définitivement ce message ?",
+    "convDeleteError": "Échec de la suppression.",
+    "convDeleted": "Message supprimé.",
+    "convBan": "Bannir {{name}}",
+    "convUnban": "Débannir {{name}}"
   },
   "reportModal": {
     "title": "Signaler",

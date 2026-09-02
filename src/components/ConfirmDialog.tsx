@@ -5,6 +5,10 @@ interface ConfirmDialogProps {
   onConfirm: () => void;
   onCancel: () => void;
   confirming?: boolean;
+  // Libellé du bouton de confirmation. Par défaut « Supprimer » (usage
+  // historique). À préciser pour les actions qui ne sont pas des suppressions
+  // (ex: bannir un membre).
+  confirmLabel?: string;
 }
 
 /**
@@ -13,7 +17,7 @@ interface ConfirmDialogProps {
  * dialogue native du navigateur, qui se comporte mal ou passe inaperçue en
  * PWA installée sur iOS.
  */
-export default function ConfirmDialog({ message, onConfirm, onCancel, confirming }: ConfirmDialogProps) {
+export default function ConfirmDialog({ message, onConfirm, onCancel, confirming, confirmLabel }: ConfirmDialogProps) {
   const { t } = useTranslation();
 
   return (
@@ -29,7 +33,7 @@ export default function ConfirmDialog({ message, onConfirm, onCancel, confirming
           <button onClick={onConfirm} disabled={confirming}
             className="flex-1 rounded-xl py-2.5 text-sm font-semibold bg-destructive text-white hover:bg-destructive/90 transition-colors disabled:opacity-50"
             style={{ fontFamily: 'Jost, sans-serif' }}>
-            {t('common.delete')}
+            {confirmLabel ?? t('common.delete')}
           </button>
         </div>
       </div>

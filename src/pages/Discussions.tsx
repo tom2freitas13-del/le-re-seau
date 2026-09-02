@@ -103,21 +103,20 @@ export default function Discussions() {
     const lastRead: Record<string, string> = {};
     (reads || []).forEach(r => { lastRead[r.salon] = r.last_read_at; });
 
-    const { data: msgs } = await supabase
-      .from('salon_messages')
-      .select('salon, created_at')
-      .neq('user_id', user.id)
-      .order('created_at', { ascending: false })
-      .limit(500);
-
-    const counts: Record<string, number> = {};
-    (msgs || []).forEach(m => {
-      const threshold = lastRead[m.salon];
-      if (!threshold || new Date(m.created_at) > new Date(threshold)) {
-        counts[m.salon] = (counts[m.salon] || 0) + 1;
-      }
-    });
-    setSalonUnread(counts);
+    // Un count exact côté serveur par salon, plutôt que ramener 500 lignes et
+    // compter côté client : l'ancienne version sous-comptait dès qu'un salon
+    // dépassait ce plafond.
+    const entries = await Promise.all(SALONS.map(async s => {
+      let q = supabase
+        .from('salon_messages')
+        .select('id', { count: 'exact', head: true })
+        .eq('salon', s.id)
+        .neq('user_id', user.id);
+      if (lastRead[s.id]) q = q.gt('created_at', lastRead[s.id]);
+      const { count } = await q;
+      return [s.id, count || 0] as const;
+    }));
+    setSalonUnread(Object.fromEntries(entries.filter(([, c]) => c > 0)));
   }, [user]);
 
   useEffect(() => {
@@ -290,21 +289,20 @@ function MessagesView({ onBack }: { onBack: () => void }) {
     const { data: reads } = await supabase.from('group_reads').select('group_id, last_read_at').eq('user_id', user.id).in('group_id', ids);
     const lastRead: Record<string, string> = {};
     (reads || []).forEach(r => { lastRead[r.group_id] = r.last_read_at; });
-    const { data: msgs } = await supabase
-      .from('chat_group_messages')
-      .select('group_id, created_at')
-      .in('group_id', ids)
-      .neq('sender_id', user.id)
-      .order('created_at', { ascending: false })
-      .limit(500);
-    const counts: Record<string, number> = {};
-    (msgs || []).forEach(m => {
-      const threshold = lastRead[m.group_id];
-      if (!threshold || new Date(m.created_at) > new Date(threshold)) {
-        counts[m.group_id] = (counts[m.group_id] || 0) + 1;
-      }
-    });
-    setGroupUnread(counts);
+
+    // Count exact côté serveur par groupe (cf. loadSalonUnread) : l'ancienne
+    // version plafonnait à 500 lignes ramenées puis comptées côté client.
+    const entries = await Promise.all(ids.map(async gid => {
+      let q = supabase
+        .from('chat_group_messages')
+        .select('id', { count: 'exact', head: true })
+        .eq('group_id', gid)
+        .neq('sender_id', user.id);
+      if (lastRead[gid]) q = q.gt('created_at', lastRead[gid]);
+      const { count } = await q;
+      return [gid, count || 0] as const;
+    }));
+    setGroupUnread(Object.fromEntries(entries.filter(([, c]) => c > 0)));
   }, [user]);
 
   const loadConversations = useCallback(async () => {
