@@ -172,12 +172,24 @@ export default function Auth() {
     <div className="min-h-screen flex flex-col relative overflow-hidden"
       style={{ background: 'linear-gradient(160deg, hsl(196 55% 28%) 0%, hsl(199 60% 18%) 55%, hsl(200 65% 12%) 100%)' }}>
       {/* Photo locale : public/images/auth-bg.jpg — disparaît proprement si absente */}
-      <img
-        src="/images/auth-bg.jpg"
-        alt=""
-        className="absolute inset-0 h-full w-full object-cover"
-        onError={(e) => { e.currentTarget.style.display = 'none'; }}
-      />
+      <picture>
+        <source type="image/avif" sizes="100vw"
+          srcSet="/images/auth-bg-800.avif 800w, /images/auth-bg-1280.avif 1280w, /images/auth-bg-1920.avif 1920w" />
+        <source type="image/webp" sizes="100vw"
+          srcSet="/images/auth-bg-800.webp 800w, /images/auth-bg-1280.webp 1280w, /images/auth-bg-1920.webp 1920w" />
+        <img
+          src="/images/auth-bg.jpg"
+          srcSet="/images/auth-bg-800.jpg 800w, /images/auth-bg-1280.jpg 1280w, /images/auth-bg-1920.jpg 1920w"
+          sizes="100vw"
+          width={1920}
+          height={1280}
+          alt=""
+          {...{ fetchpriority: 'high' }}
+          decoding="async"
+          className="absolute inset-0 h-full w-full object-cover"
+          onError={(e) => { e.currentTarget.style.display = 'none'; }}
+        />
+      </picture>
       <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(10,30,42,0.3), rgba(10,30,42,0.6))' }} />
 
       <div className="relative flex flex-col items-center justify-center min-h-screen px-5">

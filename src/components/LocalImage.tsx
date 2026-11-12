@@ -35,6 +35,10 @@ export default function LocalImage({ src, alt, fallbackEmoji, fallbackLabel, fal
     <img
       src={src}
       alt={alt}
+      // Photos de mosaïque / cartes : sous la ligne de flottaison, on ne les
+      // télécharge qu'à l'approche du viewport pour ne pas concurrencer l'image hero.
+      loading="lazy"
+      decoding="async"
       className={`object-cover ${className}`}
       onError={() => setFailed(true)}
     />

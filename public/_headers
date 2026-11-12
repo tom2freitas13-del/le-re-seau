@@ -1,0 +1,11 @@
+# Cloudflare Pages — en-têtes de cache des fichiers statiques.
+# Sans ce fichier, Pages sert tout en "max-age=0, must-revalidate" : chaque
+# visite refait un aller-retour de revalidation pour chaque image / chunk JS.
+
+# Fichiers Vite : nom hashé à chaque build -> cache longue durée sûr.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Photos : noms non hashés -> 7 jours (renommer le fichier pour forcer une MAJ plus tôt).
+/images/*
+  Cache-Control: public, max-age=604800

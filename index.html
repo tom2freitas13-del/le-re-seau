@@ -15,6 +15,19 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600&family=Fraunces:wght@500;600;700&display=swap" rel="stylesheet">
     <link rel="manifest" href="/manifest.json" />
+    <script>
+      // Preload de l'image hero (LCP) uniquement sur la page d'accueil : le <img>
+      // n'est dans le DOM qu'après le chargement du bundle JS (route lazy), donc
+      // sans ça le navigateur ne la découvre que très tard.
+      if (location.pathname === '/') {
+        var l = document.createElement('link');
+        l.rel = 'preload'; l.as = 'image'; l.type = 'image/avif';
+        l.setAttribute('imagesrcset', '/images/hero-800.avif 800w, /images/hero-1280.avif 1280w, /images/hero-1920.avif 1920w');
+        l.setAttribute('imagesizes', '100vw');
+        l.setAttribute('fetchpriority', 'high');
+        document.head.appendChild(l);
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

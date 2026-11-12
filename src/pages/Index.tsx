@@ -78,12 +78,29 @@ export default function Index() {
         style={{ background: 'linear-gradient(160deg, hsl(196 55% 28%) 0%, hsl(199 60% 18%) 55%, hsl(200 65% 12%) 100%)' }}>
         {/* Photo locale : public/images/hero.jpg — si le fichier n'existe pas,
             l'image disparaît simplement et le dégradé CSS reste visible */}
-        <img
-          src="/images/hero.jpg"
-          alt="Île de Ré"
-          className="absolute inset-0 h-full w-full object-cover"
-          onError={(e) => { e.currentTarget.style.display = 'none'; }}
-        />
+        {/* Image LCP : AVIF/WebP/JPEG responsive (≈35–180 Ko au lieu de 3,7 Mo),
+            fetchpriority="high" (jamais loading="lazy" sur l'image LCP) et
+            preload lancé depuis index.html pour ne pas attendre le bundle JS. */}
+        <picture>
+          <source type="image/avif" sizes="100vw"
+            srcSet="/images/hero-800.avif 800w, /images/hero-1280.avif 1280w, /images/hero-1920.avif 1920w" />
+          <source type="image/webp" sizes="100vw"
+            srcSet="/images/hero-800.webp 800w, /images/hero-1280.webp 1280w, /images/hero-1920.webp 1920w" />
+          <img
+            src="/images/hero.jpg"
+            srcSet="/images/hero-800.jpg 800w, /images/hero-1280.jpg 1280w, /images/hero-1920.jpg 1920w"
+            sizes="100vw"
+            width={1920}
+            height={1277}
+            alt="Île de Ré"
+            // React 18 n'accepte que l'attribut en minuscules (la prop camelCase
+            // déclenche un warning) ; le spread contourne le typage JSX.
+            {...{ fetchpriority: 'high' }}
+            decoding="async"
+            className="absolute inset-0 h-full w-full object-cover"
+            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+          />
+        </picture>
         <div className="absolute inset-0"
           style={{ background: 'linear-gradient(to bottom, rgba(10,30,42,0.1) 0%, rgba(10,30,42,0.15) 40%, rgba(10,30,42,0.75) 80%, rgba(8,24,34,0.95) 100%)' }} />
 
