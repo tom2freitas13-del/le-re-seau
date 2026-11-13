@@ -25,6 +25,18 @@ Réseau social communautaire pensé pour les habitants et visiteurs de l'Île de
 - **Carte** — Leaflet / React Leaflet
 - **Routing** — React Router
 
+## Démarrage
+
+```bash
+npm ci                # installe les dépendances
+cp .env.example .env  # puis renseigner VITE_SUPABASE_URL et VITE_SUPABASE_ANON_KEY
+npm run dev           # serveur de développement
+```
+
+Autres commandes : `npm run build` (production), `npm run lint`, `npm run test`.
+
+Le schéma de la base se trouve dans `supabase/migrations/` : appliquer les fichiers dans l'ordre (`001_…` → dernier numéro) sur un projet Supabase. Les Edge Functions sont dans `supabase/functions/`.
+
 ## Sécurité
 
 Toutes les données sont protégées par des policies **Row Level Security** au niveau de la base : chaque utilisateur ne peut consulter ou modifier que ce qui le concerne. Les photos (profils, activités) sont stockées dans des espaces isolés par utilisateur, avec un accès en écriture restreint au propriétaire.

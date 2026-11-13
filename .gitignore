@@ -7,3 +7,7 @@ dist-ssr
 *.log
 .claude
 supabase/.temp
+
+# Outils IA (fichiers de travail locaux, non publiés)
+CLAUDE.md
+AGENTS.md
